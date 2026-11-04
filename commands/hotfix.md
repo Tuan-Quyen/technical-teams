@@ -1,7 +1,7 @@
 ---
 description: "Urgent bug: debugger → developer → code-reviewer → QA (fail → developer) → security, shortened docs, never skipping G2/G3"
 argument-hint: "<bug>"
-disable-model-invocation: true
+
 ---
 # /technical-team:hotfix — hotfix
 

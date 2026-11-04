@@ -1,7 +1,7 @@
 ---
 description: "Diagnosis only: the debugger finds the root cause and proposes a fix; no code changes"
 argument-hint: "<symptom>"
-disable-model-invocation: true
+
 ---
 # /technical-team:investigate — investigate
 

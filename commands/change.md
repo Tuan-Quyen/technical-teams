@@ -1,7 +1,7 @@
 ---
 description: "Small, clearly scoped change (T1): developer → code-reviewer → QA (fail → developer) → security if triggered; gates G2–G4"
 argument-hint: "<description>"
-disable-model-invocation: true
+
 ---
 # /technical-team:change — change (T1)
 

@@ -29,8 +29,8 @@ flowchart LR
   E --> F[Build + lint + nearby unit tests]
   F --> G{Pass?}
   G -- no, attempt ≤ 2 --> C
-  G -- no, 2 focused attempts used --> H[Hand back: vướng, what was tried]
-  G -- yes --> I[Phiếu bàn giao with real output]
+  G -- no, 2 focused attempts used --> H[Hand back: blocked, what was tried]
+  G -- yes --> I[Handoff with real output]
 ```
 
 | Rule | Detail |

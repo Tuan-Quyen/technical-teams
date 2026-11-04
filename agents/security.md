@@ -26,7 +26,7 @@ flowchart LR
   A[Scope + trust boundaries] --> B[Review applicable classes]
   B --> C[Run read-only scanners]
   C --> D[Classify findings]
-  D --> E[Phiếu bàn giao]
+  D --> E[Handoff]
 ```
 
 | Step | Detail |

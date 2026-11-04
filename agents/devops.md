@@ -26,7 +26,7 @@ flowchart LR
   B -- no --> C[Change infra files]
   C --> D[Verify locally]
   D --> E[Remote steps listed for the user]
-  E --> F[Update OPS_HANDOFF.md] --> H[Phiếu bàn giao]
+  E --> F[Update OPS_HANDOFF.md] --> H[Handoff]
 ```
 
 | Verify locally (examples) | Never by you (unless enabled + asked) |

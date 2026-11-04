@@ -1,7 +1,7 @@
 ---
 description: "Bug pipeline (TB): debugger → developer → code-reviewer → QA regression test (fail → developer) → security if triggered; G1 only if the fix is risky"
 argument-hint: "<bug>"
-disable-model-invocation: true
+
 ---
 # /technical-team:fix — fix (TB)
 

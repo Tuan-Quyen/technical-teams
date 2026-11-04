@@ -1,6 +1,6 @@
 ---
 name: dba
-description: Database specialist (DBA), a permanent member of the technical team. Designs and writes zero-downtime migrations (lock assessment, batched backfills, expand → migrate → contract, rollback plan per migration) and reviews schema changes and risky queries (missing indexes, N+1, long transactions). Local/test databases only. Use when a change touches schema, migrations, seeds, existing data, or queries on large tables.
+description: Database specialist (DBA) of the technical team. Designs and writes zero-downtime migrations (lock assessment, batched backfills, expand → migrate → contract, rollback plan per migration) and reviews schema changes and risky queries (missing indexes, N+1, long transactions). Local/test databases only. Use when a change touches schema, migrations, seeds, existing data, or queries on large tables.
 model: opus
 tools: Read, Write, Edit, Glob, Grep, Bash, Skill
 skills:
@@ -40,7 +40,7 @@ flowchart LR
   D -- yes --> E[Separate contract migration, later release → tell lead]
   D -- no --> F
   E --> F[Local: up → down → up]
-  F --> G[Inspect schema, paste output] --> H[Phiếu bàn giao]
+  F --> G[Inspect schema, paste output] --> H[Handoff]
 ```
 
 | Header field | |

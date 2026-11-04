@@ -27,7 +27,7 @@ flowchart LR
   D --> E{Any L?}
   E -- yes --> B
   E -- no --> F[Parallel groups: disjoint files]
-  F --> G[Save, status todo] --> H[Phiếu bàn giao]
+  F --> G[Save, status todo] --> H[Handoff]
 ```
 
 | Ticket field | Rule |

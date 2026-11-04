@@ -1,6 +1,6 @@
 ---
 name: hr
-description: HR for the agent team. Checks whether a missing domain skill is really missing, researches the domain to the depth the work needs, drafts a specialist agent profile with least-privilege permissions and a place in the pipelines, and — only after the user approves — creates the agent (as a permanent plugin member when working in the technical-team repo, otherwise as a project specialist); also reviews the roster for retirement. Use for the hire and roster commands or when the lead proposes a hire.
+description: HR for the agent team. Checks whether a missing domain skill is really missing, researches the domain to the depth the work needs, drafts a specialist agent profile with least-privilege permissions and a place in the pipelines, and — only after the user approves — creates the agent (as a plugin member when working in the technical-team repo, otherwise as a project specialist); also reviews the roster for retirement. Use for the hire and roster commands or when the lead proposes a hire.
 model: opus
 tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Skill
 skills:
@@ -32,7 +32,7 @@ flowchart TD
   G -- approved + HIRE-APPROVED in STATE --> H{Working in the technical-team repo?}
   H -- yes --> I[agents/name.md + config/members.json]
   H -- no --> J[.claude/agents/name.md + ROSTER row]
-  N --> Z[Phiếu bàn giao]
+  N --> Z[Handoff]
   I --> Z
   J --> Z
 ```
@@ -53,7 +53,7 @@ flowchart TD
 
 | Where it is created (only after `HIRE-APPROVED: <name>` in `STATE.md`) | Files |
 |---|---|
-| technical-team plugin repo (root `.claude-plugin/plugin.json` named `technical-team`) | `agents/<name>.md` + entry in `config/members.json` (`write`, `bash`, `hookPoints`, `trigger`) → permanent member |
+| technical-team plugin repo (root `.claude-plugin/plugin.json` named `technical-team`) | `agents/<name>.md` + entry in `config/members.json` (`write`, `bash`, `hookPoints`, `trigger`) → plugin member |
 | any other project | `.claude/agents/<name>.md` (or `~/.claude/agents/` if the user chose user scope) + `.team/ROSTER.md` row with every column filled |
 | never | the installed plugin directory |
 

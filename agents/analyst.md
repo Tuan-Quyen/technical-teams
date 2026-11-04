@@ -26,7 +26,7 @@ flowchart LR
   C --> D[Acceptance criteria AC1..]
   D --> E[Edge cases E1..]
   E --> F[Open questions Q1..]
-  F --> G[Save section, status draft] --> H[Phiếu bàn giao]
+  F --> G[Save section, status draft] --> H[Handoff]
 ```
 
 | Step | Do | Rule |

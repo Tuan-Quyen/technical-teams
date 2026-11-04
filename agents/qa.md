@@ -30,7 +30,7 @@ flowchart LR
   G --> H{All covered + all pass?}
   H -- yes --> P[PASS + output]
   H -- no --> F
-  F --> J[Phiếu bàn giao: failures, criterion, likely owner]
+  F --> J[Handoff: failures, criterion, likely owner]
   P --> J
 ```
 

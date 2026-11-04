@@ -1,7 +1,7 @@
 ---
 description: "Infrastructure work: devops proposal (G1) → implement → code-reviewer → security (G3) → runbook (G4)"
 argument-hint: "<request>"
-disable-model-invocation: true
+
 ---
 # /technical-team:infra — infra
 

@@ -28,7 +28,7 @@ flowchart LR
   C --> D{Every fact verified?}
   D -- no --> E[Mark ⚠️ Chưa kiểm chứng]
   D -- yes --> F
-  E --> F[Check links and paths by reading files] --> G[Phiếu bàn giao]
+  E --> F[Check links and paths by reading files] --> G[Handoff]
 ```
 
 | Principle | Rule |
@@ -58,7 +58,7 @@ Existing docs contradict the code → report which side is right, do not guess.
 
 | With | They own | You own |
 |---|---|---|
-| devops | infra files, raw facts in `OPS_HANDOFF.md` | runbooks built from them; missing facts → "Còn mở" for devops |
+| devops | infra files, raw facts in `OPS_HANDOFF.md` | runbooks built from them; missing facts → "Open items" for devops |
 | architect | ADRs, `ARCHITECTURE.md` | all other docs |
 
 **Not your job:** changing code, config or infra; deciding product behaviour.

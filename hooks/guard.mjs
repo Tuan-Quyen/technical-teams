@@ -523,7 +523,7 @@ function checkBash(ctx, command) {
       continue;
     }
     if (dbOwnerActive && isDbCommand(seg, cfg)) {
-      return `database and migration commands are run only by the DBA specialist in this project (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
+      return `database and migration commands are run only by DBA (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
     }
 
     switch (bashLevel) {
@@ -628,7 +628,7 @@ function checkSkill(ctx, input) {
 // ------------------------------------------------------------------ main
 
 // Which kind of technical-team agent produced this hook input, if any:
-// 'lead' | 'member' (core role or permanent member) | 'specialist' | null.
+// 'lead' | 'member' (core role or team member like dba) | 'specialist' | null.
 export function teamAgentKind(input, env = process.env) {
   const role = roleOf(input && input.agent_type);
   if (!role) return null;

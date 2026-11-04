@@ -48,7 +48,7 @@ flowchart TD
 
 | Rule | Detail |
 |---|---|
-| Who | `subagent_type`: `technical-team:<role>` for analyst, architect, pm, developer, debugger, qa, code-reviewer, security, devops, writer, hr; permanent members from `config/members.json` (`technical-team:dba`); **active approved** specialists from `.team/ROSTER.md`. The guard refuses anyone else |
+| Who | `subagent_type`: `technical-team:<role>` for analyst, architect, pm, developer, debugger, qa, code-reviewer, security, devops, writer, hr, dba; **active approved** specialists from `.team/ROSTER.md`. The guard refuses anyone else |
 | Project overrides | if `.claude/agents/<role>.md` (or `~/.claude/agents/<role>.md`) exists for a core role, use the bare name `<role>`. Glob once per run |
 | Brief | template §4; agents start from zero |
 | Language | always state the user's language and the work-item ID |
@@ -59,9 +59,9 @@ flowchart TD
 
 | Check | Action when it fails |
 |---|---|
-| Handoff block present and well-formed | treat the run as `vướng` |
-| `xong` has evidence | send back or re-brief |
-| "Đã ghi vào" matches `git diff --stat` | send back |
+| Handoff block present and well-formed | treat the run as `blocked` |
+| `done` has evidence | send back or re-brief |
+| "Files changed" matches `git diff --stat` | send back |
 | Gate condition met | do not pass the gate |
 | Delivery loop round | record in `STATE.md` → `Loop log` (§3) |
 
@@ -187,7 +187,7 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 | devops | infra files, `.team/OPS_HANDOFF.md` | docker/IaC/config checks; no remote changes unless enabled |
 | writer | `README.md`, `CHANGELOG.md`, `docs/**` except `docs/adr/**` | none |
 | hr | approved agent files, `.team/ROSTER.md` (+ `agents/`, `config/members.json` in the plugin repo) | none |
-| dba (member) | migrations, seeds, schema dumps (`config/members.json`) | `db-local`: DB commands only against proven local/test targets |
+| dba | migrations, seeds, schema dumps (`config/members.json`) | `db-local`: DB commands only against proven local/test targets |
 | specialist | roster write scope, only with approval | roster Bash level |
 
 Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files. A guard denial is final: re-route to the owner or report it.
@@ -216,7 +216,7 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 
 | Kind | Where | Availability |
 |---|---|---|
-| Permanent members | `${CLAUDE_PLUGIN_ROOT}/config/members.json` (`dba`) | every project; `hookPoints` + `trigger` in that file; call as `technical-team:<name>` |
+| Plugin members (e.g. dba) | `${CLAUDE_PLUGIN_ROOT}/config/members.json` | every project; `hookPoints` + `trigger` in that file; call as `technical-team:<name>` |
 | Project specialists | `.team/ROSTER.md` | only `active` rows with `HIRE-APPROVED: <name>` in `STATE.md` |
 
 | Hook point | With | When |

@@ -39,10 +39,10 @@ _Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, del
 
 | Where the hire goes | Files | Effect |
 |---|---|---|
-| Working in the technical-team plugin repo (root `.claude-plugin/plugin.json` named `technical-team`) | `agents/<name>.md` + entry in `config/members.json` (write, bash, hookPoints, trigger); writer updates README | permanent member in every project, after `/reload-plugins` |
+| Working in the technical-team plugin repo (root `.claude-plugin/plugin.json` named `technical-team`) | `agents/<name>.md` + entry in `config/members.json` (write, bash, hookPoints, trigger); writer updates README | plugin member in every project, after `/reload-plugins` |
 | Any other project | `.claude/agents/<name>.md` (or `~/.claude/agents/` if the user asks) + `.team/ROSTER.md` row | project specialist; honoured only with `HIRE-APPROVED: <name>` in that project's `STATE.md` |
 
-Before hiring: a permanent member in `config/members.json` that covers the need means no hire. The guard lets hr write the agent file only after `HIRE-APPROVED: <name>` is in `STATE.md`.
+Before hiring: a member in `config/members.json` that covers the need means no hire. The guard lets hr write the agent file only after `HIRE-APPROVED: <name>` is in `STATE.md`.
 
 ```mermaid
 flowchart TD

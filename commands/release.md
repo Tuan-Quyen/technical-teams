@@ -1,7 +1,7 @@
 ---
 description: "Release readiness: devops ∥ security ∥ QA → CHANGELOG → GO/NO-GO; nothing is deployed"
 argument-hint: "[version]"
-disable-model-invocation: true
+
 ---
 # /technical-team:release — release (GO/NO-GO)
 

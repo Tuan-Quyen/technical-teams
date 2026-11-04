@@ -1,7 +1,7 @@
 ---
 description: "Plan only: analyst → architect → pm, stop at G1 for your approval; no code"
 argument-hint: "<goal>"
-disable-model-invocation: true
+
 ---
 # /technical-team:plan — plan (stop at G1)
 

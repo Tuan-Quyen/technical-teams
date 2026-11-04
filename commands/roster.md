@@ -1,6 +1,6 @@
 ---
 description: "Show the specialist roster and get hr's review proposal"
-disable-model-invocation: true
+
 ---
 # /technical-team:roster — roster
 
@@ -57,5 +57,5 @@ flowchart LR
 | | |
 |---|---|
 | .team | reads `ROSTER`, `STATE`; writes hr → `ROSTER`, lead → `STATE` |
-| Note | permanent members are reviewed by changing the plugin itself, not here |
+| Note | plugin members (such as dba) are reviewed by changing the plugin itself, not here |
 | End | final report: roster table, proposals, decisions, files the user should delete |

@@ -1,7 +1,7 @@
 ---
 description: "Record an architecture decision (ADR) and update ARCHITECTURE.md"
 argument-hint: "<decision>"
-disable-model-invocation: true
+
 ---
 # /technical-team:adr — adr
 

@@ -30,7 +30,7 @@ flowchart LR
   F --> G{Decision outlives W-NNN?}
   G -- yes --> H[ADR + ARCHITECTURE.md index]
   G -- no --> I[PLAN.md section, status draft]
-  H --> I --> J[Phiếu bàn giao]
+  H --> I --> J[Handoff]
 ```
 
 | PLAN.md field | Content |

@@ -1,6 +1,6 @@
 # technical-team
 
-Plugin Claude Code dựng một team kỹ thuật gồm **12 agent cốt lõi** do một tech lead điều phối, cộng **1 thành viên cố định** (`dba`): phân tầng công việc, 4 cổng chất lượng, vòng lặp giao hàng chạy tới khi pass, **18 lệnh workflow** (mỗi lệnh chứa luôn pipeline của nó), skill **`run-kit`** (tài liệu sử dụng + quy tắc chung + phiếu bàn giao), một **guard hook** chặn bằng cấu hình những gì mỗi vai trò không được làm, và quy trình **HR** để tuyển thêm specialist theo domain. Không gắn với ngôn ngữ hay framework nào: mỗi agent tự đọc stack, convention và lệnh build/test của repo.
+Plugin Claude Code dựng một team kỹ thuật gồm **13 agent** do một tech lead điều phối (mặc định bao gồm cả `dba`): phân tầng công việc, 4 cổng chất lượng, vòng lặp giao hàng chạy tới khi pass, **18 lệnh workflow** (mỗi lệnh chứa luôn pipeline của nó), skill **`run-kit`** (tài liệu sử dụng + quy tắc chung + handoff block tiếng Anh), một **guard hook** chặn bằng cấu hình những gì mỗi vai trò không được làm, và quy trình **HR** để tuyển thêm specialist theo domain. Không gắn với ngôn ngữ hay framework nào: mỗi agent tự đọc stack, convention và lệnh build/test của repo.
 
 ---
 
@@ -18,7 +18,7 @@ Plugin Claude Code dựng một team kỹ thuật gồm **12 agent cốt lõi** 
 11. [Tùy biến](#11-tùy-biến)
 12. [Giới hạn đã biết](#12-giới-hạn-đã-biết)
 13. [Phát triển plugin](#13-phát-triển-plugin)
-14. [Ghi chú về vai trò cốt lõi](#14-ghi-chú-về-vai-trò-cốt-lõi)
+14. [Ghi chú về các vai trò mặc định](#14-ghi-chú-về-các-vai-trò-mặc-định)
 
 ---
 
@@ -80,7 +80,7 @@ Gỡ plugin **không** xóa `.team/`, `ARCHITECTURE.md`, `docs/adr/` hay special
 
 ### Kiểm tra sau khi cài
 ```bash
-claude plugin details technical-team    # 13 agent (12 cốt lõi + dba), 19 skill (18 lệnh + run-kit), 2 hook (PreToolUse, SubagentStop)
+claude plugin details technical-team    # 13 agent, 19 skill (18 lệnh + run-kit), 2 hook (PreToolUse, SubagentStop)
 ```
 Trong session: `/agents` phải thấy `technical-team:lead` … `technical-team:hr`.
 
@@ -127,6 +127,7 @@ Tên agent đầy đủ có tiền tố plugin: `technical-team:<tên>`.
 | `devops` | DevOps | sonnet | CI/CD, Docker, deploy, hạ tầng; ghi thông tin vận hành vào `.team/OPS_HANDOFF.md` |
 | `writer` | Technical writer | sonnet | README, API docs, CHANGELOG, runbook vận hành hệ thống, hướng dẫn |
 | `hr` | HR | opus | Tuyển specialist khi team thiếu chuyên môn domain |
+| `dba` | Database administrator (DBA) | opus | Migration không downtime (đánh giá lock, backfill, expand → migrate → contract, rollback) và review schema/query rủi ro |
 
 Model là alias (`opus`/`sonnet`) nên luôn theo bản mới nhất.
 
@@ -141,6 +142,7 @@ Model là alias (`opus`/`sonnet`) nên luôn theo bản mới nhất.
 | pm ↔ lead | pm đề xuất thứ tự, nhóm song song, theo dõi trạng thái; chỉ lead giao việc, chọn pipeline và cho qua cổng |
 | debugger ↔ developer | debugger chẩn đoán có bằng chứng, không viết patch; developer sửa theo chẩn đoán, không chẩn đoán lại. Sửa không ăn → quay lại debugger |
 | developer ↔ qa (test) | qa viết test mới và kết luận PASS/FAIL; developer chỉ **Edit** test cũ bị gãy do hành vi được *chủ đích* thay đổi |
+| dba ↔ developer | developer giữ code model/ORM và schema-as-code (như `schema.prisma`); dba giữ migration, seed, dump schema và chạy lệnh DB/migrate |
 | devops ↔ writer | devops ghi dữ kiện thô vào `OPS_HANDOFF.md` và sửa file hạ tầng; writer biến dữ kiện thành runbook/tài liệu, không sửa hạ tầng |
 | hr ↔ lead (tuyển) | lead phát hiện và đề xuất nhu cầu, chuyển câu hỏi tham vấn, ghi phê duyệt của bạn; hr đánh giá nhu cầu có thật không, tra cứu, soạn hồ sơ, tạo specialist. Bạn là người quyết định |
 
@@ -156,7 +158,7 @@ Nguyên tắc: mỗi agent chỉ có đúng tool và phạm vi ghi công việc 
 |---|---|---|
 | **A. Frontmatter `tools`** | Claude Code chỉ đưa cho agent các tool được liệt kê | Loại tool: agent không có `Bash` thì không chạy được shell; không có `Write`/`Edit` thì không ghi file bằng tool; chỉ lead có `Agent` |
 | **B. Guard hook** (`hooks/guard.mjs`, `PreToolUse`) | Đọc `agent_type` trong input hook để biết lệnh gọi đến từ agent nào, rồi cho/không cho | Đường dẫn ghi theo chủ sở hữu, nội dung lệnh Bash theo vai trò, ai được gọi agent nào, cổng duyệt tuyển dụng, skill nào được nạp |
-| **B2. Handoff check** (`hooks/handoff-check.mjs`, `SubagentStop`) | Đọc `last_assistant_message` khi một agent của team kết thúc | Thiếu phiếu bàn giao, thiếu nhãn, `Kết quả` sai giá trị, `xong` không có bằng chứng → agent bị trả lại kèm mẫu phiếu (tối đa 2 lần). Lead phải kết thúc bằng báo cáo cuối hoặc báo cáo chờ duyệt |
+| **B2. Handoff check** (`hooks/handoff-check.mjs`, `SubagentStop`) | Đọc `last_assistant_message` khi một agent của team kết thúc | Thiếu khối Handoff, thiếu nhãn (`Result`, `Evidence`, `Files changed`, `Open items`, `Next steps`), `Result` sai giá trị, `done` không có bằng chứng → agent bị trả lại kèm mẫu Handoff (tối đa 2 lần). Lead phải kết thúc bằng báo cáo cuối hoặc báo cáo chờ duyệt |
 | **C. Chỉ dẫn** (prompt agent + run kit) | Agent tự tuân thủ | Mọi thứ còn lại: thứ tự pipeline, cổng G1–G4, giới hạn vòng lặp, "không nới lỏng test", chất lượng bằng chứng |
 
 Những gì tài liệu Claude Code xác nhận và ảnh hưởng tới thiết kế:
@@ -181,7 +183,7 @@ Những gì tài liệu Claude Code xác nhận và ảnh hưởng tới thiết
 | writer | Read, Write, Edit, Glob, Grep, Skill | `README.md`, `CHANGELOG.md` (mọi cấp), `docs/**` trừ `docs/adr/**` | Không có tool |
 | hr | Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Skill | File specialist đã duyệt (`.claude/agents/<tên>.md` hoặc `~/.claude/agents/<tên>.md`) + `.team/ROSTER.md` | Không có tool |
 | specialist | Do HR đề xuất, bạn duyệt; không bao giờ có `Agent`; có `Skill` | Cột `Write scope` trong `ROSTER.md`, chỉ khi `STATE.md` có `HIRE-APPROVED: <tên>` (mặc định không) | Cột `Bash`: `none` / `readonly` / `developer` / `db-local` (mặc định `none`) |
-| dba (thành viên cố định) | Read, Write, Edit, Glob, Grep, Bash, Skill | File migration, seed, schema dump (`config/members.json` → `dba.write`, project mở rộng bằng `paths.dba`) | `db-local` (mục 5.4b) |
+| dba | Read, Write, Edit, Glob, Grep, Bash, Skill | File migration, seed, schema dump (`config/members.json` → `dba.write`, project mở rộng bằng `paths.dba`) | `db-local` (mục 5.4b) |
 
 **Lệch so với bảng gốc, có chủ đích:**
 - **Mọi agent có thêm `Skill`**, để nạp skill theo vai trò mà bạn khai trong `.claude/technical-team.json` → `skills`. Guard chặn mọi skill ngoài `run-kit` và danh sách của đúng vai trò đó.
@@ -197,7 +199,7 @@ Guard xác định chủ theo thứ tự, khớp đầu tiên thắng:
 4. `README.md`, `**/README.md`, `CHANGELOG.md`, `**/CHANGELOG.md`, `docs/**` → writer.
 5. File hạ tầng (Dockerfile, compose, `.github/workflows/**`, `.gitlab-ci.yml`, `Jenkinsfile`, `infra/**`, `deploy/**`, `k8s/**`, `helm/**`, `terraform/**`, `ops/**`, `scripts/ci|deploy|ops/**`, …) → devops.
 6. File test (`tests/**`, `test/**`, `__tests__/**`, `e2e/**`, `spec/**`, `*.spec.*`, `*.test.*`, `*_test.*`, `test_*.py`, …) → qa.
-7. Đường dẫn của thành viên cố định trong `config/members.json` (hiện là `dba`: `**/migrations/**`, `db/migrate/**`, `**/db/migration/**`, `alembic/versions/**`, `drizzle/**`, `**/seeds/**`, `**/seeders/**`, `db/seeds.rb`, `prisma/seed.*`, `db/schema.rb`, `db/structure.sql`…) → thành viên đó.
+7. Đường dẫn của `dba` (và các thành viên cấu hình trong `config/members.json`: `**/migrations/**`, `db/migrate/**`, `**/db/migration/**`, `alembic/versions/**`, `drizzle/**`, `**/seeds/**`, `**/seeders/**`, `db/seeds.rb`, `prisma/seed.*`, `db/schema.rb`, `db/structure.sql`…) → `dba` / thành viên đó.
 8. `Write scope` của specialist đang `active` trong `ROSTER.md` **và** có `HIRE-APPROVED` trong `STATE.md` → specialist đó (bị cắt khỏi vùng của developer; không thể chiếm đường dẫn ở bước 1–6). 
 9. Còn lại → developer.
 
@@ -216,7 +218,7 @@ Lệnh build/test mỗi project khác nhau nên plugin không hardcode được.
 
 ### 5.4b Lệnh database (`db-local`, dùng cho `dba`)
 
-`dba` là thành viên cố định nên luật này áp cho mọi project (specialist nào khác được duyệt mức `db-local` cũng vậy):
+Mặc định `dba` là của technical-team nên luật này áp cho mọi project (specialist nào khác được duyệt mức `db-local` cũng vậy):
 
 - **Chỉ specialist đó được chạy lệnh DB/migration.** Danh sách tiền tố mặc định ở `config/ownership.json` → `dbCommands` (Prisma, Django, Alembic, Rails, Flyway, Liquibase, EF Core, Knex, Sequelize, TypeORM, Drizzle, goose, dbmate, sqlx, diesel, atlas, `pg_dump`…) cộng các client `psql`, `mysql`, `sqlite3`, `mongosh`, `sqlcmd`…; project thay được bằng `db.commands`. Developer, qa… chạy những lệnh này đều bị chặn (lệnh như `npx prisma generate`, `npm test` vẫn chạy được). Test setup tự chạy migration vào DB test bên trong test runner không bị ảnh hưởng.
 - **Đích kết nối phải chứng minh được là local/test**, bằng một trong ba cách: URL ghi ngay trong lệnh (`DATABASE_URL=postgresql://app@localhost:5432/app_test npx prisma migrate dev`), `--host` + `-d/--database`, hoặc `db.envFile` trỏ tới file env mà tool thật sự đọc. Host phải thuộc `db.allowedHosts`, tên DB phải khớp `db.allowedDatabases`. Không xác định được đích thì chặn.
@@ -229,8 +231,8 @@ Nói thẳng để bạn không tin nhầm vào guard:
 - **Bash vẫn có thể ghi file theo đường vòng.** Guard bắt redirect và `tee`, chặn lệnh ghi phổ biến với vai trò chỉ-đọc, nhưng một script (`node -e`, `python -c`, chương trình build, test runner tạo snapshot) vẫn có thể ghi bất cứ đâu. Đây là kiểm tra theo mẫu, không phải sandbox. Cần cách ly thật thì dùng chế độ sandbox của Claude Code hoặc allowlist.
 - **Cổng G1–G4, thứ tự pipeline, vòng lặp chất lượng, "không nới lỏng test"** chỉ dựa vào chỉ dẫn (lớp C). Guard không biết một test bị sửa là "sửa đúng" hay "nới lỏng".
 - **Cổng duyệt tuyển dụng** được hook kiểm tra (hr chỉ ghi được file specialist khi `STATE.md` có dòng `HIRE-APPROVED: <tên>`), nhưng chính lead viết dòng đó. Đây là điểm kiểm soát có dấu vết, không phải chữ ký của bạn. Xem lại `STATE.md` → "Hires" khi cần chắc chắn.
-- **Thiếu Node = không có guard** (mục 1), và không có cả kiểm tra phiếu bàn giao.
-- **Kiểm tra phiếu bàn giao** dựa vào trường `last_assistant_message` của `SubagentStop` (tài liệu có nêu). Nếu Claude Code không gửi trường này, hook không chặn (không đoán mò), và việc kiểm tra quay về lead.
+- **Thiếu Node = không có guard** (mục 1), và không có cả kiểm tra handoff.
+- **Kiểm tra handoff** dựa vào trường `last_assistant_message` của `SubagentStop` (tài liệu có nêu). Nếu Claude Code không gửi trường này, hook không chặn (không đoán mò), và việc kiểm tra quay về lead.
 - **Skill bạn khai chạy với quyền của agent nạp nó.** Guard kiểm soát *skill nào* được nạp, không kiểm soát *nội dung* skill. Một skill có khối lệnh shell tự chạy khi nạp, hoặc khai `allowed-tools`, có thể đi ngoài kiểm tra Bash của guard (chưa kiểm chứng). Chỉ khai skill bạn đã đọc và tin.
 - Tên trường input của tool `Skill` không được tài liệu ghi rõ; guard đọc `skill`/`name`/`command`, và **chặn** khi không đọc ra được tên, nên nếu Claude Code dùng tên trường khác thì agent sẽ bị chặn nạp skill (an toàn, nhưng cần sửa guard).
 - **Chặn DB theo host/tên DB không phải bảo đảm tuyệt đối.** `localhost` có thể là tunnel tới production do bạn tự mở từ trước; file config của tool (`knexfile`, `database.yml`, `alembic.ini`, `appsettings.json`) có thể hardcode host hoặc chọn môi trường theo biến, và tool có thể bỏ qua `DATABASE_URL` trong lệnh. Bảo đảm thật: máy dev và repo **không có credential production**, mạng dev không tới được DB production.
@@ -413,15 +415,15 @@ Plugin chỉ còn **một skill**: `run-kit` (`skills/run-kit/SKILL.md`). Pipeli
 
 | Thành phần | Ở đâu | Nạp thế nào | Nội dung |
 |---|---|---|---|
-| `run-kit` | `skills/run-kit/SKILL.md` | Preload vào **mọi** agent (kể cả specialist); session chính nạp khi bạn hỏi cách dùng; gõ `/technical-team:run-kit` để xem | Tài liệu sử dụng ngắn (hai cách chạy, bảng lệnh + tham số, cổng, vòng lặp, specialist), quy tắc làm việc chung, **định dạng phiếu bàn giao** |
+| `run-kit` | `skills/run-kit/SKILL.md` | Preload vào **mọi** agent (kể cả specialist); session chính nạp khi bạn hỏi cách dùng; gõ `/technical-team:run-kit` để xem | Tài liệu sử dụng ngắn (hai cách chạy, bảng lệnh + tham số, cổng, vòng lặp, specialist), quy tắc làm việc chung, **định dạng handoff (tiếng Anh)** |
 | Lead manual | `agents/lead.md`, phần cuối | Là system prompt của lead | Tầng, cổng, vòng lặp giao hàng, mẫu brief, bảng quyền tóm tắt, `.team/`, điểm gắn specialist, mẫu báo cáo cuối và báo cáo chờ duyệt |
 | Pipeline | `commands/<lệnh>.md` → `## Pipeline` | Lead đọc file bằng Read khi chạy lệnh | Các bước, agent, bước song song, cổng và điểm dừng, vòng lặp, file `.team/`, điểm gắn specialist, điều kiện kết thúc, báo cáo |
 
 Mọi agent có tool `Skill`, nhưng guard chỉ cho nạp `run-kit` và các skill bạn khai cho vai trò đó (mục 11). Chi phí luôn-bật của plugin khoảng **1,9k token** mỗi session (trước là ~2,8k với 37 skill).
 
-### Phiếu bàn giao (mọi agent, cuối mỗi lần chạy)
+### Handoff block (mọi agent, cuối mỗi lần chạy)
 
-Định dạng chỉ định nghĩa ở **một nơi**: `skills/run-kit/SKILL.md` §3, được preload vào mọi agent. Hook `SubagentStop` đọc chính mẫu đó để kiểm tra, nên nếu preload hỏng hoặc agent quên, hook vẫn trả agent lại kèm đúng mẫu. Sau 2 lần nhắc mà vẫn thiếu, hook cho dừng để tránh lặp vô hạn; lead coi lần chạy đó là `vướng`.
+Định dạng chỉ định nghĩa ở **một nơi**: `skills/run-kit/SKILL.md` §3 (tiêu đề `### Handoff` và các nhãn tiếng Anh: `Result`, `Evidence`, `Files changed`, `Open items`, `Next steps`), được preload vào mọi agent. Hook `SubagentStop` đọc chính mẫu đó để kiểm tra, nên nếu preload hỏng hoặc agent quên, hook vẫn trả agent lại kèm đúng mẫu. Sau 2 lần nhắc mà vẫn thiếu, hook cho dừng để tránh lặp vô hạn; lead coi lần chạy đó là `blocked`.
 
 ## 9. Tuyển specialist
 
@@ -434,7 +436,7 @@ Mọi agent có tool `Skill`, nhưng guard chỉ cho nạp `run-kit` và các sk
 4. **hr** chốt **một** đề xuất; ý kiến mâu thuẫn được nêu rõ để bạn quyết.
 5. **Cổng duyệt tuyển dụng:** lead dừng, trình bạn hồ sơ domain, hồ sơ specialist, chỗ đặt, câu hỏi.
 6. **Tạo:** bạn duyệt → lead ghi `HIRE-APPROVED: <tên>` vào `STATE.md` → hr tạo agent ở một trong hai nơi → lead đối chiếu lại:
-   - **Đang làm việc trong chính repo `technical-team`** (gốc project có `.claude-plugin/plugin.json` tên `technical-team`): hr ghi `agents/<tên>.md` và thêm mục vào `config/members.json` (đường dẫn ghi, mức Bash, điểm gắn, điều kiện kích hoạt), writer cập nhật README. Agent trở thành **thành viên cố định của plugin**, guard áp quyền ở mọi project dùng plugin. Có hiệu lực sau `/reload-plugins` hoặc session mới.
+   - **Đang làm việc trong chính repo `technical-team`** (gốc project có `.claude-plugin/plugin.json` tên `technical-team`): hr ghi `agents/<tên>.md` và thêm mục vào `config/members.json` (đường dẫn ghi, mức Bash, điểm gắn, điều kiện kích hoạt), writer cập nhật README. Agent trở thành **thành viên của plugin** (như `dba`), guard áp quyền ở mọi project dùng plugin. Có hiệu lực sau `/reload-plugins` hoặc session mới.
    - **Project khác:** hr ghi `.claude/agents/<tên>.md` (hoặc `~/.claude/agents/` nếu bạn chọn user scope) và một dòng `ROSTER.md` của project đó. Không bao giờ ghi vào thư mục plugin đã cài.
 
 **Có hiệu lực khi nào:** Claude Code theo dõi `.claude/agents/` và `~/.claude/agents/`, thường nhận agent mới trong vài giây. Cần **khởi động lại session** nếu thư mục `agents/` chưa tồn tại lúc session bắt đầu (lệnh `init` tạo sẵn `.claude/agents/` để tránh trường hợp này ở các session sau), hoặc nếu lead báo không gọi được tên đó.
@@ -448,17 +450,17 @@ Mọi agent có tool `Skill`, nhưng guard chỉ cho nạp `run-kit` và các sk
 | `review` | code-reviewer | Ở bước code review (trước QA); phát hiện "chặn merge" trả code về developer và giữ G3 |
 | `test` | qa | Ở bước QA, trước G2 |
 
-Ở mỗi điểm gắn, lead xem thành viên cố định trong `config/members.json` và các dòng `active` trong `ROSTER.md` (có `HIRE-APPROVED` tương ứng), rồi gọi ai có điểm gắn và điều kiện kích hoạt khớp với yêu cầu.
+Ở mỗi điểm gắn, lead xem `dba` và thành viên trong `config/members.json` cùng các dòng `active` trong `ROSTER.md` (có `HIRE-APPROVED` tương ứng), rồi gọi ai có điểm gắn và điều kiện kích hoạt khớp với yêu cầu.
 
-### Thành viên cố định: `dba`
+### Vai trò DBA: `dba`
 
-`agents/dba.md` — DBA cho migration không downtime (đánh giá lock, backfill theo batch, expand → migrate → contract, rollback từng migration) và review schema/query rủi ro. Model `opus`. Hồ sơ được bạn duyệt ngày 2026-11-05. `dba` là **một phần của plugin**: có mặt ở mọi project, không cần kích hoạt, không nằm trong `ROSTER.md`.
+`agents/dba.md` — DBA cho migration không downtime (đánh giá lock, backfill theo batch, expand → migrate → contract, rollback từng migration) và review schema/query rủi ro. Model `opus`. Mặc định `dba` là của technical-team: có mặt ở mọi project, không cần kích hoạt, không nằm trong `ROSTER.md`.
 
 - **Quyền** khai trong `config/members.json`: đường dẫn migration/seed/schema dump phổ biến của các stack (mục 5.3), Bash `db-local` (mục 5.4b). Project để migration ở chỗ khác thì thêm `paths.dba` vào `.claude/technical-team.json`.
 - **Bạn tự thêm mục `db`** vào `.claude/technical-team.json` (host/DB local hợp lệ, file env), mục 11. Thiếu thì dùng mặc định `localhost` + tên DB `*_test`/`*_dev`/`*_local`.
 - **Điểm gắn:** `design` (cùng architect khi chạm schema/dữ liệu), `execute` (song song với developer khi migration viết tay; nối tiếp sau developer khi migration sinh từ model ORM), `review` (ở bước code review, trước QA).
 - **Ranh giới với developer:** developer giữ code model/ORM và file schema-as-code như `schema.prisma`; dba giữ file migration, seed và file dump schema. Chỉ dba chạy lệnh migrate/DB.
-- **Ranh giới khác:** fixture test thuộc qa; bước chạy migration trong CI/deploy thuộc devops (dba đưa thứ tự chạy và rollback trong phiếu bàn giao để devops ghi `OPS_HANDOFF.md`); kế hoạch rollback nằm ở header của từng file migration.
+- **Ranh giới khác:** fixture test thuộc qa; bước chạy migration trong CI/deploy thuộc devops (dba đưa thứ tự chạy và rollback trong handoff để devops ghi `OPS_HANDOFF.md`); kế hoạch rollback nằm ở header của từng file migration.
 - **Lưu ý:** vì `dba` luôn có mặt, ở mọi project developer **không còn** tự chạy lệnh migrate được nữa, kể cả project nhỏ. Việc đổi schema luôn đi qua dba.
 
 **Rà soát:** `roster` → hr đề xuất cho nghỉ specialist lâu không dùng hoặc trùng việc. Chỉ khi bạn đồng ý, hr chuyển dòng sang mục "Retired"; hr không xóa file được — bạn tự xóa file agent theo đường dẫn lead đưa.
@@ -555,7 +557,7 @@ Sửa `model:` trong file agent (bản ghi đè ở project, hoặc fork plugin)
 - **Chi phí:** pipeline `feature` gọi khoảng 8–10 lượt agent (nhiều hơn nếu có vòng lặp hoặc specialist). Dùng `run` để lead chọn tầng nhẹ nhất phù hợp.
 - **Commit/push:** guard chặn mọi agent của team commit, push, mở PR, kể cả khi bạn yêu cầu; lead sẽ đưa bạn lệnh để tự chạy.
 - **Lead không gọi được agent ngoài team** (Explore, general-purpose, agent của plugin khác).
-- **Phiếu bàn giao** dựa vào chỉ dẫn + preload; không có hook kiểm tra định dạng.
+- **Handoff check** dựa vào trường `last_assistant_message` của `SubagentStop` (nếu Claude Code không gửi trường này thì việc kiểm tra fallback về tech lead).
 - Guard chạy với mỗi lệnh `Write/Edit/MultiEdit/NotebookEdit/Bash/Agent` (timeout 15 giây); với session thường nó thoát ngay.
 
 ---
@@ -575,15 +577,15 @@ technical-team/
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
-├── agents/            12 agent cốt lõi + dba (thành viên cố định)
+├── agents/            13 agent của technical-team (bao gồm dba)
 ├── commands/          18 lệnh workflow, mỗi lệnh chứa pipeline của nó
-├── skills/run-kit/    tài liệu sử dụng + quy tắc chung + phiếu bàn giao
+├── skills/run-kit/    tài liệu sử dụng + quy tắc chung + handoff format
 ├── hooks/
 │   ├── hooks.json        PreToolUse → guard.mjs, SubagentStop → handoff-check.mjs
 │   ├── guard.mjs         thực thi phân quyền
-│   └── handoff-check.mjs bắt buộc phiếu bàn giao
+│   └── handoff-check.mjs bắt buộc khối handoff chuẩn
 ├── config/ownership.json   chủ sở hữu đường dẫn + dbCommands mặc định
-├── config/members.json     thành viên cố định ngoài 12 vai trò (dba)
+├── config/members.json     phân quyền cho dba và thành viên plugin
 ├── scripts/team-init.mjs
 ├── templates/         .team/*.md, ARCHITECTURE.md, adr.md, specialist-agent.md, technical-team.json
 └── tests/guard.test.mjs
@@ -593,9 +595,9 @@ Nội dung agent, command và skill viết dạng **bảng + sơ đồ Mermaid**
 
 ---
 
-## 14. Ghi chú về vai trò cốt lõi
+## 14. Ghi chú về các vai trò mặc định
 
-Không thêm vai trò ngoài 12 vai trò. Những khoảng trống có thể cần cân nhắc sau, mỗi cái đều tuyển được dưới dạng specialist qua hr nếu project cần:
+Không tùy tiện thêm vai trò ngoài các vai trò mặc định của team. Những khoảng trống có thể cần cân nhắc sau, mỗi cái đều tuyển được dưới dạng specialist qua hr nếu project cần:
 - **UX/UI designer:** không ai sở hữu luồng người dùng, wireframe, accessibility. Hiện analyst chỉ viết AC, developer tự quyết giao diện.
-- ~~Data/DBA~~: đã có thành viên cố định `dba` (mục 9). Data engineering theo nghĩa pipeline/ETL/warehouse vẫn chưa có ai.
+- ~~Data/DBA~~: mặc định `dba` là của technical-team (mục 9). Data engineering theo nghĩa pipeline/ETL/warehouse vẫn chưa có ai.
 - **Product owner:** người ưu tiên backlog giữa nhiều work item hiện là bạn; pm chỉ sắp thứ tự ticket trong một work item.

@@ -4,14 +4,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.env.CLAUDE_PLUGIN_ROOT = ROOT;
 const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-home-'));
 process.env.HOME = fakeHome;
 process.env.USERPROFILE = fakeHome;
-const { decide, parseRoster, globToRegExp } = await import(path.join(ROOT, 'hooks', 'guard.mjs'));
+const { decide, parseRoster, globToRegExp } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'guard.mjs')).href);
 
 function project({ roster = '', state = '', config } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-proj-'));
@@ -278,7 +278,7 @@ test('roster rows without HIRE-APPROVED grant nothing', () => {
   assert.equal(write(d, 'technical-team:developer', 'firmware/main.c'), null, 'no carve-out without approval');
 });
 
-test('dba is a permanent member: owns migrations/seeds in every project, no roster needed', () => {
+test('dba is default to technical-team: owns migrations/seeds in every project, no roster needed', () => {
   const d = project();
   assert.equal(write(d, 'technical-team:dba', 'prisma/migrations/001_init/migration.sql'), null);
   assert.equal(write(d, 'technical-team:dba', 'app/orders/migrations/0002_add_x.py'), null);
@@ -364,18 +364,23 @@ test('skills: run-kit always, otherwise only the role list from project config',
   assert.ok(call(none, 'technical-team:developer', 'Skill', { skill: 'react-native' }), 'no config, no extra skills');
 });
 
-test('handoff check: template from run-kit, required labels, evidence for "xong"', async () => {
-  const { checkHandoff, handoffTemplate } = await import(path.join(ROOT, 'hooks', 'handoff-check.mjs'));
+test('handoff check: template from run-kit, required labels, evidence for "done"', async () => {
+  const { checkHandoff, handoffTemplate } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'handoff-check.mjs')).href);
   const tpl = handoffTemplate();
-  assert.match(tpl, /Phiếu bàn giao/);
-  for (const l of ['Kết quả', 'Bằng chứng', 'Đã ghi vào', 'Còn mở', 'Đề xuất bước tiếp']) assert.match(tpl, new RegExp(l));
-  const ok = `Done.\n### Phiếu bàn giao\n- **Kết quả:** xong\n- **Bằng chứng:** npm test → 42 passed\n- **Đã ghi vào:** src/a.ts\n- **Còn mở:** không\n- **Đề xuất bước tiếp:** qa`;
+  assert.match(tpl, /Handoff/);
+  for (const l of ['Result', 'Evidence', 'Files changed', 'Open items', 'Next steps']) assert.match(tpl, new RegExp(l));
+  const ok = `Done.\n### Handoff\n- **Result:** done\n- **Evidence:** npm test → 42 passed\n- **Files changed:** src/a.ts\n- **Open items:** none\n- **Next steps:** qa`;
   assert.equal(checkHandoff(ok, 'member'), null);
   assert.ok(checkHandoff('I fixed it.', 'member'));
-  assert.ok(checkHandoff(ok.replace('- **Còn mở:** không\n', ''), 'member'));
-  assert.ok(checkHandoff(ok.replace('npm test → 42 passed', 'không'), 'member'), 'xong without evidence');
-  assert.equal(checkHandoff(ok.replace('xong', 'vướng').replace('npm test → 42 passed', 'không'), 'member'), null);
-  assert.ok(checkHandoff(ok.replace('xong', 'ok'), 'member'));
+  assert.ok(checkHandoff(ok.replace('- **Open items:** none\n', ''), 'member'));
+  assert.ok(checkHandoff(ok.replace('npm test → 42 passed', 'none'), 'member'), 'done without evidence');
+  assert.equal(checkHandoff(ok.replace('done', 'blocked').replace('npm test → 42 passed', 'none'), 'member'), null);
+  assert.ok(checkHandoff(ok.replace('done', 'invalid_status'), 'member'));
+  // Backward compatibility with Vietnamese labels
+  const okVi = `Done.\n### Phiếu bàn giao\n- **Kết quả:** xong\n- **Bằng chứng:** npm test → 42 passed\n- **Đã ghi vào:** src/a.ts\n- **Còn mở:** không\n- **Đề xuất bước tiếp:** qa`;
+  assert.equal(checkHandoff(okVi, 'member'), null);
+  assert.equal(checkHandoff('## Report — W-001 Login\n- ...', 'lead'), null);
+  assert.equal(checkHandoff('## Waiting for approval — G1 — W-001', 'lead'), null);
   assert.equal(checkHandoff('## Báo cáo — W-001 Login\n- ...', 'lead'), null);
   assert.equal(checkHandoff('## Chờ duyệt — G1 — W-001', 'lead'), null);
   assert.ok(checkHandoff('done', 'lead'));

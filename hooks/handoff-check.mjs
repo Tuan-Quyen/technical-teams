@@ -16,39 +16,61 @@ import { teamAgentKind } from './guard.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(HERE, '..');
 const MAX_RETRIES = 2;
-export const LABELS = ['Kết quả', 'Bằng chứng', 'Đã ghi vào', 'Còn mở', 'Đề xuất bước tiếp'];
-const RESULTS = ['xong', 'vướng', 'cần quyết định'];
+export const LABELS = ['Result', 'Evidence', 'Files changed', 'Open items', 'Next steps'];
+export const RESULTS = ['done', 'blocked', 'needs decision'];
 
 export function handoffTemplate() {
   const kit = (() => { try { return fs.readFileSync(path.join(PLUGIN_ROOT, 'skills', 'run-kit', 'SKILL.md'), 'utf8'); } catch { return ''; } })();
   const sec = kit.split(/^## 3\. /m)[1] || '';
   const m = sec.match(/```\n([\s\S]*?)```/);
-  return m ? m[1].trim() : '### Phiếu bàn giao\n' + LABELS.map((l) => `- **${l}:** ...`).join('\n');
+  return m ? m[1].trim() : '### Handoff\n' + LABELS.map((l) => `- **${l}:** ...`).join('\n');
 }
 
+const ALIASES = {
+  'Result': ['Result', 'Kết quả'],
+  'Evidence': ['Evidence', 'Bằng chứng'],
+  'Files changed': ['Files changed', 'Files touched', 'Files written', 'Đã ghi vào'],
+  'Open items': ['Open items', 'Still open', 'Còn mở'],
+  'Next steps': ['Next steps', 'Next step', 'Suggested next steps', 'Suggested next step', 'Đề xuất bước tiếp'],
+};
+
 function field(text, label) {
-  const re = new RegExp(`\\*\\*${label}:\\*\\*([^\\n]*)`, 'i');
-  const m = text.match(re);
-  return m ? m[1].trim() : null;
+  const candidates = ALIASES[label] || [label];
+  for (const c of candidates) {
+    const re = new RegExp(`\\*\\*${c}:\\*\\*([^\\n]*)`, 'i');
+    const m = text.match(re);
+    if (m) return m[1].trim();
+  }
+  return null;
 }
 
 // Returns null when the message is acceptable, otherwise the problem.
 export function checkHandoff(message, kind) {
   const text = String(message || '');
   if (kind === 'lead') {
-    if (/^##\s*(Báo cáo|Chờ duyệt|Report|Waiting for approval)\b/im.test(text)) return null;
+    if (/^##\s*(Report|Waiting for approval|Báo cáo|Chờ duyệt)\b/im.test(text)) return null;
     return 'the tech lead must end with the final report (Lead manual §8) or a gate report (§9).';
   }
-  const idx = text.lastIndexOf('Phiếu bàn giao');
-  if (idx < 0) return 'the run ends without the handoff block.';
+  const match = [...text.matchAll(/###?\s*(?:Handoff|Phiếu bàn giao)\b/gi)].pop();
+  let idx = match ? match.index : -1;
+  if (idx < 0) {
+    idx = Math.max(text.lastIndexOf('Handoff'), text.lastIndexOf('Phiếu bàn giao'));
+    if (idx < 0) return 'the run ends without the handoff block.';
+  }
   const block = text.slice(idx);
   const missing = LABELS.filter((l) => field(block, l) === null);
   if (missing.length) return `the handoff block is missing: ${missing.join(', ')}.`;
-  const result = field(block, 'Kết quả').replace(/[*`_]/g, '').trim().toLowerCase();
-  if (!RESULTS.some((r) => result.startsWith(r))) return `"Kết quả" must be one of: ${RESULTS.join(' | ')}.`;
-  const evidence = field(block, 'Bằng chứng').replace(/[*`_<>]/g, '').trim();
-  if (result.startsWith('xong') && (!evidence || /^(không|none|n\/a|-|—)\.?$/i.test(evidence))) {
-    return '"Kết quả: xong" needs evidence (command output, test summary or file:line). Without evidence, report "vướng".';
+  const rawResult = field(block, 'Result').replace(/[*`_]/g, '').trim().toLowerCase();
+  const canonicalResult = (() => {
+    if (rawResult.startsWith('done') || rawResult.startsWith('xong')) return 'done';
+    if (rawResult.startsWith('blocked') || rawResult.startsWith('vướng') || rawResult.startsWith('vuong')) return 'blocked';
+    if (rawResult.startsWith('needs decision') || rawResult.startsWith('cần quyết định') || rawResult.startsWith('can quyet dinh') || rawResult.startsWith('decision needed')) return 'needs decision';
+    return null;
+  })();
+  if (!canonicalResult) return `"Result" must be one of: ${RESULTS.join(' | ')}.`;
+  const evidence = field(block, 'Evidence').replace(/[*`_<>]/g, '').trim();
+  if (canonicalResult === 'done' && (!evidence || /^(none|n\/a|no|không|-|—)\.?$/i.test(evidence))) {
+    return '"Result: done" needs evidence (command output, test summary or file:line). Without evidence, report "blocked".';
   }
   return null;
 }
@@ -79,7 +101,7 @@ async function main() {
   if (!problem) return;
   const r = retries(String(input.agent_id || input.session_id || 'unknown'));
   if (input.stop_hook_active && r.count >= MAX_RETRIES) return;
-  if (r.count >= MAX_RETRIES) return;                  // give up; the lead treats a missing handoff as "vướng"
+  if (r.count >= MAX_RETRIES) return;                  // give up; the lead treats a missing handoff as "blocked"
   r.bump();
   const how = kind === 'lead'
     ? 'Finish with the final report (Lead manual §8), or the gate report (§9) if you are stopping for the user.'

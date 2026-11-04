@@ -24,7 +24,7 @@ flowchart LR
   U[You] -->|/technical-team:cmd + context| M[Main session]
   M -->|brief + User-provided context| L[lead]
   L -->|briefs| T[team agents]
-  T -->|Phiếu bàn giao| L
+  T -->|Handoff| L
   L -->|Báo cáo / Chờ duyệt| M --> U
 ```
 
@@ -78,7 +78,7 @@ No round limit. Same failure unchanged for two rounds → debugger → architect
 
 | Thing | Where | Effect |
 |---|---|---|
-| Permanent members | plugin `config/members.json` (now: `dba`) | available in every project; permissions enforced by the guard |
+| Plugin members | plugin `config/members.json` (dba is default) | available in every project; permissions enforced by the guard |
 | Project specialists | `.team/ROSTER.md` + `HIRE-APPROVED: <name>` in `.team/STATE.md` | hired with `hire`; ignored by the guard without approval |
 | Skills per role | `.claude/technical-team.json` → `"skills": { "developer": ["react-native"] }` | lead names the fitting ones in each brief; the guard blocks others |
 | Your own context | skills you install and run yourself in the main session | passed to the lead as "User-provided context" |
@@ -91,7 +91,7 @@ Full documentation: `${CLAUDE_PLUGIN_ROOT}/README.md`.
 |---|---|---|
 | 1 | Start from zero | You know only the brief and what you read. Read the files the brief lists first. |
 | 2 | Read `.team/` first | At least `.team/STATE.md` and your work item's (`W-NNN`) sections. Everyone reads every `.team/` file; write only your own. |
-| 3 | Report conflicts | Brief, `.team/`, code or user disagree → describe it in "Còn mở". Never silently overwrite someone else's content or decision. |
+| 3 | Report conflicts | Brief, `.team/`, code or user disagree → describe it in "Open items". Never silently overwrite someone else's content or decision. |
 | 4 | Learn the project | Stack, conventions, build/test/lint commands from `CLAUDE.md`, manifests, `Makefile`, CI files, `README.md`. Follow existing patterns. |
 | 5 | Language | Answer in the brief's language. Code, identifiers, commit messages in English unless the project differs. |
 | 6 | Summaries, no secrets | `.team/` holds conclusions and short evidence. No secrets, tokens, passwords or real personal data anywhere. |
@@ -104,20 +104,20 @@ Full documentation: `${CLAUDE_PLUGIN_ROOT}/README.md`.
 ## 3. Handoff format (mandatory, last thing in every run)
 
 ```
-### Phiếu bàn giao
-- **Kết quả:** xong | vướng | cần quyết định
-- **Bằng chứng:** <command + relevant output lines, test summary, or file:line references>
-- **Đã ghi vào:** <files created/changed, or "không">
-- **Còn mở:** <risks, questions, conflicts, work not done — or "không">
-- **Đề xuất bước tiếp:** <who should do what next>
+### Handoff
+- **Result:** done | blocked | needs decision
+- **Evidence:** <command + relevant output lines, test summary, or file:line references>
+- **Files changed:** <files created/changed, or "none">
+- **Open items:** <risks, questions, conflicts, work not done — or "none">
+- **Next steps:** <who should do what next>
 ```
 
 | Field | Rule |
 |---|---|
-| Kết quả | exactly one of `xong` / `vướng` / `cần quyết định` |
-| Bằng chứng | required for `xong`; no evidence → `vướng` |
-| Đã ghi vào | must match what you actually changed |
-| Còn mở | risks, questions, conflicts, unfinished work |
-| Đề xuất bước tiếp | who does what next |
+| Result | exactly one of `done` / `blocked` / `needs decision` |
+| Evidence | required for `done`; no evidence → `blocked` |
+| Files changed | must match what you actually changed |
+| Open items | risks, questions, conflicts, unfinished work |
+| Next steps | who does what next |
 
 Labels stay exactly as written (the lead and the handoff hook read them). One block per run, also when reporting failure.

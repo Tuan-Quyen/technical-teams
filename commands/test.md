@@ -1,7 +1,7 @@
 ---
 description: "QA adds missing tests against acceptance criteria and runs them (G2)"
 argument-hint: "[scope]"
-disable-model-invocation: true
+
 ---
 # /technical-team:test — test (G2)
 

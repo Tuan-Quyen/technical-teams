@@ -29,7 +29,7 @@ flowchart LR
   D --> E{Any blocking?}
   E -- yes --> F[Back to developer]
   E -- no --> G[Clean: qa may run]
-  F --> H[Phiếu bàn giao]
+  F --> H[Handoff]
   G --> H
 ```
 

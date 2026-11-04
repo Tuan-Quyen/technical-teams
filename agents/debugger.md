@@ -31,7 +31,7 @@ flowchart LR
   F -- yes --> E
   F -- no --> G[Root cause + file:line proof]
   G --> H[Fix direction + risk]
-  H --> I[Regression test idea] --> J[Phiếu bàn giao]
+  H --> I[Regression test idea] --> J[Handoff]
   N --> J
 ```
 

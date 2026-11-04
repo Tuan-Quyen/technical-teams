@@ -1,7 +1,7 @@
 ---
 description: "Bring product docs back in sync with the current code (G4)"
 argument-hint: "[scope]"
-disable-model-invocation: true
+
 ---
 # /technical-team:docs — docs (G4)
 

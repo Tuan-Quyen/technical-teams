@@ -1,7 +1,7 @@
 ---
 description: "Full read-only security audit of the repository or a scope"
 argument-hint: "[scope]"
-disable-model-invocation: true
+
 ---
 # /technical-team:audit — audit
 

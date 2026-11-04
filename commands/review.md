@@ -1,7 +1,7 @@
 ---
 description: "Code-reviewer ∥ security on a diff (code-level review, not a project review), merged into one G3 verdict"
 argument-hint: "[diff scope]"
-disable-model-invocation: true
+
 ---
 # /technical-team:review — review
 
