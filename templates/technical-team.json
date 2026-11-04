@@ -1,0 +1,35 @@
+{
+  "$comment": "Project settings for the technical-team plugin. Only you edit this file: the guard blocks every team agent from writing .claude/. Fill a command list to switch that role from denylist mode to allowlist mode (each entry is a command prefix). Path lists extend the plugin defaults in config/ownership.json. The db section is used when a database specialist (Bash level db-local, e.g. dba) is active: its DB commands must target a host in allowedHosts and a database matching allowedDatabases (glob), given explicitly in the command or through envFile; while it is active, no other role may run db.commands. Leave db.commands empty to use the plugin's default list. skills: per-role lists of skills an agent may load with the Skill tool (project skills by name, plugin skills as <plugin>:<skill>); the lead names the fitting ones in each brief; run-kit is always allowed.",
+  "commands": {
+    "build": [],
+    "lint": [],
+    "test": [],
+    "run": [],
+    "infra": []
+  },
+  "paths": {
+    "architecture": [],
+    "docs": [],
+    "infra": [],
+    "tests": []
+  },
+  "devopsAllowRemote": false,
+  "db": {
+    "commands": [],
+    "allowedHosts": [
+      "localhost",
+      "127.0.0.1",
+      "::1"
+    ],
+    "allowedDatabases": [
+      "*_test",
+      "*_dev",
+      "*_local"
+    ],
+    "envFile": null
+  },
+  "skills": {
+    "developer": [],
+    "qa": []
+  }
+}

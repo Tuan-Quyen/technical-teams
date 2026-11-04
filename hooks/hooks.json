@@ -1,0 +1,34 @@
+{
+  "description": "technical-team hooks: the guard (PreToolUse) enforces write ownership, per-role shell policy, lead-only delegation, the hire approval gate and per-role skill lists; the handoff check (SubagentStop) sends a team agent back when it ends without the handoff block (or the lead without its report). Calls from your own main session are not affected.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|Agent|Task|Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs"
+            ],
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/handoff-check.mjs"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

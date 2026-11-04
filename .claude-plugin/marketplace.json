@@ -1,0 +1,16 @@
+{
+  "name": "technical-team-marketplace",
+  "description": "Marketplace that distributes the technical-team plugin.",
+  "owner": {
+    "name": "ctuanquyen97",
+    "email": "ctuanquyen97@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "technical-team",
+      "source": "./",
+      "description": "Stack-agnostic engineering team: tech lead, 11 core roles, gated pipelines, run kit, guard hook and specialist hiring.",
+      "category": "development"
+    }
+  ]
+}

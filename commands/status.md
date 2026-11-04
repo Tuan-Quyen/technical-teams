@@ -1,0 +1,26 @@
+---
+description: "Summarize the team's current state from .team/STATE.md and .team/TASKS.md — what waits for you, gates, blocked tickets"
+disable-model-invocation: true
+---
+# /technical-team:status — current state
+
+Run this yourself in the current session; do not delegate (read-only, no agent, no file changes).
+
+```mermaid
+flowchart LR
+  A{.team/ exists?} -- no --> B[say so, suggest init]
+  A -- yes --> C[Read STATE + TASKS + ROSTER count] --> D[Summary, newest first] --> E[Next command per item]
+```
+
+| Section (in this order, user's language) | Source |
+|---|---|
+| **Waiting for you** — pending gates and decisions | `STATE.md` → status `waiting-for-user` |
+| Active work items — ID, title, pipeline/tier, status, gate, what it waits for | `STATE.md` |
+| Tickets `blocked` / `doing` with owner role | `TASKS.md` |
+| Delivery loops stalled (same failure two rounds) or long-running, escalation step reached | `STATE.md` → `Loop log` |
+| Deferred findings still open | `STATE.md` |
+| Members and active specialists (count) | `config/members.json`, `ROSTER.md` |
+
+| Then | |
+|---|---|
+| Suggest the next command per item | answer the G1 question, `feature` to continue, `fix` for a reported bug, … |
