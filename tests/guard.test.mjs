@@ -422,3 +422,32 @@ test('no overrides: bare core-role agents are not team members', () => {
   assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'dba' }), 'core roles only as technical-team:<role>');
   assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:developer' }), null);
 });
+
+test('hire gate: adding a new HIRE-APPROVED line to STATE.md asks the user, from any session', () => {
+  const d = project({ state: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n' });
+  const st = path.join(d, '.team', 'STATE.md');
+  const line = '- HIRE-APPROVED: vrm-pose-specialist (2026-11-05, scope: project)';
+  const isAsk = (r) => r && typeof r === 'object' && typeof r.ask === 'string';
+
+  const edit = call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n' + line });
+  assert.ok(isAsk(edit), 'lead Edit asks');
+  assert.match(edit.ask, /vrm-pose-specialist/);
+  assert.ok(isAsk(call(d, 'technical-team:lead', 'Write', { file_path: st, content: '# State\n' + line + '\n' })), 'Write asks');
+  assert.ok(isAsk(call(d, 'technical-team:lead', 'MultiEdit', { file_path: st, edits: [{ old_string: 'a', new_string: 'x' }, { old_string: 'b', new_string: line }] })), 'MultiEdit asks');
+  assert.ok(isAsk(decide({ tool_name: 'Edit', tool_input: { file_path: st, old_string: '# State', new_string: line }, cwd: d }, env(d))), 'main session asks too');
+  assert.ok(isAsk(call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '- hire-approved: `Vrm-Pose-Specialist`' })), 'case and backticks');
+});
+
+test('hire gate: ordinary STATE.md edits, re-written approvals and other files do not ask', () => {
+  const d = project({ state: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n' });
+  const st = path.join(d, '.team', 'STATE.md');
+  assert.equal(call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n- Status: in-progress' }), null);
+  assert.equal(call(d, 'technical-team:lead', 'Write', { file_path: st, content: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n- W-002 open\n' }), null, 'existing approval kept');
+  assert.equal(write(d, 'technical-team:analyst', '.team/SPEC.md'), null);
+});
+
+test('hire gate: a deny from ownership wins over the ask', () => {
+  const d = project({ state: '# State\n' });
+  const r = call(d, 'technical-team:analyst', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
+  assert.equal(typeof r, 'string', 'analyst may not write STATE.md at all');
+});

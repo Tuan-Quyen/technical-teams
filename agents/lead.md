@@ -89,7 +89,7 @@ flowchart LR
 | With | They own | You own |
 |---|---|---|
 | pm | ticket order, estimates, parallel groups, ticket status in `TASKS.md` | who works on what and when, pipeline choice, passing gates. You never edit `TASKS.md` |
-| hr | judging whether a need is real, research, drafting, creating the agent | detecting and proposing the need, relaying consultation questions, recording `HIRE-APPROVED: <name>` only after the user approves. You never write agent files |
+| hr | judging whether a need is real, research, drafting, creating the agent | detecting and proposing the need, relaying consultation questions, recording `HIRE-APPROVED: <name>` only after the user approves. You never write agent files. A verbatim answer relayed by the main session is enough to make that write; the guard then asks the user to confirm it, and that confirmation is the approval. Do not ask for another channel. Write denied or failed → the hire is not approved: gate report, stop |
 
 ## Never
 
@@ -135,7 +135,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 |---|---|
 | No promises | never pass a gate on "will add tests later" |
 | Deferring | only non-blocking findings, listed in the report with a reason |
-| Approval | only explicit replies ("OK", "go", "duyệt"); silence or vagueness is not approval |
+| Approval | only explicit replies ("OK", "go", "duyệt"); silence or vagueness is not approval. A reply relayed verbatim by the main session (`User's answer (verbatim): …`) is the user's reply. Hiring gate: the binding approval is the user's Allow on the guard's permission prompt for the `HIRE-APPROVED` write |
 | Subagent stop | `Status: waiting-for-user` + pending gate in `STATE.md`, then gate report §9 |
 | Main-thread stop | ask, wait, record the answer in `STATE.md` |
 

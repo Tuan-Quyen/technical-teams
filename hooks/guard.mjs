@@ -19,8 +19,12 @@
 //     in .claude/technical-team.json -> skills.<role>
 //   - database/pipeline commands: only dba (or a specialist with Bash level `db-local`)
 //     runs them, and only against a target proven to be local/test
+//   - hire approval: any Write/Edit that ADDS a new "HIRE-APPROVED: <name>" line to
+//     .team/STATE.md (from any session, including your main session) is turned into a
+//     permission prompt. Your click on that prompt is the approval; a chat message,
+//     relayed or not, only tells the lead to make the write.
 //
-// Decision: prints {"hookSpecificOutput":{"permissionDecision":"deny",...}} and exits 0.
+// Decision: prints {"hookSpecificOutput":{"permissionDecision":"deny"|"ask",...}} and exits 0.
 // No output means "no decision" and the normal permission flow continues.
 
 import fs from 'node:fs';
@@ -186,12 +190,46 @@ function isMarkedSpecialist(projectDir, role) {
   return files.some((f) => (readText(f) || '').includes(SPECIALIST_MARKER));
 }
 
+// Names approved by "HIRE-APPROVED: <name>" lines in a text (lower-cased).
+export function approvedNames(text) {
+  const re = /^\s*[-*]?\s*HIRE-APPROVED:\s*`?([A-Za-z0-9._-]+)`?/gim;
+  const out = [];
+  let m;
+  while ((m = re.exec(String(text || '')))) out.push(m[1].toLowerCase());
+  return out;
+}
+
 export function hireApproved(projectDir, name) {
   const state = readText(path.join(projectDir, '.team', 'STATE.md')) || '';
-  const re = /^\s*[-*]?\s*HIRE-APPROVED:\s*`?([A-Za-z0-9._-]+)`?/gim;
-  let m;
-  while ((m = re.exec(state))) if (m[1].toLowerCase() === name.toLowerCase()) return true;
-  return false;
+  return approvedNames(state).includes(String(name).toLowerCase());
+}
+
+// The hire gate. Returns { ask: reason } when a Write/Edit/MultiEdit on the project's
+// .team/STATE.md would add a HIRE-APPROVED line for a name not yet approved there.
+// Applies to every session (team agents and your main session alike): approval is
+// your click on the permission prompt, never a message that reached the lead.
+export function hireApprovalAsk(input, env = process.env) {
+  const tool = input && input.tool_name;
+  if (!WRITE_TOOLS.has(tool)) return null;
+  const ti = input.tool_input || {};
+  const filePath = ti.file_path || ti.notebook_path || ti.path;
+  if (!filePath) return null;
+  const projectDir = env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+  const rel = toRel(projectDir, path.resolve(input.cwd || projectDir, filePath));
+  if (rel == null || !samePath(rel, '.team/STATE.md')) return null;
+  const added = tool === 'Write' ? [ti.content]
+    : tool === 'Edit' ? [ti.new_string]
+    : tool === 'MultiEdit' ? (ti.edits || []).map((e) => e && e.new_string)
+    : [ti.new_source];
+  const text = added.filter((x) => typeof x === 'string').join('\n');
+  const already = approvedNames(readText(path.join(projectDir, '.team', 'STATE.md')) || '');
+  const fresh = [...new Set(approvedNames(text))].filter((n) => !already.includes(n));
+  if (!fresh.length) return null;
+  const lines = text.split(/\r?\n/).filter((l) => /HIRE-APPROVED:/i.test(l) && fresh.some((n) => l.toLowerCase().includes(n)));
+  return {
+    ask: `HIRE APPROVAL for ${fresh.join(', ')}. This write grants the specialist its roster permissions (write scope, Bash level). `
+      + `Allow only if YOU approved this hire as proposed; deny otherwise. Line(s): ${lines.map((l) => l.trim()).join(' | ')}`,
+  };
 }
 
 function samePath(a, b) {
@@ -652,7 +690,14 @@ export function teamAgentKind(input, env = process.env) {
   return null;
 }
 
+// Returns null (no decision), a deny reason (string) or { ask: reason }.
 export function decide(input, env = process.env) {
+  const deny = decideDeny(input, env);
+  if (deny) return deny;
+  return hireApprovalAsk(input, env);
+}
+
+function decideDeny(input, env = process.env) {
   const role = roleOf(input.agent_type);
   if (!role) return null; // your own main session: not restricted by the team guard
   if (role.startsWith('__not_team__:')) return null; // not the plugin's agent
@@ -701,11 +746,12 @@ async function main() {
     if (roleOf(input.agent_type)) reason = `technical-team guard error: ${err && err.message}. Blocking to stay safe.`;
   }
   if (reason) {
+    const ask = typeof reason === 'object' && reason.ask;
     process.stdout.write(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: `[technical-team guard] ${reason}`,
+        permissionDecision: ask ? 'ask' : 'deny',
+        permissionDecisionReason: `[technical-team guard] ${ask || reason}`,
       },
     }));
   }

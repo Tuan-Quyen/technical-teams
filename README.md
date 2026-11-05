@@ -367,13 +367,13 @@ Danh sách đầy đủ nằm ở `config/ownership.json`; mỗi project mở r�
 |---|---|
 | Bash ghi file theo đường vòng | guard bắt redirect, `tee` và lệnh ghi phổ biến; `node -e`, `python -c`, test runner tạo snapshot vẫn ghi được. Cần cách ly thật thì dùng sandbox của Claude Code hoặc allowlist |
 | Cổng, vòng lặp, "không nới lỏng test" | chỉ dựa vào chỉ dẫn; guard không phân biệt sửa test đúng hay nới lỏng |
-| `HIRE-APPROVED` | do lead ghi sau khi bạn duyệt: là dấu vết kiểm soát, không phải chữ ký của bạn |
+| `HIRE-APPROVED` | guard biến mọi lệnh Write/Edit **thêm** dòng `HIRE-APPROVED` mới vào `.team/STATE.md` thành hộp xác nhận (cả từ session chính); cú Allow của bạn mới là lời duyệt. Không chặn được: ghi bằng Bash từ session chính của bạn (session chính không bị guard giới hạn), và chế độ `bypassPermissions` có thể bỏ qua hộp xác nhận |
 | Tool MCP của lead | lead nhận toàn bộ tool của session; guard không thấy tool MCP (GitHub, Slack…), nên "không mở PR" qua MCP chỉ dựa vào chỉ dẫn |
 | Nội dung skill | guard kiểm soát *skill nào* được nạp, không kiểm soát nội dung; skill có lệnh shell tự chạy hoặc `allowed-tools` có thể đi ngoài guard. Chỉ khai skill bạn đã đọc |
 | WebFetch | có thể đọc nội dung độc hại hoặc làm lộ dữ liệu qua URL; run-kit dặn coi web là dữ liệu và không đưa code/secret vào truy vấn, guard không kiểm tra URL |
 | DB `localhost` | có thể là tunnel tới production do bạn tự mở; config của tool có thể hardcode host. Bảo đảm thật: máy dev không có credential production |
 | Thiếu Node | không có guard, không có kiểm tra phiếu |
-| Session chính | không bị guard giới hạn (trừ khi lead là session chính); agent ngoài team không trong `externalAgents` cũng không bị đụng tới |
+| Session chính | không bị guard giới hạn (trừ khi lead là session chính), ngoại trừ hộp xác nhận khi thêm `HIRE-APPROVED`; agent ngoài team không trong `externalAgents` cũng không bị đụng tới |
 
 ---
 
@@ -441,6 +441,7 @@ flowchart TD
 | Quyền tối thiểu | mặc định chỉ đọc và tư vấn; Write/Edit/Bash chỉ khi thật sự cần, kèm lý do; không bao giờ có `Agent`; phạm vi ghi không chồng ai; preload `technical-team:run-kit` |
 | Repo plugin | khi gốc project có `.claude-plugin/plugin.json` tên `technical-team`, agent được tuyển thành **specialist của plugin**; có hiệu lực sau `/reload-plugins` |
 | Project khác | specialist của riêng project; `.claude/agents/` thường nhận trong vài giây, khởi động lại nếu thư mục chưa có lúc mở session |
+| Cách duyệt | trả lời "duyệt" ở session chính như mọi cổng khác; khi lead ghi `HIRE-APPROVED`, Claude Code hiện hộp xác nhận kèm dòng sẽ ghi. Đọc rồi bấm Allow: đó mới là lời duyệt. Lead phải chạy foreground ở bước này; agent chạy nền không hiện được hộp nên lệnh ghi bị từ chối và hire chưa được duyệt |
 | Rà soát (`hire --roster`) | hr đề xuất cho nghỉ specialist lâu không dùng hoặc trùng việc; bạn duyệt; hr không xóa file, bạn tự xóa |
 
 | Điểm gắn | Cùng ai | Khi nào |

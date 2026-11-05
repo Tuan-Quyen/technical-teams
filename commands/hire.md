@@ -16,6 +16,7 @@ disable-model-invocation: true
 | Any other session | Agent tool → `subagent_type: technical-team:lead`, prompt below |
 | Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
 | User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (hire). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
+| Hiring gate answered "approve" | relay it verbatim as above, **in the foreground** (no `run_in_background`): the guard turns the lead's `HIRE-APPROVED` write into a permission prompt, and a background agent cannot show it. The user's Allow on that prompt is the approval |
 | Always | show the lead's report as written; do not do the team's work in the main session |
 
 ```
@@ -69,7 +70,7 @@ flowchart TD
 | 3 | Relay answers verbatim → one proposal + disagreements | hr | — |
 | 4 | Check: no `Agent` tool; write scope does not overlap `.team/`, docs, infra, tests, `ARCHITECTURE.md`, `docs/adr/`, dba's data paths or another specialist; Write/Edit/Bash justified; `technical-team:run-kit` preloaded; name not a core name nor confusable | lead | — |
 | 5 | **Hiring gate**: need + why the team lacks it, domain profile, specialist profile, placement, disagreements, user questions, where it goes, settings the user must add (e.g. `.claude/technical-team.json`) | lead | — |
-| 6 | Approved → `- HIRE-APPROVED: <name> (<date>, scope: plugin|project|user)` in `STATE.md` → hr creates the agent file + `config/agents.json` entry (plugin repo) or `ROSTER.md` row (project: `active`, Hired = today) → plugin repo: writer updates README | lead → hr (→ writer) | — |
+| 6 | Approved (explicit reply in the main thread, or relayed verbatim by the main session) → lead writes `- HIRE-APPROVED: <name> (<date>, scope: plugin|project|user)` in `STATE.md`; the guard asks the user to confirm that write — **the user's Allow is the approval**. Denied, failed or auto-denied (background) → not approved: gate report, stop. Allowed → hr creates the agent file + `config/agents.json` entry (plugin repo) or `ROSTER.md` row (project: `active`, Hired = today) → plugin repo: writer updates README | lead → hr (→ writer) | — |
 | 7 | Read the file and the entry/row; they must match the approval (tools, scope, Bash level, hook points) | lead | — |
 
 | | |
