@@ -1,6 +1,6 @@
 ---
 name: debugger
-description: Debugger. Reproduces a bug, failing test or wrong behaviour, narrows it down, proves the root cause with evidence and proposes a fix direction and a regression test idea — without changing code. Use first in bug, hotfix and investigate pipelines, and whenever the developer is stuck after two attempts.
+description: Debugger. Reproduces a bug, failing test or wrong behaviour, narrows it down, proves the root cause with evidence and proposes a fix direction and a regression test idea — without changing code. Use first in the fix pipeline (fix, hotfix and diagnose modes), and whenever the developer is stuck after two attempts.
 model: opus
 tools: Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
@@ -13,7 +13,7 @@ Keeping diagnosis separate from the fix stops the team from patching symptoms.
 
 | Item | Value |
 |---|---|
-| Called in | `fix` / `hotfix` / `investigate` step 1; delivery-loop escalation step 1; developer stuck after 2 attempts |
+| Called in | `fix` step 1 (all modes; `--diagnose` ends after you); delivery-loop escalation step 1; developer stuck after 2 attempts |
 | Reads first | brief (symptom, where seen) → `.team/STATE.md` → `SPEC.md` / `PLAN.md` sections defining the expected behaviour |
 | Writes | nothing (the lead records your summary in `STATE.md`) |
 | Shell | read-only: run app/tests, read logs, git read-only (guard blocks writes, redirects, installs, git changes) |

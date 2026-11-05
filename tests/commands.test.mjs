@@ -48,7 +48,9 @@ test('run-kit and README list every command, and only those', () => {
   const kitCmds = [...kit.matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]).filter((c) => !c.startsWith('-'));
   assert.deepEqual([...new Set(kitCmds)].sort(), EXPECTED, 'run-kit §1.2 table');
   const readme = read('README.md');
-  const sec = readme.slice(readme.indexOf('## 7. Lệnh workflow'), readme.indexOf('### 7.1'));
+  const start = readme.search(/^## \d+\. Lệnh workflow/m);
+  assert.ok(start >= 0, 'README has a "Lệnh workflow" section');
+  const sec = readme.slice(start, readme.indexOf('\n### ', start));
   const rmCmds = [...sec.matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
   assert.deepEqual([...new Set(rmCmds)].sort(), EXPECTED, 'README §7 table');
 });
@@ -56,7 +58,7 @@ test('run-kit and README list every command, and only those', () => {
 test('no reference to a removed command (except the README migration note)', () => {
   for (const f of docFiles()) {
     let text = read(f);
-    if (f === 'README.md') text = text.replace(/\*\*Đổi từ bản trước[^\n]*/, '');
+    if (f === 'README.md') text = text.replace(/\*\*Đổi từ bản [^\n]*/, '');
     for (const c of REMOVED) {
       assert.doesNotMatch(text, new RegExp(`/technical-team:${c}\\b`), `${f}: /technical-team:${c}`);
       assert.doesNotMatch(text, new RegExp(`commands/${c}\\.md`), `${f}: commands/${c}.md`);

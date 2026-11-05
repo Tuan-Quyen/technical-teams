@@ -53,7 +53,7 @@ flowchart LR
 
 | # | Step | Agent | Parallel |
 |---|---|---|---|
-| 0 | Open W-NNN (pipeline `release`); range = last release tag → `HEAD` (devops determines it: your shell has no `git log`) | lead | — |
+| 0 | Open W-NNN (pipeline `release`); range = last release tag → `HEAD` (devops determines it: your shell has no `git log`). No tag yet (first release, e.g. from `new`) → range = all history + uncommitted files (`git status --porcelain`); default version `0.1.0` | lead | — |
 | 1 | qa: full relevant suite (**G2**) · security: changes since the last tag + dependency audit (**G3**) · devops: range (`git log --oneline`), artifacts, migration steps, config/secret names, deploy + rollback in `OPS_HANDOFF.md` · **Hook `test`/`review`**: release-relevant domain checks (dba: pending migrations and their order) · lead: open blocking findings / deferred items in `STATE.md` | qa ∥ security ∥ devops ∥ specialists | yes |
 | 2 | CHANGELOG entry / release notes from the work items and commits in range, verified against the code; upgrade notes for breaking changes. No version given → propose one (breaking → major, feature → minor, fix → patch) | writer | — |
 | 3 | **GO** only if G2 passed, no blocking findings, deploy + rollback ready, docs updated; otherwise **NO-GO** with each reason and the shortest path to GO | lead | — |
@@ -62,4 +62,4 @@ flowchart LR
 |---|---|
 | .team | reads `STATE`, `TASKS`, `OPS_HANDOFF`, `ROSTER`; writes lead → `STATE`, devops → `OPS_HANDOFF` |
 | Hook points | `test`, `review` (1) |
-| End | final report: GO/NO-GO + reasons, version, contents, test/security evidence, exact commands the user runs (tag, push, deploy, rollback) |
+| End | final report: GO/NO-GO + reasons, version, contents, test/security evidence, exact commands the user runs (commit if uncommitted, tag, push, deploy, rollback) |

@@ -65,6 +65,7 @@ flowchart LR
 |---|---|
 | Loop | delivery loop with devops in the developer's place and no qa: devops → code-reviewer → security; any change restarts at code-reviewer; no round limit; same finding unchanged two rounds → debugger (if a failure) → architect → user |
 | Tests | change affects application tests or CI test stages → tell the user, suggest `test` |
+| Inside `new` | step 1 comes from the approved MVP plan (its infra section is the proposal) and step 2 is covered by the MVP G1; anything beyond it (new tool, remote step, environment not in the plan) → G1 here as usual |
 | .team | reads `STATE`, `PLAN`, `OPS_HANDOFF`, `ROSTER`; writes lead → `STATE`, devops → `OPS_HANDOFF` |
 | Hook points | `design` (1), `execute` (3), `review` (4a) |
 | End | final report with the exact remote commands the user must run, in order, with rollback |

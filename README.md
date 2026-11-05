@@ -3,7 +3,7 @@
 Plugin Claude Code dựng một team kỹ thuật cho nhiều dự án sản phẩm cùng lúc:
 
 - **13 agent**: 13 vai trò do một tech lead điều phối.
-- **18 lệnh workflow**: mỗi lệnh chứa luôn pipeline của nó, có `argument-hint`.
+- **12 lệnh workflow**: mỗi lệnh chứa luôn pipeline của nó, có `argument-hint`; biến thể chọn bằng cờ; `new` chạy trọn một project mới.
 - **1 skill `run-kit`**: tài liệu sử dụng, quy tắc chung, phiếu bàn giao.
 - **2 hook**: guard thực thi phân quyền, và kiểm tra phiếu bàn giao.
 - **Không gian làm việc chung `.team/`** trong repo của từng project.
@@ -63,7 +63,7 @@ Thư mục này vừa là plugin (`.claude-plugin/plugin.json`) vừa là market
 | Cài cho mọi project của bạn | `claude plugin install technical-team@technical-team-marketplace --scope user` |
 | Cài cho một repo (cả team) | chạy trong repo: `claude plugin marketplace add <nguồn> --scope project` rồi `claude plugin install technical-team@technical-team-marketplace --scope project` |
 | Gỡ | `claude plugin uninstall technical-team@technical-team-marketplace --scope user` (hoặc `--scope project`) |
-| Kiểm tra | `claude plugin details technical-team` → 13 agent, 19 skill (18 lệnh + `run-kit`), 2 hook |
+| Kiểm tra | `claude plugin details technical-team` → 13 agent, 13 skill (12 lệnh + `run-kit`), 2 hook |
 
 Với project scope, lệnh cài ghi vào `.claude/settings.json` của repo; commit file đó. Đường dẫn `D:/...` chỉ dùng được trên máy bạn. Để đồng đội cài được, hãy đẩy plugin lên một git repo và khai báo như sau:
 
@@ -144,9 +144,10 @@ Lead dùng `inherit`, nên session chạy sonnet thì lead cũng là sonnet và 
 | Tầng | Khi nào | Lệnh |
 |---|---|---|
 | **T0** việc lẻ | câu hỏi, sửa một chỗ, cập nhật tài liệu | giao thẳng 1 agent |
-| **T1** thay đổi nhỏ | phạm vi rõ, không đổi thiết kế | `change` |
-| **T2** tính năng | tính năng mới hoặc chạm thiết kế | `feature` |
-| **TB** lỗi | bug, test fail, hành vi sai | `fix` (`hotfix` nếu khẩn) |
+| **T1** thay đổi nhỏ | phạm vi rõ, không đổi thiết kế | `feature --small` |
+| **T2** tính năng | tính năng mới hoặc chạm thiết kế | `feature` (`--plan` nếu chỉ cần kế hoạch) |
+| **TB** lỗi | bug, test fail, hành vi sai | `fix` (`--hotfix` nếu khẩn, `--diagnose` nếu chỉ cần nguyên nhân) |
+| **Project mới** | làm sản phẩm từ đầu, repo chưa có code ứng dụng | `new` (mục 6.1) |
 
 | Tham gia bắt buộc (mọi tầng) | Khi |
 |---|---|
@@ -190,7 +191,7 @@ flowchart LR
 | Chống "làm cho test xanh" | test bị skip, xóa, nới assertion, mock mất phần đang kiểm tra = chặn merge (code-reviewer) và FAIL (qa) |
 | Nhật ký | `STATE.md` → `Loop log` |
 
-`infra` không có qa: devops → code-reviewer → security. `review`, `audit`, `release` chỉ kiểm tra rồi kết luận nên chạy song song.
+`infra` không có qa: devops → code-reviewer → security. `review` (cả `--audit`), `release` chỉ kiểm tra rồi kết luận nên chạy song song.
 
 > PASS QA nghĩa là đạt AC và các test hiện có, không chứng minh được là không còn lỗi. Chất lượng phụ thuộc nhiều nhất vào việc AC ở G1 có đủ và đúng hay không.
 
@@ -202,40 +203,85 @@ Mọi lệnh có tiền tố `/technical-team:`. Mỗi file lệnh gồm hai ph�
 - **Running this command**: session chính giao cho lead, chuyển báo cáo chờ duyệt cho bạn, rồi gọi lại lead với câu trả lời.
 - **Pipeline**: sơ đồ và bảng các bước mà lead thực thi.
 
-Thiếu tham số bắt buộc thì lệnh hỏi lại, không đoán.
+Biến thể của cùng một pipeline là **cờ** (nói bằng lời cũng được: "chỉ lên kế hoạch", "gấp", "chỉ chẩn đoán", "audit", "ghi ADR"); lead ghi chế độ vào `STATE.md`. `run` và `new` không chép lại bước nào: chúng gọi đúng các bước (theo mã bước) trong `feature`, `fix`, `infra`, `docs`, `release`. Thiếu tham số bắt buộc thì lệnh hỏi lại, không đoán.
 
 | Lệnh | Tham số | Pipeline | Cổng |
 |---|---|---|---|
-| `run` | `<yêu cầu>` | lead xếp T0/T1/T2/TB rồi chạy lệnh tương ứng | theo tầng |
+| `run` | `<yêu cầu>` | lead xếp T0/T1/T2/TB/project mới rồi chạy đúng lệnh và chế độ | theo tầng |
+| `new` | `<ý tưởng \| đường dẫn PRD>` (trống = chạy tiếp) | trọn một project mới (mục 6.1) | REQ, STACK, G1, cuối mỗi milestone, RELEASE |
 | `init` | – | tạo `.team/` từ template | – |
 | `status` | – | tóm tắt `.team/`, không gọi agent | – |
-| `plan` | `<mục tiêu>` | analyst → architect → pm, dừng ở G1 | G1 |
 | `feature` | `<mô tả>` | plan → G1 → vòng lặp giao hàng (luôn có security) → writer ∥ pm | G1–G4 |
-| `change` | `<mô tả>` | vòng lặp giao hàng (security nếu bị kích hoạt) | G2–G4 |
+| | `<mục tiêu> --plan` | analyst → architect → pm, dừng ở G1, không viết code | G1 |
+| | `<mô tả> --small` | thay đổi nhỏ (T1): vòng lặp giao hàng (security nếu bị kích hoạt) | G2–G4 |
 | `fix` | `<lỗi>` | debugger → vòng lặp giao hàng với regression test | G1 nếu rủi ro, G2–G4 |
-| `hotfix` | `<lỗi>` | debugger → bản sửa nhỏ nhất → vòng lặp với security → tài liệu rút gọn | G2–G4 |
-| `investigate` | `<triệu chứng>` | chỉ debugger chẩn đoán | – |
+| | `<lỗi> --hotfix` | khẩn/production: bản sửa nhỏ nhất, security luôn chạy, tài liệu rút gọn | G2–G4 |
+| | `<triệu chứng> --diagnose` | chỉ debugger chẩn đoán, không sửa code | – |
 | `review` | `[phạm vi diff]` | code-reviewer ∥ security, gộp một kết luận | G3 |
-| `audit` | `[phạm vi]` | security quét toàn diện, chỉ-đọc | – |
+| | `--audit [phạm vi]` | security quét toàn diện, chỉ-đọc | – |
 | `test` | `[phạm vi]` | qa bổ sung test còn thiếu | G2 |
 | `infra` | `<yêu cầu>` | devops đề xuất → G1 → làm → code-reviewer → security → runbook | G1, G3, G4 |
 | `release` | `[version]` | devops ∥ security ∥ qa → CHANGELOG → GO/NO-GO | G2–G4 |
 | `docs` | `[phạm vi]` | writer đồng bộ tài liệu với code | G4 |
-| `adr` | `<quyết định>` | architect ghi ADR | – |
+| | `--adr <quyết định>` | architect ghi ADR + cập nhật `ARCHITECTURE.md` | – |
 | `hire` | `<domain/nhu cầu> [lý do]` | tuyển specialist (mục 9) | cổng tuyển dụng |
-| `roster` | – | danh bạ + đề xuất rà soát của hr | duyệt cho nghỉ |
+| | `--roster` | danh bạ + đề xuất rà soát của hr | duyệt cho nghỉ |
+
+**Đổi từ bản 18 lệnh:** `plan` → `feature --plan` · `change` → `feature --small` · `hotfix` → `fix --hotfix` · `investigate` → `fix --diagnose` · `audit` → `review --audit` · `adr` → `docs --adr` · `roster` → `hire --roster`. Không mất bước, cổng hay bước security nào. Lệnh giữ riêng vì có cổng/quyền/rủi ro khác: `infra` (G1 bắt buộc, không có qa, chạm secrets/hạ tầng), `release` (GO/NO-GO, không deploy), `test` (qa ghi test, không sửa code), `hire` (cổng tuyển dụng đổi quyền của team), `init`/`status` (tiện ích), `run` (cửa vào chung), `new` (chạy dài nhiều pha).
 
 | Ví dụ | Kết quả |
 |---|---|
 | `/technical-team:run Thêm "Quên mật khẩu" ở trang đăng nhập` | lead chọn T2 (chạm auth), nói lý do, chạy `feature` |
-| `/technical-team:plan Xuất báo cáo doanh thu ra CSV theo khoảng ngày` | dừng ở G1 với tóm tắt AC, thiết kế, ticket |
-| `/technical-team:change Đổi thông báo lỗi email thành "Email không hợp lệ"` | lead ghi hành vi mong đợi thay cho AC, chạy vòng lặp giao hàng |
+| `/technical-team:new docs/prd-booking.md` | chạy từ yêu cầu tới release, dừng ở 5 cổng; gọi lại `new` không tham số để chạy tiếp |
+| `/technical-team:feature Xuất báo cáo doanh thu ra CSV theo khoảng ngày --plan` | dừng ở G1 với tóm tắt AC, thiết kế, ticket |
+| `/technical-team:feature --small Đổi thông báo lỗi email thành "Email không hợp lệ"` | lead ghi hành vi mong đợi thay cho AC, chạy vòng lặp giao hàng |
 | `/technical-team:fix Tổng tiền sai khi áp 2 mã giảm giá` | debugger chứng minh nguyên nhân gốc rồi mới sửa |
-| `/technical-team:hotfix API /orders trả 500 trên production` | sửa nhỏ nhất; hướng sửa rủi ro cao thì vẫn dừng hỏi bạn |
+| `/technical-team:fix --hotfix API /orders trả 500 trên production` | sửa nhỏ nhất; hướng sửa rủi ro cao thì vẫn dừng hỏi bạn |
+| `/technical-team:fix --diagnose Worker thỉnh thoảng treo sau vài giờ` | chỉ báo nguyên nhân gốc, bằng chứng, hướng sửa |
 | `/technical-team:review main...HEAD` | không có tham số: working tree so với `HEAD`, hoặc commit cuối nếu sạch |
+| `/technical-team:review --audit src/payments/` | audit bảo mật chỉ-đọc, gợi ý work item tiếp theo |
 | `/technical-team:infra Thêm GitHub Actions chạy lint + test cho PR` | devops đề xuất trước, bạn duyệt, rồi mới làm |
 | `/technical-team:release 1.4.0` | GO/NO-GO; team không tag, không deploy |
+| `/technical-team:docs --adr Chuyển từ REST polling sang WebSocket` | ADR mới + cập nhật `ARCHITECTURE.md` |
 | `/technical-team:hire IoT: firmware ESP32, MQTT, OTA` | hồ sơ domain, hồ sơ specialist, chỗ đặt, rồi chờ bạn duyệt |
+
+### 6.1 `new`: chạy trọn một project mới
+
+Gọi một lần với ý tưởng ngắn hoặc đường dẫn PRD. Team chỉ dừng hỏi ở 5 cổng; G2/G3/G4 vẫn áp dụng nội bộ. Các điểm dừng bắt buộc sẵn có vẫn giữ: cổng tuyển dụng, leo thang khi cùng một lỗi lặp 2 vòng, đổi hướng sau G1, guard từ chối mà chỉ bạn sửa được.
+
+```mermaid
+flowchart TD
+  N0[N0 init .team/ + mở W-NNN] --> N1[N1 analyst: spec MVP + câu hỏi]
+  N1 --> REQ{{1 REQ: chốt yêu cầu}}
+  REQ --> N2[N2 architect: đề xuất stack, ARCHITECTURE.md, ADR]
+  N2 --> STACK{{2 STACK: chốt stack + kiến trúc}}
+  STACK --> N3[N3 plan MVP: milestone + ticket, M1 = scaffold]
+  N3 --> G1{{3 G1: duyệt cả MVP}}
+  G1 --> N4[N4 milestone Mk: delivery loop của feature]
+  N4 --> MK{{4 Mk: báo cáo milestone}}
+  MK -- milestone tiếp --> N4
+  MK -- xong milestone cuối --> N5[N5 hạ tầng còn thiếu: infra]
+  N5 --> N6[N6 docs → G4]
+  N6 --> N7[N7 release: GO/NO-GO]
+  N7 --> REL{{5 RELEASE: GO/NO-GO}}
+  REL -- NO-GO, sửa --> FX[fix từng mục chặn] --> N7
+  REL -- chấp nhận --> END[Báo cáo cuối + lệnh commit/tag/deploy/rollback để bạn tự chạy]
+```
+
+| Cổng | Bạn nhận được | Bạn trả lời |
+|---|---|---|
+| REQ | phạm vi MVP (trong/ngoài), story chính, câu hỏi đánh số kèm đáp án mặc định, giả định | trả lời, hoặc "OK" = nhận hết mặc định |
+| STACK | 2–3 phương án stack, phương án đề xuất, tóm tắt kiến trúc, ADR, máy bạn cần cài gì | duyệt / chọn phương án khác / chỉnh |
+| G1 | bảng milestone, số ticket mỗi milestone, rủi ro, ước lượng số lượt agent | duyệt một lần cho cả MVP |
+| Mk | đã xong gì, bằng chứng test, review/security, chỗ lệch kế hoạch, lệnh chạy thử local, lệnh commit gợi ý | đi tiếp / chỉnh / dừng |
+| RELEASE | GO/NO-GO kèm lý do, version (mặc định `0.1.0`), lệnh commit/tag/push/deploy/rollback | chấp nhận / sửa các mục NO-GO / đóng ở NO-GO |
+
+| Lưu ý | |
+|---|---|
+| Bị ngắt giữa chừng | lead ghi `Phase`, `Next step`, `Milestones`, cổng đang chờ vào `.team/STATE.md` sau mỗi bước; gọi lại `new` không tham số là chạy tiếp; `status` hiện pha và bước kế tiếp |
+| Git | repo chưa `git init` thì lead hỏi ở REQ; code mới là file untracked nên review dùng thêm `git status --porcelain`; commit sau mỗi milestone (lệnh có trong báo cáo) cho milestone sau diff sạch |
+| Repo đã có code | `new` dừng và đề xuất `feature`/`run` (hoặc chạy trong thư mục con bạn chỉ định) |
+| Sau khi chốt stack | nên điền `commands.*` và `skills.*` trong `.claude/technical-team.json` (chỉ bạn sửa được) |
 
 ---
 
@@ -393,7 +439,7 @@ flowchart TD
 | Quyền tối thiểu | mặc định chỉ đọc và tư vấn; Write/Edit/Bash chỉ khi thật sự cần, kèm lý do; không bao giờ có `Agent`; phạm vi ghi không chồng ai; preload `technical-team:run-kit` |
 | Repo plugin | khi gốc project có `.claude-plugin/plugin.json` tên `technical-team`, agent được tuyển thành **specialist của plugin**; có hiệu lực sau `/reload-plugins` |
 | Project khác | specialist của riêng project; `.claude/agents/` thường nhận trong vài giây, khởi động lại nếu thư mục chưa có lúc mở session |
-| Rà soát (`roster`) | hr đề xuất cho nghỉ specialist lâu không dùng hoặc trùng việc; bạn duyệt; hr không xóa file, bạn tự xóa |
+| Rà soát (`hire --roster`) | hr đề xuất cho nghỉ specialist lâu không dùng hoặc trùng việc; bạn duyệt; hr không xóa file, bạn tự xóa |
 
 | Điểm gắn | Cùng ai | Khi nào |
 |---|---|---|
@@ -480,7 +526,7 @@ Skill chỉ thêm kiến thức, không thêm quyền. File build/release mobile
 
 | Giới hạn | Chi tiết |
 |---|---|
-| Chưa chạy end-to-end với model thật | đã kiểm chứng: `claude plugin validate --strict` (plugin + marketplace), cài thử và `claude plugin details`, 32 unit test của hook, chạy thử `init` |
+| Chưa chạy end-to-end với model thật | đã kiểm chứng: `claude plugin validate --strict` (plugin + marketplace), cài thử và `claude plugin details`, 41 unit test (guard, phiếu bàn giao, tính nhất quán của bộ lệnh), chạy thử `init` |
 | Chưa kiểm chứng được | giá trị `agent_type` thực tế cho agent plugin; preload skill bằng tên có tiền tố (`technical-team:run-kit`); tên trường input của tool `Skill` (guard chặn khi không đọc được tên); trường `last_assistant_message` của `SubagentStop` (thiếu thì hook không chặn) |
 | Thử nhanh sau khi cài | `/technical-team:status`, rồi nhờ `technical-team:pm` ghi thử vào `README.md` → guard phải từ chối |
 | Chi phí | `feature` gọi khoảng 8–10 lượt agent (nhiều hơn nếu có vòng lặp, specialist); dùng `run` để lead chọn tầng nhẹ nhất |
@@ -495,10 +541,20 @@ Skill chỉ thêm kiến thức, không thêm quyền. File build/release mobile
 
 | Việc | Lệnh |
 |---|---|
-| Test hook | `node --test tests/guard.test.mjs` |
+| Test | `node --test "tests/*.test.mjs"` (guard + kiểm tra bộ lệnh/agent/skill khớp run-kit và README) |
 | Validate | `claude plugin validate . --strict` và `claude plugin validate .claude-plugin/marketplace.json --strict` |
 | Chạy thử | `claude --plugin-dir .` |
 | Tuyển specialist vào plugin | mở chính repo này làm project rồi chạy `/technical-team:hire …` |
+
+**Quy tắc khi sửa plugin:** mỗi lần thêm, đổi tên, gộp hoặc xóa một **agent, skill hay command** (kể cả đổi tham số/cờ), cập nhật trong cùng thay đổi:
+
+| Thay đổi | Cập nhật |
+|---|---|
+| command (tên, `argument-hint`, cờ, gate) | `skills/run-kit/SKILL.md` §1.2, README mục 6 (+ 6.1 nếu là `new`), `agents/lead.md` §1 nếu ảnh hưởng tầng, dòng "Called in" của agent liên quan |
+| agent (thêm/xóa/đổi quyền, tool) | README mục 4 và 7, `agents/lead.md` (Who, §5), `skills/run-kit/SKILL.md` §1.4 nếu là specialist |
+| skill | `skills/run-kit/SKILL.md` + README mục 8 |
+
+`tests/commands.test.mjs` fail khi bảng lệnh trong run-kit/README lệch với `commands/`, khi còn tham chiếu tới lệnh đã bỏ, khi `new` gọi một bước không còn tồn tại, hoặc khi một agent/skill không có trong README.
 
 ```
 technical-team/
@@ -506,7 +562,7 @@ technical-team/
 │   ├── plugin.json
 │   └── marketplace.json
 ├── agents/                 13 vai trò
-├── commands/               18 lệnh, mỗi lệnh chứa pipeline của nó
+├── commands/               12 lệnh, mỗi lệnh chứa pipeline của nó (biến thể = cờ)
 ├── skills/run-kit/         tài liệu sử dụng + quy tắc chung + phiếu bàn giao
 ├── hooks/
 │   ├── hooks.json          PreToolUse → guard.mjs, SubagentStop → handoff-check.mjs
@@ -517,7 +573,7 @@ technical-team/
 │   └── agents.json         specialist tuyển vào plugin (hiện trống)
 ├── scripts/team-init.mjs
 ├── templates/              .team/*.md, ARCHITECTURE.md, adr.md, specialist-agent.md, technical-team.json
-└── tests/guard.test.mjs
+└── tests/                  guard.test.mjs, commands.test.mjs
 ```
 
 **Vai trò có thể cần sau này** (tuyển qua `hire` khi project cần): UX/UI designer (luồng người dùng, wireframe, accessibility), product owner (ưu tiên backlog giữa nhiều work item; hiện là bạn).

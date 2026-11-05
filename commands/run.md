@@ -1,5 +1,5 @@
 ---
-description: "Hand any request to the tech lead, who picks the tier (T0 single task, T1 change, T2 feature, TB bug) and runs the matching pipeline"
+description: "Hand any request to the tech lead, who picks the tier (T0 single task, T1 small change, T2 feature, TB bug, new project) and runs the matching pipeline"
 argument-hint: "<request>"
 disable-model-invocation: true
 ---
@@ -36,15 +36,17 @@ _Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, del
 flowchart LR
   A[1 Classify: Lead manual §1] --> B{tier}
   B -- T0 --> C[brief the single owner; G4 if a file changed]
-  B -- T1 --> D[commands/change.md]
-  B -- T2 --> E[commands/feature.md]
-  B -- TB --> F[commands/fix.md or hotfix.md]
-  A -. expertise missing .-> H[commands/hire.md first]
+  B -- T1 --> D[feature.md: Small]
+  B -- T2 --> E[feature.md: full]
+  B -- TB --> F[fix.md: fix / --hotfix / --diagnose]
+  B -- new project --> N[new.md]
+  A -. expertise missing .-> H[hire.md first]
 ```
 
 | # | Step |
 |---|---|
 | 1 | Classify with the tier table (Lead manual §1); tell the user the tier, why, and who will be called |
-| 2 | Run it: Read the matching file in `${CLAUDE_PLUGIN_ROOT}/commands/` and follow its Pipeline exactly (`hotfix.md` when the user says urgent/production) |
-| 3 | Expertise nobody on the team or among the specialists has → propose `hire.md` first |
-| 4 | The user may switch tier at any time; switch and keep the same work-item ID |
+| 2 | Run it: Read the matching file in `${CLAUDE_PLUGIN_ROOT}/commands/` and follow its Pipeline exactly, in the mode the tier implies (T1 → `feature.md` Small; T2 → `feature.md` full, or plan-only if the user only wants a plan; TB → `fix.md`, `--hotfix` when the user says urgent/production, `--diagnose` when they only want the cause). A whole product from scratch in a repository without application code → `new.md` |
+| 3 | Requests that match a read-only or special pipeline go there: review/audit → `review.md`, tests only → `test.md`, infrastructure → `infra.md`, release readiness → `release.md`, docs/ADR → `docs.md` |
+| 4 | Expertise nobody on the team or among the specialists has → propose `hire.md` first |
+| 5 | The user may switch tier or mode at any time; switch and keep the same work-item ID |

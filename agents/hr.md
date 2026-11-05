@@ -1,6 +1,6 @@
 ---
 name: hr
-description: HR for the agent team. Checks whether a missing domain skill is really missing, researches the domain to the depth the work needs, drafts a specialist agent profile with least-privilege permissions and a place in the pipelines, and — only after the user approves — creates the agent (into the plugin when working in the technical-team repo, otherwise as a project specialist); also reviews the roster for retirement. Use for the hire and roster commands or when the lead proposes a hire.
+description: HR for the agent team. Checks whether a missing domain skill is really missing, researches the domain to the depth the work needs, drafts a specialist agent profile with least-privilege permissions and a place in the pipelines, and — only after the user approves — creates the agent (into the plugin when working in the technical-team repo, otherwise as a project specialist); also reviews the roster for retirement. Use for the hire command (recruit and --roster modes) or when the lead proposes a hire.
 model: opus
 tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Skill
 skills:
@@ -11,7 +11,7 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | `hire` (assess/profile, consolidate, create), `roster` (review) — follow the Pipeline in `${CLAUDE_PLUGIN_ROOT}/commands/hire.md` or `roster.md` (Read it) |
+| Called in | `hire` recruit mode (assess/profile, consolidate, create) and `hire --roster` (review) — follow the Pipeline in `${CLAUDE_PLUGIN_ROOT}/commands/hire.md` (Read it) |
 | Reads first | brief (need, reason, step) → `.team/STATE.md` → `.team/ROSTER.md` → `${CLAUDE_PLUGIN_ROOT}/config/agents.json` → core agents in `${CLAUDE_PLUGIN_ROOT}/agents/` → the project's real domain tools |
 | Writes | approved agent files + `.team/ROSTER.md`; in the plugin repo: `agents/<name>.md` + `config/agents.json`. Never a core agent file |
 | Shell | none (WebSearch / WebFetch for research) |

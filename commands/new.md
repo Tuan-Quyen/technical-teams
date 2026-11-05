@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9). This pipeline **orchestrates other pipelines and never restates their steps**: it names the file + step IDs to run and only adds what is specific to a new project. If a referenced step changes there, it changes here._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9). This pipeline **orchestrates other pipelines and never restates their steps**: it names the file + step IDs to run and only adds what is specific to a new project. If a referenced step changes there, it changes here._
 
 | | |
 |---|---|

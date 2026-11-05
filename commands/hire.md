@@ -1,9 +1,9 @@
 ---
-description: "Recruit a domain specialist through hr, with a hiring approval gate (into the plugin when working in the technical-team repo)"
-argument-hint: "<domain or need> [why]"
+description: "Recruit a domain specialist through hr, with a hiring approval gate (into the plugin when working in the technical-team repo); --roster to review the specialist roster (retirement approval)"
+argument-hint: "<domain or need> [why] | --roster"
 disable-model-invocation: true
 ---
-# /technical-team:hire — hire
+# /technical-team:hire — hire (recruit · roster)
 
 ## Running this command
 
@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 | Situation | Do |
 |---|---|
-| Argument required | yes — empty → ask for the domain or need (and, if you can, why the team needs it) in one short question, stop; never guess |
+| Argument required | yes (`<domain or need>` or `--roster`) — empty → ask for the domain or need (and, if you can, why the team needs it) in one short question, stop; never guess |
 | This session **is** the tech lead (`--agent technical-team:lead` or `agent` setting) | execute the **Pipeline** below yourself |
 | Any other session | Agent tool → `subagent_type: technical-team:lead`, prompt below |
 | Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
@@ -32,10 +32,12 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 _Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
-| | |
-|---|---|
-| Gate | hiring approval (changes the team's permissions) |
-| Input | domain or need (required) + reason |
+| Flag | Mode | Gate | Input |
+|---|---|---|---|
+| none | **recruit** (steps 0–7) | hiring approval (changes the team's permissions) | domain or need (required) + reason |
+| `--roster` ("xem danh bạ", "rà soát specialist") | **roster** (steps R1–R4) | retirement approval (only if hr proposes one) | none |
+
+### Recruit (steps 0–7)
 
 | Where the hire goes | Files | Effect |
 |---|---|---|
@@ -61,7 +63,7 @@ flowchart TD
 
 | # | Step | Agent | Parallel |
 |---|---|---|---|
-| 0 | Open W-NNN (pipeline `hire`): need, who raised it; check core roles, `config/agents.json` and the roster; decide plugin vs project specialist | lead | — |
+| 0 | Open W-NNN (pipeline `hire (recruit)`): need, who raised it; check core roles, `config/agents.json` and the roster; decide plugin vs project specialist | lead | — |
 | 1 | a) covered by a core role or an existing specialist? (yes → stop with "no hire", continue only if the user insists) · b) domain profile at the needed depth, sourced, with confidence + user questions · c) specialist profile draft · d) placement questions | hr | — |
 | 2 | Placement consultation: hook point, trigger, boundary with their role — **answer only, write no files** | architect ∥ pm ∥ closest role | yes |
 | 3 | Relay answers verbatim → one proposal + disagreements | hr | — |
@@ -75,3 +77,29 @@ flowchart TD
 | .team | reads `STATE`, `ROSTER`, `config/agents.json`; writes lead → `STATE` (incl. `HIRE-APPROVED`), hr → agent file + `config/agents.json` or `ROSTER` |
 | Activation | plugin specialist: `/reload-plugins` or a new session · project: `.claude/agents/` is watched, usually live in seconds; restart if the folder did not exist at session start or the lead cannot spawn the name |
 | End | final report: hired / not hired and why, file path, entry/row, settings the user must add, activation |
+
+### Roster (steps R1–R4)
+
+```mermaid
+flowchart LR
+  A[R1 Read ROSTER + plugin specialists + usage] --> B{active specialists?}
+  B -- no --> R[report, no agent call]
+  B -- yes --> C[R3 hr: review proposal]
+  C --> D{retire / change proposed?}
+  D -- no --> R2[report]
+  D -- yes --> G{{R4 gate}}
+  G -- approved --> H[hr moves row to Retired; user deletes file]
+```
+
+| # | Step | Agent |
+|---|---|---|
+| R1 | Open W-NNN (pipeline `hire (roster)`). Read `.team/ROSTER.md`, `config/agents.json`, "Specialist usage" in `STATE.md`; show plugin and active project specialists (name, domain, hook points, trigger, write scope, Bash, last used) | lead |
+| R2 | No active project specialists → report, stop | lead |
+| R3 | Review: unused (default: 60 days, or never used 30 days after hire), overlapping domains/triggers, scopes grown too wide, outdated profiles; update "Last used" from `STATE.md` | hr |
+| R4 | Proposals → gate. Retirement approved → hr moves the row under "Retired" (`retired`); the user deletes the agent file (give the path). Profile changes go through recruit mode | lead → hr |
+
+| | |
+|---|---|
+| .team | reads `ROSTER`, `STATE`; writes hr → `ROSTER`, lead → `STATE` |
+| Note | plugin specialists (`config/agents.json`) are reviewed by changing the plugin itself |
+| End | final report: roster table, proposals, decisions, files the user should delete |

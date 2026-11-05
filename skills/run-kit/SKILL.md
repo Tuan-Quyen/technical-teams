@@ -1,6 +1,6 @@
 ---
 name: run-kit
-description: How to use the technical-team plugin — the two ways to run the tech lead, every workflow command and its arguments, gates and the delivery loop, the .team/ workspace, specialists and per-role skills — plus the working rules and the mandatory handoff format every team agent follows. Preloaded into every technical-team agent; load it when the user asks how to use the technical team or what a command does.
+description: How to use the technical-team plugin — the two ways to run the tech lead, every workflow command with its arguments and modes, gates and the delivery loop, the .team/ workspace, specialists and per-role skills — plus the working rules and the mandatory handoff format every team agent follows. Preloaded into every technical-team agent; load it when the user asks how to use the technical team or what a command does.
 ---
 
 # technical-team run kit
@@ -32,24 +32,27 @@ flowchart LR
 
 | Command | Arguments | Pipeline | Gates |
 |---|---|---|---|
-| `run` | `<request>` | lead picks T0/T1/T2/TB | by tier |
+| `run` | `<request>` | lead picks T0/T1/T2/TB (or `new`) and the mode | by tier |
+| `new` | `<idea \| path/to/PRD>` (empty = resume) | requirements → stack + architecture → MVP plan → milestones (delivery loop) → ops → docs → release; resumes from `.team/STATE.md` | stops only at REQ, STACK, G1, each milestone, RELEASE (+ hiring gate / escalation) |
 | `init` | – | create `.team/` from templates | – |
 | `status` | – | summary of `.team/`, no agents | – |
-| `plan` | `<goal>` | analyst → architect → pm → stop | G1 |
 | `feature` | `<description>` | plan → G1 → delivery loop (with security) → docs | G1–G4 |
-| `change` | `<description>` | delivery loop (security if triggered) | G2–G4 |
+| | `<goal> --plan` | analyst → architect → pm → stop, no code | G1 |
+| | `<description> --small` | T1: delivery loop (security if triggered) | G2–G4 |
 | `fix` | `<bug>` | debugger → delivery loop with regression test | G1 if risky, G2–G4 |
-| `hotfix` | `<bug>` | debugger → minimal fix → delivery loop with security → short docs | G2–G4 |
-| `investigate` | `<symptom>` | debugger only | – |
-| `review` | `[diff scope]` | code-reviewer ∥ security | G3 |
-| `audit` | `[scope]` | security, full read-only | – |
+| | `<bug> --hotfix` | urgent: minimal fix, security always, short docs | G2–G4 |
+| | `<symptom> --diagnose` | debugger only, no code | – |
+| `review` | `[diff scope]` | code-reviewer ∥ security on a diff | G3 |
+| | `--audit [scope]` | security, full read-only audit | – |
 | `test` | `[scope]` | qa fills missing tests | G2 |
 | `infra` | `<request>` | devops proposal → G1 → devops → code-reviewer → security → runbook | G1, G3, G4 |
 | `release` | `[version]` | devops ∥ security ∥ qa → CHANGELOG → GO/NO-GO | G2–G4 |
 | `docs` | `[scope]` | writer syncs docs | G4 |
-| `adr` | `<decision>` | architect writes an ADR | – |
+| | `--adr <decision>` | architect writes an ADR + updates `ARCHITECTURE.md` | – |
 | `hire` | `<domain or need> [why]` | hr hires a specialist: into the plugin (in the technical-team repo) or into this project | hiring gate |
-| `roster` | – | roster + hr review | retirement approval |
+| | `--roster` | roster + hr review | retirement approval |
+
+Flags can also be said in words ("chỉ lên kế hoạch", "gấp", "chỉ chẩn đoán", "audit", "ghi ADR"); the lead records the mode in `STATE.md`.
 
 ### 1.3 Gates and delivery loop
 
