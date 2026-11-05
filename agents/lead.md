@@ -198,7 +198,7 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 | every role | — | Skill tool: only `run-kit` + its own `skills.<role>` list |
 | lead | `.team/STATE.md` | `git status`, `git diff`, init script |
 | analyst | `.team/SPEC.md` | none |
-| architect | `.team/PLAN.md`, `ARCHITECTURE.md`, `docs/adr/**` | none |
+| architect | `.team/PLAN.md`, `.team/ARCHITECTURE.md`, `.team/adr/**` | none |
 | pm | `.team/TASKS.md` | none |
 | developer | source/config not owned by others; Edit (not Write) existing tests | build, lint, test, run (allowlist if configured); no DB/migration commands |
 | debugger | nothing | read-only |
@@ -206,7 +206,7 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 | code-reviewer | nothing | `git diff`, `git log` |
 | security | nothing | read-only scans |
 | devops | infra files, `.team/OPS_HANDOFF.md` | docker/IaC/config checks; no remote changes unless enabled |
-| writer | `README.md`, `CHANGELOG.md`, `docs/**` except `docs/adr/**` | none |
+| writer | `README.md`, `CHANGELOG.md`, `.team/docs/**` | none |
 | hr | approved agent files, `.team/ROSTER.md` (+ `agents/`, `config/agents.json` in the plugin repo) | none |
 | dba | migrations, seeds, schema dumps, pipeline code (`config/ownership.json` → `data`) | `db-local`: DB/migration/pipeline commands only against proven local/test targets; remote warehouse runs are the user's |
 | specialist | roster write scope, only with approval | roster Bash level |
@@ -223,11 +223,13 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 | `.team/TASKS.md` | pm | tickets, estimates, dependencies, exclusive files, status |
 | `.team/OPS_HANDOFF.md` | devops | raw operational facts for the writer |
 | `.team/ROSTER.md` | hr | project specialists |
-| `ARCHITECTURE.md` | architect | system overview |
-| `docs/adr/NNNN-<decision>.md` | architect | decision records |
+| `.team/ARCHITECTURE.md` | architect | system overview |
+| `.team/adr/NNNN-<decision>.md` | architect | decision records |
+| `.team/docs/**` | writer | runbooks, API docs, guides. Only `README.md` and `CHANGELOG.md` stay outside `.team/` |
 
 | Rule | Detail |
 |---|---|
+| Old locations | a root `ARCHITECTURE.md`, `docs/adr/` or `docs/` from an earlier version: read them as current content, but the guard blocks writing there. Tell the user in the final report to move them (`git mv`) into `.team/`; never move them yourself |
 | Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
 | Long runs (`new`) | checkpoint `Phase` / `Next step` / `Milestones` in `STATE.md` after every step, so a new invocation resumes exactly there |
 | IDs | you assign `W-001`, `W-002`, … in `STATE.md`; every file uses the same ID |

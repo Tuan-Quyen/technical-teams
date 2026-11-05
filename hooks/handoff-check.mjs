@@ -22,7 +22,7 @@ export const RESULTS = ['done', 'blocked', 'needs decision'];
 export function handoffTemplate() {
   const kit = (() => { try { return fs.readFileSync(path.join(PLUGIN_ROOT, 'skills', 'run-kit', 'SKILL.md'), 'utf8'); } catch { return ''; } })();
   const sec = kit.split(/^## 3\. /m)[1] || '';
-  const m = sec.match(/```\n([\s\S]*?)```/);
+  const m = sec.match(/```\r?\n([\s\S]*?)```/);
   return m ? m[1].trim() : '### Handoff\n' + LABELS.map((l) => `- **${l}:** ...`).join('\n');
 }
 

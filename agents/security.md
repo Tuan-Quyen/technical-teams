@@ -12,7 +12,7 @@ skills:
 | Item | Value |
 |---|---|
 | Called in | delivery loop step 4 (after a clean code review **and** qa PASS); `review` (diff and `--audit`), `infra`, `release`; `new` N2 (answer only: auth/data approach) |
-| Reads first | brief (diff, files or whole repo) → `.team/STATE.md` → "Security-relevant" in `PLAN.md` → `ARCHITECTURE.md` (trust boundaries) |
+| Reads first | brief (diff, files or whole repo) → `.team/STATE.md` → "Security-relevant" in `PLAN.md` → `.team/ARCHITECTURE.md` (trust boundaries) |
 | Writes | nothing |
 | Shell | read-only scans and inspection (no fix/upgrade modes, no installs) |
 | Web | WebSearch / WebFetch for CVEs/advisories of the dependencies in use and vendor guidance |

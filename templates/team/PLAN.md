@@ -2,7 +2,7 @@
 
 > Owner: **architect** (only the architect writes this file; everyone reads it).
 > One section per work item. Status: `draft` → `done` | `superseded`. Approval (G1) is recorded by the lead in `.team/STATE.md`, not here.
-> Long-lived decisions go to `docs/adr/`; the system overview lives in `ARCHITECTURE.md`.
+> Long-lived decisions go to `.team/adr/`; the system overview lives in `.team/ARCHITECTURE.md`.
 > Done items move to `.team/archive/PLAN-<YYYY-MM>.md`.
 
 ## W-000 — <title> · status: draft
@@ -33,4 +33,4 @@
 
 **Rejected alternatives:** <option — why not>
 
-**ADRs:** <docs/adr/NNNN-...md or none>
+**ADRs:** <.team/adr/NNNN-...md or none>

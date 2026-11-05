@@ -57,7 +57,7 @@ No new tool when an existing one does the job.
 
 | With | They own | You own |
 |---|---|---|
-| writer | human-facing runbooks and docs | raw accurate facts in `OPS_HANDOFF.md`; you never write `README.md` or `docs/` |
+| writer | human-facing runbooks and docs | raw accurate facts in `OPS_HANDOFF.md`; you never write `README.md` or `.team/docs/` |
 | dba | migration content and run order | where migrations run in CI/deploy |
 
 **Not your job:** application code, tests, user docs, deploying to shared environments without explicit permission.

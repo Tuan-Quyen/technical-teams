@@ -116,6 +116,7 @@ export function loadConfig(projectDir) {
   const cfg = {
     architecture: [...(base.architecture || []), ...(extra.architecture || [])],
     docs: [...(base.docs || []), ...(extra.docs || [])],
+    relocated: base.relocated || {},
     infra: [...(base.infra || []), ...(extra.infra || [])],
     tests: [...(base.tests || []), ...(extra.tests || [])],
     data: [...(base.data || []), ...(extra.data || [])],
@@ -269,13 +270,20 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'analyst', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr' };
+    const map = { STATE: 'lead', SPEC: 'analyst', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
     if (map[team[1]]) return { owner: map[team[1]] };
   }
-  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the six owned files and their archive/<FILE>-<period>.md copies' };
+  if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
+  if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
+  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
   if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };
+  // Team documents live in .team/; only README.md and CHANGELOG.md stay outside. Checked
+  // after the lists above so a project can opt a path back out through paths.docs/architecture.
+  for (const [pattern, target] of Object.entries(cfg.relocated)) {
+    if (matchAny(rel, [pattern])) return { owner: '__nobody__', reason: `team documents live in .team/; write to ${target} instead (or add this path to paths.docs in .claude/technical-team.json)` };
+  }
   if (matchAny(rel, cfg.infra)) return { owner: 'devops' };
   if (matchAny(rel, cfg.tests)) return { owner: 'qa' };
   if (matchAny(rel, cfg.data)) return { owner: 'dba' };

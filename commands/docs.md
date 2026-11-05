@@ -1,5 +1,5 @@
 ---
-description: "Documentation: bring product docs back in sync with the code (writer, G4); --adr to record an architecture decision and update ARCHITECTURE.md (architect)"
+description: "Documentation: bring product docs back in sync with the code (writer, G4); --adr to record an architecture decision and update .team/ARCHITECTURE.md (architect)"
 argument-hint: "[scope] | --adr <decision>"
 disable-model-invocation: true
 ---
@@ -61,17 +61,17 @@ flowchart LR
 ```mermaid
 flowchart LR
   A[A1 Open W-NNN] --> B[design hook: affected domains give their view]
-  B --> C[A2 architect: ADR + supersede + index + ARCHITECTURE.md]
+  B --> C[A2 architect: ADR + supersede + index + .team/ARCHITECTURE.md]
   C --> D[A3 STATE] --> E[Report]
 ```
 
 | # | Step | Agent |
 |---|---|---|
 | A1 | Open W-NNN (pipeline `docs (adr)`) | lead |
-| A2 | **Hook `design`**: specialists whose domain is affected (e.g. dba for data decisions) give their view first. Then `docs/adr/NNNN-<kebab-title>.md` from the template; status `accepted` if the user says the decision is made, else `proposed`; superseded ADR → `superseded by NNNN`; update the index and affected sections of `ARCHITECTURE.md` | specialists → architect |
+| A2 | **Hook `design`**: specialists whose domain is affected (e.g. dba for data decisions) give their view first. Then `.team/adr/NNNN-<kebab-title>.md` from the template; status `accepted` if the user says the decision is made, else `proposed`; superseded ADR → `superseded by NNNN`; update the index and affected sections of `.team/ARCHITECTURE.md` | specialists → architect |
 | A3 | Update `STATE.md` | lead |
 
 | | |
 |---|---|
-| .team | sync: reads `STATE`, `OPS_HANDOFF`, `SPEC`, `ROSTER`; writes lead → `STATE`, devops → `OPS_HANDOFF` (step 2) · adr: reads `STATE`, `ARCHITECTURE.md`, `docs/adr/`, `ROSTER`; writes lead → `STATE` |
+| .team | sync: reads `STATE`, `OPS_HANDOFF`, `SPEC`, `ROSTER`; writes lead → `STATE`, devops → `OPS_HANDOFF` (step 2) · adr: reads `STATE`, `.team/ARCHITECTURE.md`, `.team/adr/`, `ROSTER`; writes lead → `STATE` |
 | End | sync: final report — docs changed, discrepancies (which side was wrong), unverified items · adr: final report — ADR path, status, decision in one sentence; if `proposed`, what the user must confirm |

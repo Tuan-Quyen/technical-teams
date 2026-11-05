@@ -72,7 +72,7 @@ flowchart LR
 |---|---|---|---|
 | P0 | Open work item: next `W-NNN`, pipeline `feature (<mode>)`, status `running`, gate `G1 pending`; no `.team/` → init script | lead | — |
 | P1 | Spec → `.team/SPEC.md#W-NNN` (goal, scope, constraints from the user) | analyst | every AC observable/testable; edge cases + open questions listed; gaps → send back once. Questions that block design → gate report now |
-| P2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `ARCHITECTURE.md`) | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
+| P2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `.team/ARCHITECTURE.md`) | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
 | P2a | **dba** when schema/data/pipelines are touched, and **hook `design`** specialists, review the draft | dba / specialists | blocking issue → one architect revision; leftover disagreement → gate report |
 | P3 | Tickets → `.team/TASKS.md#W-NNN` | pm | every plan item ticketed; disjoint file sets per parallel group; no L. "Cannot split cleanly" → architect, then pm again |
 | P4 | Consistency: AC ↔ plan ↔ tickets; flags decide who joins later | lead | gaps → re-brief the owner, never edit their file |
@@ -149,6 +149,6 @@ flowchart LR
 | Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/analyst → user. In small mode, needing the architect step means it was not T1: propose full mode |
 | Non-blocking findings | fix now if cheap and in scope (through the loop), otherwise deferred with a reason |
 | .team reads | all (small: `STATE`, `ROSTER`, `OPS_HANDOFF` if infra) |
-| .team writes | lead → `STATE`; analyst → `SPEC`; architect → `PLAN`, `ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
+| .team writes | lead → `STATE`; analyst → `SPEC`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
 | Hook points | `design` (P2a), `execute` (D1 / S1), `review` (D2 / S2), `test` (D3 / S3) |
 | End | full/small: after G4; plan-only: after G1 approved / changed-and-approved / rejected; or the user cancels/redirects. A stalled loop pauses for the user but never closes the work item as done |

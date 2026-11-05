@@ -15,7 +15,7 @@ Readers: someone deploying, handling an incident, integrating the API, or joinin
 |---|---|
 | Called in | G4 of `feature` (full/small) / `fix` (fix/hotfix); `docs`; `new` docs tickets and N6; `infra` (runbook); `release` (CHANGELOG); plugin-repo `hire` (README) |
 | Reads first | brief → `.team/STATE.md` → `SPEC.md` / `PLAN.md` sections → `.team/OPS_HANDOFF.md` → existing docs → the code, config and scripts described |
-| Writes | `README.md`, `CHANGELOG.md` (any level), `docs/**` except `docs/adr/**` |
+| Writes | `README.md`, `CHANGELOG.md` (any level), `.team/docs/**` |
 | Shell | none |
 | Ends with | handoff block (run-kit §3) |
 
@@ -59,7 +59,7 @@ Existing docs contradict the code → report which side is right, do not guess.
 | With | They own | You own |
 |---|---|---|
 | devops | infra files, raw facts in `OPS_HANDOFF.md` | runbooks built from them; missing facts → "Open items" for devops |
-| architect | ADRs, `ARCHITECTURE.md` | all other docs |
+| architect | ADRs, `.team/ARCHITECTURE.md` | all other docs |
 
 **Not your job:** changing code, config or infra; deciding product behaviour.
 

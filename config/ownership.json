@@ -1,16 +1,17 @@
 {
-  "$comment": "Default path ownership for the technical-team guard hook. A project can extend these lists in .claude/technical-team.json under \"paths\". First match wins, in this order: protected -> .team/ -> architecture -> docs -> infra -> tests -> data (dba) -> plugin specialists (config/agents.json) -> project specialists (approved rows of .team/ROSTER.md) -> developer (everything else). dbCommands: prefixes of database, migration and pipeline commands; only dba (and specialists with Bash level db-local) may run them, against provable local/test targets (a project can replace the list with db.commands). externalAgents: non-team agents the lead may call; the guard runs them read-only. A project can replace the list in .claude/technical-team.json -> externalAgents.",
-  "architecture": [
-    "ARCHITECTURE.md",
-    "docs/adr/**"
-  ],
+  "$comment": "Default path ownership for the technical-team guard hook. A project can extend these lists in .claude/technical-team.json under \"paths\". Team documents live in .team/ (ARCHITECTURE.md, adr/, docs/); only README.md and CHANGELOG.md stay outside. relocated: paths the team may no longer write, each with its .team/ target; a project can opt one back out by adding it to paths.docs or paths.architecture. First match wins, in this order: protected -> .team/ -> architecture -> docs -> relocated -> infra -> tests -> data (dba) -> plugin specialists (config/agents.json) -> project specialists (approved rows of .team/ROSTER.md) -> developer (everything else). dbCommands: prefixes of database, migration and pipeline commands; only dba (and specialists with Bash level db-local) may run them, against provable local/test targets (a project can replace the list with db.commands). externalAgents: non-team agents the lead may call; the guard runs them read-only. A project can replace the list in .claude/technical-team.json -> externalAgents.",
+  "architecture": [],
   "docs": [
     "README.md",
     "**/README.md",
     "CHANGELOG.md",
-    "**/CHANGELOG.md",
-    "docs/**"
+    "**/CHANGELOG.md"
   ],
+  "relocated": {
+    "ARCHITECTURE.md": ".team/ARCHITECTURE.md",
+    "docs/adr/**": ".team/adr/",
+    "docs/**": ".team/docs/"
+  },
   "infra": [
     "Dockerfile",
     "**/Dockerfile",

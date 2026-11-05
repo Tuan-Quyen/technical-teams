@@ -15,7 +15,7 @@ const REMOVED = ['plan', 'change', 'hotfix', 'investigate', 'audit', 'adr', 'ros
 const EXPECTED = ['docs', 'feature', 'fix', 'hire', 'infra', 'init', 'new', 'release', 'review', 'run', 'status', 'test'];
 
 function frontmatter(name) {
-  const m = read(`commands/${name}.md`).match(/^---\n([\s\S]*?)\n---/);
+  const m = read(`commands/${name}.md`).match(/^---\r?\n([\s\S]*?)\r?\n---/);
   assert.ok(m, `${name}.md has frontmatter`);
   return m[1];
 }
