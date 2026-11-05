@@ -121,3 +121,25 @@ test('disable-model-invocation kept on user-initiated commands', () => {
     assert.match(frontmatter(c), /^disable-model-invocation: true$/m, c);
   }
 });
+
+test('team-init creates .team files on demand, never up front', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const os = await import('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-init-'));
+  const run = (...a) => spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'team-init.mjs'), ...a], { env: { ...process.env, CLAUDE_PROJECT_DIR: dir }, encoding: 'utf8' });
+  const ls = () => fs.readdirSync(path.join(dir, '.team')).sort();
+  assert.equal(run().status, 0);
+  assert.deepEqual(ls(), ['STATE.md'], 'default: STATE.md only');
+  assert.ok(!fs.existsSync(path.join(dir, '.claude')), 'no .claude/ unless asked');
+  fs.writeFileSync(path.join(dir, '.team', 'STATE.md'), 'mine');
+  assert.equal(run('SPEC', '.team/plan.md').status, 0);
+  assert.deepEqual(ls(), ['PLAN.md', 'SPEC.md', 'STATE.md']);
+  assert.equal(fs.readFileSync(path.join(dir, '.team', 'STATE.md'), 'utf8'), 'mine', 'never overwrites');
+  assert.equal(run('BOGUS').status, 2);
+  assert.equal(run('--config').status, 0);
+  assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
+  assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
+  assert.equal(run('--all').status, 0);
+  assert.equal(ls().length, 6);
+  assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
+});

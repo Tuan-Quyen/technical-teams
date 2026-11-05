@@ -8,8 +8,8 @@ Run this yourself in the current session; do not delegate (read-only, no agent, 
 
 ```mermaid
 flowchart LR
-  A{.team/ exists?} -- no --> B[say so, suggest init]
-  A -- yes --> C[Read STATE + TASKS + ROSTER count] --> D[Summary, newest first] --> E[Next command per item]
+  A{.team/STATE.md exists?} -- no --> B[say no team work yet; any command starts it]
+  A -- yes --> C[Read STATE + TASKS + ROSTER count, skip missing files] --> D[Summary, newest first] --> E[Next command per item]
 ```
 
 | Section (in this order, user's language) | Source |

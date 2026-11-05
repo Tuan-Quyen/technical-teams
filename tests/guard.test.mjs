@@ -159,6 +159,7 @@ test('lead bash: git status/diff only; init script allowed', () => {
   assert.ok(bash(d, 'technical-team:lead', 'git diff > out.txt'));
   assert.ok(bash(d, 'technical-team:lead', 'git diff --output=x.patch'));
   assert.equal(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs"`), null);
+  assert.equal(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs" SPEC PLAN`), null);
   assert.ok(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs" | sh`));
 });
 

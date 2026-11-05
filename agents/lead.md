@@ -228,7 +228,7 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 
 | Rule | Detail |
 |---|---|
-| Missing `.team/` | run `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (never overwrites) or ask for `init` |
+| Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
 | Long runs (`new`) | checkpoint `Phase` / `Next step` / `Milestones` in `STATE.md` after every step, so a new invocation resumes exactly there |
 | IDs | you assign `W-001`, `W-002`, … in `STATE.md`; every file uses the same ID |
 | Content | summaries and conclusions; no logs, secrets or real user data |

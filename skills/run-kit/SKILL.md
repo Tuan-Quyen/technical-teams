@@ -11,7 +11,7 @@ description: How to use the technical-team plugin — the two ways to run the te
 
 | Step | Do |
 |---|---|
-| 1 | `/technical-team:init` — creates `.team/`, `.claude/agents/`, `.claude/technical-team.json` (never overwrites) |
+| 1 | Optional: `/technical-team:init` — creates `.team/STATE.md` + `.claude/technical-team.json` (never overwrites). Other `.team/` files are created on demand |
 | 2 | Pick a mode (below) and run a command |
 
 | Mode | Start | Gates |
@@ -34,7 +34,7 @@ flowchart LR
 |---|---|---|---|
 | `run` | `<request>` | lead picks T0/T1/T2/TB (or `new`) and the mode | by tier |
 | `new` | `<idea \| path/to/PRD>` (empty = resume) | requirements → stack + architecture → MVP plan → milestones (delivery loop) → ops → docs → release; resumes from `.team/STATE.md` | stops only at REQ, STACK, G1, each milestone, RELEASE (+ hiring gate / escalation) |
-| `init` | – | create `.team/` from templates | – |
+| `init` | `[--all]` | create `.team/STATE.md` + `.claude/technical-team.json`; `--all` = every file up front | – |
 | `status` | – | summary of `.team/`, no agents | – |
 | `feature` | `<description>` | plan → G1 → delivery loop (with security) → docs | G1–G4 |
 | | `<goal> --plan` | analyst → architect → pm → stop, no code | G1 |
@@ -94,7 +94,7 @@ Full documentation: `${CLAUDE_PLUGIN_ROOT}/README.md`.
 | # | Rule | Detail |
 |---|---|---|
 | 1 | Start from zero | You know only the brief and what you read. Read the files the brief lists first. |
-| 2 | Read `.team/` first | At least `.team/STATE.md` and your work item's (`W-NNN`) sections. Everyone reads every `.team/` file; write only your own. |
+| 2 | Read `.team/` first | At least `.team/STATE.md` and your work item's (`W-NNN`) sections. Everyone reads every `.team/` file; write only your own. A missing file means nothing is recorded yet. Your own file missing → Read `${CLAUDE_PLUGIN_ROOT}/templates/team/<FILE>.md` and Write it as the start of your file. |
 | 3 | Report conflicts | Brief, `.team/`, code or user disagree → describe it in "Còn mở". Never silently overwrite someone else's content or decision. |
 | 4 | Learn the project | Stack, conventions, build/test/lint commands from `CLAUDE.md`, manifests, `Makefile`, CI files, `README.md`. Follow existing patterns. |
 | 5 | Language | Answer in the brief's language. Code, identifiers, commit messages in English unless the project differs. |

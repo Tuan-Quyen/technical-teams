@@ -81,7 +81,8 @@ Với project scope, lệnh cài ghi vào `.claude/settings.json` của repo; co
 Gỡ plugin **không** xóa `.team/`, `ARCHITECTURE.md`, `docs/adr/` hay specialist của project.
 
 **Bắt đầu ở một project:** gõ `/technical-team:init`.
-- Lệnh tạo `.team/`, `.claude/agents/` và `.claude/technical-team.json`, không bao giờ ghi đè file đã có.
+- Không bắt buộc. Lệnh chỉ tạo `.team/STATE.md` và `.claude/technical-team.json`, không bao giờ ghi đè file đã có.
+- Các file `.team/` khác (`SPEC`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`, `archive/`) chỉ được tạo khi pipeline cần tới lần đầu; `.claude/agents/` chỉ có khi tuyển specialist đầu tiên. Muốn tạo hết từ đầu như trước: `/technical-team:init --all`.
 - Nên commit `.team/` để cả team dùng chung.
 
 ---
@@ -211,7 +212,7 @@ Biến thể của cùng một pipeline là **cờ** (nói bằng lời cũng đ
 |---|---|---|---|
 | `run` | `<yêu cầu>` | lead xếp T0/T1/T2/TB/project mới rồi chạy đúng lệnh và chế độ | theo tầng |
 | `new` | `<ý tưởng \| đường dẫn PRD>` (trống = chạy tiếp) | trọn một project mới (mục 6.1) | REQ, STACK, G1, cuối mỗi milestone, RELEASE |
-| `init` | – | tạo `.team/` từ template | – |
+| `init` | `[--all]` | tạo `.team/STATE.md` + `.claude/technical-team.json`; `--all` tạo hết từ đầu | – |
 | `status` | – | tóm tắt `.team/`, không gọi agent | – |
 | `feature` | `<mô tả>` | plan → G1 → vòng lặp giao hàng (luôn có security) → writer ∥ pm | G1–G4 |
 | | `<mục tiêu> --plan` | analyst → architect → pm, dừng ở G1, không viết code | G1 |
@@ -478,7 +479,7 @@ flowchart TD
 
 ## 11. Cấu hình theo project
 
-Mọi tùy biến nằm trong `.claude/technical-team.json`. File này do `init` tạo ra và **chỉ bạn sửa**, vì guard chặn mọi agent ghi vào `.claude/`.
+Mọi tùy biến nằm trong `.claude/technical-team.json`. File này do `init` tạo ra (không có thì dùng mặc định) và **chỉ bạn sửa**, vì guard chặn mọi agent ghi vào `.claude/`.
 
 ```json
 {
