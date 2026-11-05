@@ -1,6 +1,6 @@
 # Architecture
 
-> Owner: architect. Describes the system as it is now; decisions and their reasons live in `docs/adr/`.
+> Owner: architect. Describes the system as it is now; decisions and their reasons live in `.team/adr/`.
 
 ## Purpose and context
 <What the system does, for whom, and what it talks to. A context diagram in text or Mermaid.>

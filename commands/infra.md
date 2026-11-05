@@ -59,7 +59,7 @@ flowchart LR
 | 3 | Implement the approved approach, verify locally (no remote changes unless enabled), update `OPS_HANDOFF.md`. **Hook `execute`** | devops (+ specialists) | — |
 | 4a | Code review of the diff. **Hook `review`** | code-reviewer + specialists | blocking → 3 |
 | 4b | Security on the final diff | security | blocking → 3 → 4a → 4b; clean = **G3** |
-| 5 | Runbook(s) in `docs/` (deploy, rollback, incident) from `OPS_HANDOFF.md` + real files; unverified facts marked → **G4** | writer | — |
+| 5 | Runbook(s) in `.team/docs/` (deploy, rollback, incident) from `OPS_HANDOFF.md` + real files; unverified facts marked → **G4** | writer | — |
 
 | Rule | Detail |
 |---|---|

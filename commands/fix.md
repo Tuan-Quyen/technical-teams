@@ -70,7 +70,7 @@ flowchart LR
 | 4 | Code review: fix addresses the root cause, not the symptom. Hotfix: anything beyond the minimal fix is blocking. **Hook `review`** | code-reviewer + specialists | blocking → 3 |
 | 5 | Regression test on the diagnosed faulty path + related suite (hotfix: most relevant suite; say what was not run). **Hook `test`** | qa + specialists | FAIL → 3 → 4 → 5; PASS = **G2** |
 | 6 | Security on the final diff (hotfix: always; fix: if triggered) | security | blocking → 3 → 4 → 5 → 6 |
-| 7 | **G3** on the final code. Fix: docs if documented behaviour changed or a CHANGELOG is kept (Fixed). Hotfix: CHANGELOG (Fixed) if kept; short incident note in `docs/` only if a runbook exists; everything else **deferred** with a suggested work item → **G4**; report includes the root cause in one sentence (hotfix: tested / not tested, deferred, commands the user runs to commit/deploy) | writer | — |
+| 7 | **G3** on the final code. Fix: docs if documented behaviour changed or a CHANGELOG is kept (Fixed). Hotfix: CHANGELOG (Fixed) if kept; short incident note in `.team/docs/` only if a runbook exists; everything else **deferred** with a suggested work item → **G4**; report includes the root cause in one sentence (hotfix: tested / not tested, deferred, commands the user runs to commit/deploy) | writer | — |
 
 | Rule | Detail |
 |---|---|

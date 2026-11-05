@@ -48,7 +48,7 @@ flowchart TD
 | Default | read-only advisor |
 | Write/Edit/Bash | only when the work truly needs it, with the reason |
 | `Agent` tool | never |
-| Write scope | never overlaps `.team/`, docs, infra, tests, `ARCHITECTURE.md`, `docs/adr/`, dba's data paths or another specialist |
+| Write scope | never overlaps `.team/`, docs, infra, tests, dba's data paths or another specialist |
 | Preload | `technical-team:run-kit`; keep the `<!-- technical-team:specialist -->` marker |
 
 | Where it is created (only after `HIRE-APPROVED: <name>` in `STATE.md`) | Files |

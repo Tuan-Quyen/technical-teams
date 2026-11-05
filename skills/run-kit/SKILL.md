@@ -48,7 +48,7 @@ flowchart LR
 | `infra` | `<request>` | devops proposal → G1 → devops → code-reviewer → security → runbook | G1, G3, G4 |
 | `release` | `[version]` | devops ∥ security ∥ qa → CHANGELOG → GO/NO-GO | G2–G4 |
 | `docs` | `[scope]` | writer syncs docs | G4 |
-| | `--adr <decision>` | architect writes an ADR + updates `ARCHITECTURE.md` | – |
+| | `--adr <decision>` | architect writes an ADR + updates `.team/ARCHITECTURE.md` | – |
 | `hire` | `<domain or need> [why]` | hr hires a specialist: into the plugin (in the technical-team repo) or into this project | hiring gate |
 | | `--roster` | roster + hr review | retirement approval |
 

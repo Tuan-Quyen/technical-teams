@@ -4,14 +4,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.env.CLAUDE_PLUGIN_ROOT = ROOT;
 const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-home-'));
 process.env.HOME = fakeHome;
 process.env.USERPROFILE = fakeHome;
-const { decide, parseRoster, globToRegExp } = await import(path.join(ROOT, 'hooks', 'guard.mjs'));
+const { decide, parseRoster, globToRegExp } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'guard.mjs')).href);
 
 function project({ roster = '', state = '', config } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-proj-'));
@@ -66,15 +66,36 @@ test('each .team file has exactly one writer', () => {
   assert.ok(write(d, 'technical-team:analyst', '.team/notes.md'));
 });
 
-test('architect owns ARCHITECTURE.md and docs/adr, writer owns other docs', () => {
+test('architect owns .team/ARCHITECTURE.md and .team/adr, writer owns .team/docs, README, CHANGELOG', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:architect', 'ARCHITECTURE.md'), null);
-  assert.equal(write(d, 'technical-team:architect', 'docs/adr/0001-use-postgres.md'), null);
-  assert.ok(write(d, 'technical-team:writer', 'docs/adr/0002-x.md'));
-  assert.equal(write(d, 'technical-team:writer', 'docs/runbook/deploy.md'), null);
+  assert.equal(write(d, 'technical-team:architect', '.team/ARCHITECTURE.md'), null);
+  assert.equal(write(d, 'technical-team:architect', '.team/adr/0001-use-postgres.md'), null);
+  assert.ok(write(d, 'technical-team:writer', '.team/adr/0002-x.md'));
+  assert.ok(write(d, 'technical-team:writer', '.team/ARCHITECTURE.md'));
+  assert.equal(write(d, 'technical-team:writer', '.team/docs/runbook/deploy.md'), null);
+  assert.ok(write(d, 'technical-team:architect', '.team/docs/x.md'));
   assert.equal(write(d, 'technical-team:writer', 'README.md'), null);
   assert.equal(write(d, 'technical-team:writer', 'CHANGELOG.md'), null);
+  assert.equal(write(d, 'technical-team:writer', 'packages/a/CHANGELOG.md'), null);
+  assert.ok(write(d, 'technical-team:writer', '.team/CHANGELOG.md'), 'CHANGELOG stays outside .team/');
   assert.ok(write(d, 'technical-team:writer', 'src/index.ts'));
+});
+
+test('old locations outside .team/ are closed to every role and name the new path', () => {
+  const d = project();
+  for (const [file, target] of [['ARCHITECTURE.md', '.team/ARCHITECTURE.md'], ['docs/adr/0001-x.md', '.team/adr/'], ['docs/runbook/deploy.md', '.team/docs/']]) {
+    for (const role of ['architect', 'writer', 'developer']) {
+      const r = write(d, `technical-team:${role}`, file);
+      assert.ok(r, `${role} must not write ${file}`);
+      assert.match(JSON.stringify(r), new RegExp(target.replace(/\./g, '\\.')));
+    }
+  }
+});
+
+test('a project can opt docs/ back out of .team/ through paths.docs', () => {
+  const d = project({ config: { paths: { docs: ['docs/**'] } } });
+  assert.equal(write(d, 'technical-team:writer', 'docs/site/index.md'), null);
+  assert.ok(write(d, 'technical-team:writer', 'ARCHITECTURE.md'), 'other old paths stay closed');
 });
 
 test('developer: source yes; docs/infra/.team no; existing tests by Edit only', () => {
@@ -366,7 +387,7 @@ test('skills: run-kit always, otherwise only the role list from project config',
 });
 
 test('handoff check: template from run-kit, required labels, evidence for "xong"', async () => {
-  const { checkHandoff, handoffTemplate } = await import(path.join(ROOT, 'hooks', 'handoff-check.mjs'));
+  const { checkHandoff, handoffTemplate } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'handoff-check.mjs')).href);
   const tpl = handoffTemplate();
   assert.match(tpl, /Phiếu bàn giao/);
   for (const l of ['Kết quả', 'Bằng chứng', 'Đã ghi vào', 'Còn mở', 'Đề xuất bước tiếp']) assert.match(tpl, new RegExp(l));

@@ -12,7 +12,7 @@ skills:
 | Item | Value |
 |---|---|
 | Called in | `feature` step P1 (all modes but small); `new` N1 (MVP spec from an idea or a PRD path, clarifying questions with proposed defaults); escalation step 2 of the delivery loop (criterion conflicts) |
-| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` (if any) → `README.md`, `ARCHITECTURE.md`, code the request touches |
+| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` (if any) → `README.md`, `.team/ARCHITECTURE.md`, code the request touches |
 | Writes | `.team/SPEC.md` (+ `.team/archive/SPEC-<YYYY-MM>.md`) only |
 | Shell | none |
 | Ends with | handoff block (run-kit §3) |

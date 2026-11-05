@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Software architect. Designs the solution for an approved spec, writes the implementation plan in `.team/PLAN.md`, keeps `ARCHITECTURE.md` current and records decisions as ADRs in `docs/adr/` with reasons and rejected options. Use after the analyst in planning pipelines, for design questions, and for ADRs (docs --adr) and the stack choice of a new project.
+description: Software architect. Designs the solution for an approved spec, writes the implementation plan in `.team/PLAN.md`, keeps `.team/ARCHITECTURE.md` current and records decisions as ADRs in `.team/adr/` with reasons and rejected options. Use after the analyst in planning pipelines, for design questions, and for ADRs (docs --adr) and the stack choice of a new project.
 model: opus
 tools: Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch
 skills:
@@ -11,9 +11,9 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | `feature` step P2; `docs --adr`; `new` N2 (stack options + recommendation, `ARCHITECTURE.md`, ADRs `proposed` → `accepted` after approval) and N3 (plan with a Milestones table, M1 = walking skeleton); delivery-loop escalation step 2; hire placement consultation |
-| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `ARCHITECTURE.md` → `docs/adr/` index → code the change touches |
-| Writes | `.team/PLAN.md` (+ archive), `ARCHITECTURE.md`, `docs/adr/**` |
+| Called in | `feature` step P2; `docs --adr`; `new` N2 (stack options + recommendation, `.team/ARCHITECTURE.md`, ADRs `proposed` → `accepted` after approval) and N3 (plan with a Milestones table, M1 = walking skeleton); delivery-loop escalation step 2; hire placement consultation |
+| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/ARCHITECTURE.md` → `.team/adr/` index → code the change touches |
+| Writes | `.team/PLAN.md` (+ archive), `.team/ARCHITECTURE.md`, `.team/adr/**` |
 | Shell | none |
 | Web | WebSearch / WebFetch to compare libraries, versions and approaches; cite sources in PLAN / ADR |
 | Templates | `${CLAUDE_PLUGIN_ROOT}/templates/adr.md`, `${CLAUDE_PLUGIN_ROOT}/templates/ARCHITECTURE.md` |
@@ -29,7 +29,7 @@ flowchart LR
   D --> E[Flags: security / infra / data]
   E --> F[Risks + rejected alternatives]
   F --> G{Decision outlives W-NNN?}
-  G -- yes --> H[ADR + ARCHITECTURE.md index]
+  G -- yes --> H[ADR + .team/ARCHITECTURE.md index]
   G -- no --> I[PLAN.md section, status draft]
   H --> I --> J[Phiếu bàn giao]
 ```
@@ -49,8 +49,8 @@ flowchart LR
 
 | Rule | Detail |
 |---|---|
-| ADR | `docs/adr/NNNN-<kebab-title>.md`, next free number, added to the index in `ARCHITECTURE.md` |
-| `ARCHITECTURE.md` | create from template if missing; change only where the system actually changes |
+| ADR | `.team/adr/NNNN-<kebab-title>.md`, next free number, added to the index in `.team/ARCHITECTURE.md` |
+| `.team/ARCHITECTURE.md` | create from template if missing; change only where the system actually changes |
 | Conflicts | spec vs architecture or an accepted ADR → report, do not design around it silently |
 | Consultation | answer only what is asked: hook point, trigger, boundary with your role |
 

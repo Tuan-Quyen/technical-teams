@@ -78,7 +78,7 @@ Với project scope, lệnh cài ghi vào `.claude/settings.json` của repo; co
 }
 ```
 
-Gỡ plugin **không** xóa `.team/`, `ARCHITECTURE.md`, `docs/adr/` hay specialist của project.
+Gỡ plugin **không** xóa `.team/`, `README.md`, `CHANGELOG.md` hay specialist của project.
 
 **Bắt đầu ở một project:** gõ `/technical-team:init`.
 - Không bắt buộc. Lệnh chỉ tạo `.team/STATE.md` và `.claude/technical-team.json`, không bao giờ ghi đè file đã có.
@@ -111,7 +111,7 @@ Tên đầy đủ có tiền tố plugin: `technical-team:<tên>`. Model dùng a
 |---|---|---|---|
 | `lead` | Tech lead | `inherit` (theo session) | người duy nhất phân việc: xếp tầng, chạy pipeline, giữ cổng, báo cáo |
 | `analyst` | Business analyst | sonnet | user story, acceptance criteria kiểm chứng được, trường hợp biên |
-| `architect` | Architect | opus | thiết kế, plan triển khai, `ARCHITECTURE.md`, ADR |
+| `architect` | Architect | opus | thiết kế, plan triển khai, `.team/ARCHITECTURE.md`, ADR |
 | `pm` | Project manager | sonnet | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
 | `developer` | Developer fullstack | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau |
 | `debugger` | Debugger | opus | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa; không sửa code |
@@ -226,7 +226,7 @@ Biến thể của cùng một pipeline là **cờ** (nói bằng lời cũng đ
 | `infra` | `<yêu cầu>` | devops đề xuất → G1 → làm → code-reviewer → security → runbook | G1, G3, G4 |
 | `release` | `[version]` | devops ∥ security ∥ qa → CHANGELOG → GO/NO-GO | G2–G4 |
 | `docs` | `[phạm vi]` | writer đồng bộ tài liệu với code | G4 |
-| | `--adr <quyết định>` | architect ghi ADR + cập nhật `ARCHITECTURE.md` | – |
+| | `--adr <quyết định>` | architect ghi ADR + cập nhật `.team/ARCHITECTURE.md` | – |
 | `hire` | `<domain/nhu cầu> [lý do]` | tuyển specialist (mục 9) | cổng tuyển dụng |
 | | `--roster` | danh bạ + đề xuất rà soát của hr | duyệt cho nghỉ |
 
@@ -245,7 +245,7 @@ Biến thể của cùng một pipeline là **cờ** (nói bằng lời cũng đ
 | `/technical-team:review --audit src/payments/` | audit bảo mật chỉ-đọc, gợi ý work item tiếp theo |
 | `/technical-team:infra Thêm GitHub Actions chạy lint + test cho PR` | devops đề xuất trước, bạn duyệt, rồi mới làm |
 | `/technical-team:release 1.4.0` | GO/NO-GO; team không tag, không deploy |
-| `/technical-team:docs --adr Chuyển từ REST polling sang WebSocket` | ADR mới + cập nhật `ARCHITECTURE.md` |
+| `/technical-team:docs --adr Chuyển từ REST polling sang WebSocket` | ADR mới + cập nhật `.team/ARCHITECTURE.md` |
 | `/technical-team:hire IoT: firmware ESP32, MQTT, OTA` | hồ sơ domain, hồ sơ specialist, chỗ đặt, rồi chờ bạn duyệt |
 
 ### 6.1 `new`: chạy trọn một project mới
@@ -256,7 +256,7 @@ Gọi một lần với ý tưởng ngắn hoặc đường dẫn PRD. Team ch�
 flowchart TD
   N0[N0 init .team/ + mở W-NNN] --> N1[N1 analyst: spec MVP + câu hỏi]
   N1 --> REQ{{1 REQ: chốt yêu cầu}}
-  REQ --> N2[N2 architect: đề xuất stack, ARCHITECTURE.md, ADR]
+  REQ --> N2[N2 architect: đề xuất stack, .team/ARCHITECTURE.md, ADR]
   N2 --> STACK{{2 STACK: chốt stack + kiến trúc}}
   STACK --> N3[N3 plan MVP: milestone + ticket, M1 = scaffold]
   N3 --> G1{{3 G1: duyệt cả MVP}}
@@ -310,7 +310,7 @@ Tài liệu Claude Code xác nhận ba điều sau, và cả ba ảnh hưởng t
 |---|---|---|---|
 | lead | không khai → nhận toàn bộ tool của session | chỉ `.team/STATE.md` | chỉ `git status`, `git diff` (+ `head`/`tail`/`grep`/`wc`/`sort`/`uniq`/`cut`), script `init` |
 | analyst | Read, Write, Edit, Glob, Grep, Skill | chỉ `.team/SPEC.md` | không có |
-| architect | Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch | `.team/PLAN.md`, `ARCHITECTURE.md`, `docs/adr/**` | không có |
+| architect | Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch | `.team/PLAN.md`, `.team/ARCHITECTURE.md`, `.team/adr/**` | không có |
 | pm | Read, Write, Edit, Glob, Grep, Skill | chỉ `.team/TASKS.md` | không có |
 | developer | Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch | mọi đường dẫn **không** thuộc ai khác; test cũ chỉ bằng Edit | build, lint, test, chạy local; không lệnh DB/migrate/pipeline |
 | debugger | Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch | không | chỉ-đọc |
@@ -318,7 +318,7 @@ Tài liệu Claude Code xác nhận ba điều sau, và cả ba ảnh hưởng t
 | code-reviewer | Read, Glob, Grep, Bash, Skill | không | chỉ `git diff`, `git log` (+ bộ lọc) |
 | security | Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch | không | chỉ-đọc (chặn `audit fix`) |
 | devops | Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch | file hạ tầng + `.team/OPS_HANDOFF.md` | Docker/IaC/kiểm tra config; không thay đổi môi trường từ xa trừ khi bật |
-| writer | Read, Write, Edit, Glob, Grep, Skill | `README.md`, `CHANGELOG.md` (mọi cấp), `docs/**` trừ `docs/adr/**` | không có |
+| writer | Read, Write, Edit, Glob, Grep, Skill | `README.md`, `CHANGELOG.md` (mọi cấp), `.team/docs/**` | không có |
 | hr | Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Skill | file agent đã duyệt, `.team/ROSTER.md` (+ `agents/`, `config/agents.json` trong repo plugin) | không có |
 | dba | Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch | migration, seed, schema dump, code pipeline | `db-local` (7.5) |
 | specialist | do bạn duyệt; không bao giờ có `Agent` | cột `Write scope` của dòng đã duyệt | cột `Bash`: `none` / `readonly` / `developer` / `db-local` |
@@ -334,13 +334,15 @@ Guard đi qua các bước dưới đây theo thứ tự, gặp bước khớp �
 |---|---|---|
 | 1 | `.git/**`, `.claude/**` (trừ file agent đã duyệt cho hr), `.env`, `.env.*` (trừ `*.example`/`*.sample`/`*.template`), file lạ trong `.team/` | không ai |
 | 2 | `.team/STATE.md` · `SPEC.md` · `PLAN.md` · `TASKS.md` · `OPS_HANDOFF.md` · `ROSTER.md` (kể cả `archive/<FILE>-<YYYY-MM>.md`) | lead · analyst · architect · pm · devops · hr |
-| 3 | `ARCHITECTURE.md`, `docs/adr/**` | architect |
-| 4 | `README.md`, `CHANGELOG.md` (mọi cấp), `docs/**` | writer |
+| 3 | `.team/ARCHITECTURE.md`, `.team/adr/**` | architect |
+| 4 | `README.md`, `CHANGELOG.md` (mọi cấp), `.team/docs/**` | writer |
 | 5 | hạ tầng: Dockerfile, compose, `.github/workflows/**`, `.gitlab-ci.yml`, `Jenkinsfile`, `infra/`, `deploy/`, `k8s/`, `helm/`, `terraform/`, `ops/`, `scripts/ci|deploy|ops/**`… | devops |
 | 6 | test: `tests/`, `test/`, `__tests__/`, `e2e/`, `spec/`, `*.spec.*`, `*.test.*`, `*_test.*`, `test_*.py`… | qa |
 | 7 | dữ liệu (`data`): `**/migrations/**`, `db/migrate/**`, `**/db/migration/**`, `alembic/versions/**`, `drizzle/**`, `**/seeds/**`, `**/seeders/**`, `db/seeds.rb`, `prisma/seed.*`, `db/schema.rb`, `db/structure.sql`, `dbt/**`, `dags/**`, `etl/**`, `elt/**`, `warehouse/**`… | dba |
 | 8 | specialist của plugin (`config/agents.json`), rồi `Write scope` của specialist project `active` có `HIRE-APPROVED` | specialist đó |
 | 9 | còn lại | developer |
+
+Tài liệu của team nằm hết trong `.team/`, chỉ `README.md` và `CHANGELOG.md` ở ngoài. Agent bị chặn ghi vào `ARCHITECTURE.md` ở root, `docs/adr/**`, `docs/**` (guard báo đường dẫn mới); project cần giữ một đường dẫn ở ngoài thì thêm nó vào `paths.docs` (mục 11). Vì vậy nên commit `.team/`, đừng cho vào `.gitignore`.
 
 Danh sách đầy đủ nằm ở `config/ownership.json`; mỗi project mở rộng được (mục 11). Không agent nào được ghi ra ngoài thư mục project, trừ một ngoại lệ: hr ghi vào `~/.claude/agents/` khi bạn chọn user scope.
 
@@ -464,8 +466,9 @@ flowchart TD
 | `.team/TASKS.md` | pm | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
 | `.team/OPS_HANDOFF.md` | devops | thông tin vận hành thô cho writer |
 | `.team/ROSTER.md` | hr | specialist của project |
-| `ARCHITECTURE.md` | architect | tổng quan kiến trúc |
-| `docs/adr/NNNN-<quyet-dinh>.md` | architect | ADR |
+| `.team/ARCHITECTURE.md` | architect | tổng quan kiến trúc |
+| `.team/adr/NNNN-<quyet-dinh>.md` | architect | ADR |
+| `.team/docs/**` | writer | runbook, API docs, hướng dẫn |
 
 | Quy ước | |
 |---|---|

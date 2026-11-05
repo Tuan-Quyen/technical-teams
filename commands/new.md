@@ -47,7 +47,7 @@ flowchart TD
   R0 -->|none| N0[N0 Setup: init script, open W-NNN, repo checks]
   N0 --> N1[N1 Requirements: analyst → SPEC MVP scope + questions]
   N1 --> REQ{{REQ — user: answers + MVP scope}}
-  REQ --> N2[N2 Stack + architecture: architect → options, ARCHITECTURE.md, ADRs proposed; design hook; devops/security consulted]
+  REQ --> N2[N2 Stack + architecture: architect → options, .team/ARCHITECTURE.md, ADRs proposed; design hook; devops/security consulted]
   N2 -. expertise missing .-> HIRE{{hire.md hiring gate}}
   HIRE -.-> N2
   N2 --> STACK{{STACK — user: stack + architecture}}
@@ -86,7 +86,7 @@ flowchart TD
 | N0 | Setup | lead | init script (`init`) | run `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only; other `.team/` files are created right before their owner's first step); open `W-NNN` (pipeline `new`, gate `REQ pending`), record **Input** (idea verbatim, or document path). `git status` fails → not a repository: ask the user to run `git init` at REQ (do not block N1). Application code already present (anything beyond `.team/`, `.claude/`, `docs/`, README, LICENSE, the PRD, dotfiles) → gate report now: propose `feature` / `run`, or `new` in a subfolder the user names |
 | N1 | Requirements | analyst | `feature.md` P1 | **MVP** spec in `SPEC.md#W-NNN`: problem, users, MVP scope **in / out**, stories, testable ACs, edge cases, non-functional constraints (scale, platforms, compliance, deadline). Idea → analyst asks clarifying questions in **Open questions**, each with a proposed default answer. Document → analyst reads it (the brief gives the path), cites its sections, asks only about gaps and contradictions. No blocking question may stay hidden in assumptions |
 | — | **REQ** | lead | gate report §9 | MVP scope in/out, key stories, numbered questions with defaults ("OK" = accept all defaults), assumptions, user actions needed (e.g. `git init`) |
-| N2 | Stack + architecture | architect (+ dba / specialists via hook `design`; devops, security **answer only**) | `feature.md` P2, P2a; `docs.md` ADR A2 | the plugin is stack-agnostic, so the stack is a proposal: 2–3 options scored against the SPEC constraints, one recommended; `ARCHITECTURE.md` (components, data flow, mermaid); ADRs `proposed` for stack and major choices. devops answers: local runtime (e.g. compose), CI fit; security answers: auth/data approach. A domain nobody covers → `hire.md` recruit (its gate stops as usual) |
+| N2 | Stack + architecture | architect (+ dba / specialists via hook `design`; devops, security **answer only**) | `feature.md` P2, P2a; `docs.md` ADR A2 | the plugin is stack-agnostic, so the stack is a proposal: 2–3 options scored against the SPEC constraints, one recommended; `.team/ARCHITECTURE.md` (components, data flow, mermaid); ADRs `proposed` for stack and major choices. devops answers: local runtime (e.g. compose), CI fit; security answers: auth/data approach. A domain nobody covers → `hire.md` recruit (its gate stops as usual) |
 | — | **STACK** | lead | gate report §9 | recommended stack + alternatives and why not, architecture summary, ADR list, risks, what the user's machine needs (runtimes, Docker). Optional for the user: fill `commands.*` allowlists and `skills.*` in `.claude/technical-team.json` for this stack. Approved → architect sets the ADRs `accepted` |
 | N3 | MVP plan | architect → pm → lead | `feature.md` P2–P4 | `PLAN.md#W-NNN` **Milestones** table: M1 = walking skeleton (structure, build, lint, test runner, one end-to-end slice, local run), each next milestone a runnable increment with its ACs (`Satisfies`) and exit criteria; infra items placed in milestones (local env in M1, CI where it fits). pm: `TASKS.md#W-NNN` grouped `### Mk — <name>`; scaffold tickets split by owner (developer: source + manifests · qa: test setup + smoke test · devops: Dockerfile/compose/CI · writer: README run section · dba: initial migrations) because the guard enforces ownership; aim ≤ 8 tickets per milestone so one lead run stays focused. Lead P4: every MVP AC lands in exactly one milestone |
 | — | **G1** | lead | `feature.md` P5 | G1 report content + milestones table, ticket count per milestone, rough agent-call estimate. Approval covers the whole MVP: no per-feature G1 later |
@@ -109,6 +109,6 @@ flowchart TD
 
 | | |
 |---|---|
-| .team | reads all; writes lead → `STATE`; analyst → `SPEC`; architect → `PLAN`, `ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF`; hr → `ROSTER` (only through `hire.md`) |
+| .team | reads all; writes lead → `STATE`; analyst → `SPEC`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF`; hr → `ROSTER` (only through `hire.md`) |
 | Hook points | `design` (N2, N3), `execute` / `review` / `test` (N4 through `feature.md` D1–D3), `test` / `review` (N7 through `release.md` 1) |
 | End | RELEASE accepted (GO, or closed as NO-GO by the user), G1 rejected, or the user cancels. Final report §8 also lists: milestones with dates, ADRs, how to run locally, deferred findings, commands for the user |

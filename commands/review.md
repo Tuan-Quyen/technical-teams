@@ -72,5 +72,5 @@ flowchart LR
 
 | | |
 |---|---|
-| .team | reads `STATE`, `SPEC`, `PLAN`, `ROSTER` (audit: + `ARCHITECTURE.md`, `OPS_HANDOFF`); writes lead → `STATE` |
+| .team | reads `STATE`, `SPEC`, `PLAN`, `ROSTER` (audit: + `.team/ARCHITECTURE.md`, `OPS_HANDOFF`); writes lead → `STATE` |
 | End | diff: final report with the merged table (severity · `file:line` · finding · raised by · fix direction) + verdict; suggest `feature --small` / `fix`. Audit: findings by severity with `file:line` + fix direction, coverage and gaps, missing scanners; follow-up work items grouped by effort (`fix` single issues, `feature --small` / `feature` structural). Do not start them unless asked |
