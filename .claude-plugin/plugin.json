@@ -1,7 +1,7 @@
 {
   "name": "technical-team",
   "displayName": "Technical Team",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "A stack-agnostic engineering team of 13 Claude Code agents led by a tech lead: tiered pipelines, quality gates G1–G4, a run kit of operating skills, workflow commands, a guard hook that enforces per-role permissions, and an HR process for hiring domain specialists.",
   "author": {
     "name": "ctuanquyen97",
