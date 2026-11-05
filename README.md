@@ -54,23 +54,25 @@ flowchart LR
 
 ## 2. Cài đặt, chạy thử, gỡ
 
-Thư mục này vừa là plugin (`.claude-plugin/plugin.json`) vừa là marketplace (`.claude-plugin/marketplace.json`, tên `technical-team-marketplace`).
+Repo `https://github.com/Tuan-Quyen/technical-teams` vừa là plugin (`.claude-plugin/plugin.json`) vừa là marketplace (`.claude-plugin/marketplace.json`, tên `technical-team-marketplace`). Mọi cách cài đều đi qua git, không trỏ tới thư mục trên máy.
 
 | Mục đích | Lệnh |
 |---|---|
-| Chạy thử, không cài | `claude --plugin-dir "D:/code/AI/storage/plugin/technical-team"` (sửa xong gõ `/reload-plugins`) |
-| Thêm marketplace | `claude plugin marketplace add "D:/code/AI/storage/plugin/technical-team"` |
+| Thêm marketplace | `claude plugin marketplace add Tuan-Quyen/technical-teams` (hoặc URL đầy đủ `https://github.com/Tuan-Quyen/technical-teams.git`) |
 | Cài cho mọi project của bạn | `claude plugin install technical-team@technical-team-marketplace --scope user` |
-| Cài cho một repo (cả team) | chạy trong repo: `claude plugin marketplace add <nguồn> --scope project` rồi `claude plugin install technical-team@technical-team-marketplace --scope project` |
-| Gỡ | `claude plugin uninstall technical-team@technical-team-marketplace --scope user` (hoặc `--scope project`) |
+| Cài cho một repo (cả team) | chạy trong repo đó: `claude plugin marketplace add Tuan-Quyen/technical-teams --scope project` rồi `claude plugin install technical-team@technical-team-marketplace --scope project` |
+| Cập nhật bản mới | `claude plugin marketplace update technical-team-marketplace` rồi `claude plugin update technical-team@technical-team-marketplace` |
+| Gỡ | `claude plugin uninstall technical-team@technical-team-marketplace --scope user` (hoặc `--scope project`); bỏ marketplace: `claude plugin marketplace remove technical-team-marketplace` |
 | Kiểm tra | `claude plugin details technical-team` → 13 agent, 13 skill (12 lệnh + `run-kit`), 2 hook |
 
-Với project scope, lệnh cài ghi vào `.claude/settings.json` của repo; commit file đó. Đường dẫn `D:/...` chỉ dùng được trên máy bạn. Để đồng đội cài được, hãy đẩy plugin lên một git repo và khai báo như sau:
+**Repo private:** máy cài phải có quyền đọc repo qua git, ví dụ `gh auth login` hoặc credential helper của git. Việc tự cập nhật nền cần thêm biến môi trường `GITHUB_TOKEN`. Không có quyền thì lệnh `marketplace add` báo lỗi xác thực.
+
+Với project scope, lệnh cài ghi vào `.claude/settings.json` của repo; commit file đó để đồng đội mở repo là được nhắc cài. Nội dung tương đương nếu muốn tự khai:
 
 ```json
 {
   "extraKnownMarketplaces": {
-    "technical-team-marketplace": { "source": { "source": "git", "url": "https://<git-host>/<org>/technical-team.git" } }
+    "technical-team-marketplace": { "source": { "source": "github", "repo": "Tuan-Quyen/technical-teams" } }
   },
   "enabledPlugins": { "technical-team@technical-team-marketplace": true }
 }
@@ -543,7 +545,7 @@ Skill chỉ thêm kiến thức, không thêm quyền. File build/release mobile
 |---|---|
 | Test | `node --test "tests/*.test.mjs"` (guard + kiểm tra bộ lệnh/agent/skill khớp run-kit và README) |
 | Validate | `claude plugin validate . --strict` và `claude plugin validate .claude-plugin/marketplace.json --strict` |
-| Chạy thử | `claude --plugin-dir .` |
+| Chạy thử bản đang sửa (từ thư mục clone của repo) | `claude --plugin-dir .`, sửa xong gõ `/reload-plugins` |
 | Tuyển specialist vào plugin | mở chính repo này làm project rồi chạy `/technical-team:hire …` |
 
 **Quy tắc khi sửa plugin:** mỗi lần thêm, đổi tên, gộp hoặc xóa một **agent, skill hay command** (kể cả đổi tham số/cờ), cập nhật trong cùng thay đổi:
