@@ -1,7 +1,7 @@
 ---
 description: "Bug pipeline (TB): debugger → developer → code-reviewer → QA regression test (fail → developer) → security if triggered; G1 only if the fix is risky"
 argument-hint: "<bug>"
-
+disable-model-invocation: true
 ---
 # /technical-team:fix — fix (TB)
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -60,7 +60,7 @@ flowchart LR
 |---|---|---|---|
 | 0 | Open W-NNN (pipeline `fix`, TB) with the symptom as reported | lead | — |
 | 1 | Symptom, where seen, expected behaviour (user, `SPEC.md`, docs). Record root cause, evidence, direction, risk, regression idea in `STATE.md` | debugger | "could not reproduce" → report what was tried + info needed, stop |
-| 2 | **G1 (conditional)**: high risk (shared code, data, security, behaviour users rely on) or several options → gate report. Otherwise continue and note "G1 skipped: <why>". **Hook `design`** if the cause is in a member's/specialist's domain | lead (+ dba / specialists) | — |
+| 2 | **G1 (conditional)**: high risk (shared code, data, security, behaviour users rely on) or several options → gate report. Otherwise continue and note "G1 skipped: <why>". **Hook `design`** if the cause is in a specialist's domain | lead (+ dba / specialists) | — |
 | 3 | Fix from the diagnosis verbatim; no re-diagnosis. **Hook `execute`** | developer (+ dba for data fixes) | does not hold → debugger with new evidence |
 | 4 | Code review: fix addresses the root cause, not the symptom. **Hook `review`** | code-reviewer + specialists | blocking → 3 |
 | 5 | Regression test on the diagnosed faulty path + related suite. **Hook `test`** | qa + specialists | FAIL → 3 → 4 → 5; PASS = **G2** |

@@ -1,7 +1,7 @@
 ---
 description: "Full feature pipeline (T2): plan → G1 → developer → code-reviewer → QA (fail → developer) → security (G2/G3) → docs (G4)"
 argument-hint: "<description>"
-
+disable-model-invocation: true
 ---
 # /technical-team:feature — feature (T2)
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -55,7 +55,7 @@ flowchart LR
 | # | Step | Agent | Parallel | Check / on fail |
 |---|---|---|---|---|
 | 1 | Planning: Pipeline of `${CLAUDE_PLUGIN_ROOT}/commands/plan.md` steps 0–5, exactly | analyst → architect → pm | no | stop until G1 approved |
-| 2 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops, migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), docs wait for 6. **Hook `execute`** | developer, devops, dba, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` = "Files changed"; developer stuck → debugger |
+| 2 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops, migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), docs wait for 6. **Hook `execute`** | developer, devops, dba, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` = "Đã ghi vào"; developer stuck → debugger |
 | 3 | Code review of the W-NNN diff with plan + ACs. **Hook `review`** (dba for DB parts) | code-reviewer + specialists | specialists ∥ reviewer | blocking → 2 |
 | 4 | Tests: all ACs + changed files. **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → 2 (then 3, 4); PASS with output = **G2** |
 | 5 | Security on the final diff + plan's security notes | security | no | blocking → 2 (then 3, 4, 5); clean = **G3** |

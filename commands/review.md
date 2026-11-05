@@ -1,7 +1,7 @@
 ---
 description: "Code-reviewer ∥ security on a diff (code-level review, not a project review), merged into one G3 verdict"
 argument-hint: "[diff scope]"
-
+disable-model-invocation: true
 ---
 # /technical-team:review — review
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -59,7 +59,7 @@ flowchart LR
 | # | Step | Agent | Parallel |
 |---|---|---|---|
 | 1 | Open W-NNN (pipeline `review`) with the resolved scope and `git diff --stat` | lead | — |
-| 2 | Review the scope. **Hook `review`**: members/specialists whose trigger matches the changed files | code-reviewer ∥ security ∥ specialists | yes |
+| 2 | Review the scope. **Hook `review`**: specialists whose trigger matches the changed files | code-reviewer ∥ security ∥ specialists | yes |
 | 3 | Merge: same `file:line` + same root issue → one finding, highest severity, keep who raised it; sort blocking → should fix → suggestion | lead | — |
 | 4 | Verdict: **pass** (no blocking) or **blocked** (list) | lead | — |
 

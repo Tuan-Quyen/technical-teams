@@ -1,7 +1,7 @@
 ---
 description: "Diagnosis only: the debugger finds the root cause and proposes a fix; no code changes"
 argument-hint: "<symptom>"
-
+disable-model-invocation: true
 ---
 # /technical-team:investigate — investigate
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -40,7 +40,7 @@ _Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, del
 
 ```mermaid
 flowchart LR
-  A[1 Open W-NNN] --> B[2 debugger] --> C{cause in a member's/specialist's domain?}
+  A[1 Open W-NNN] --> B[2 debugger] --> C{cause in a specialist's domain?}
   C -- yes --> D[confirm with dba / specialist]
   C -- no --> E
   D --> E[3 Record in STATE, done] --> F[Report + suggest fix/hotfix]
@@ -49,7 +49,7 @@ flowchart LR
 | # | Step | Agent |
 |---|---|---|
 | 1 | Open W-NNN (pipeline `investigate`) | lead |
-| 2 | Symptom, where it appears, expected behaviour, logs/repro hints from the user. **Hook `design`**: cause in a member's/specialist's domain → one confirmation call | debugger (+ dba / specialist) |
+| 2 | Symptom, where it appears, expected behaviour, logs/repro hints from the user. **Hook `design`**: cause in a specialist's domain → one confirmation call | debugger (+ dba / specialist) |
 | 3 | Record root cause (one line), evidence, fix direction + risk, regression test idea; work item `done` | lead |
 
 | | |

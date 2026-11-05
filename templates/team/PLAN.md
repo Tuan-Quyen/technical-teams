@@ -26,6 +26,11 @@
 
 **Infra-relevant:** yes/no — <what devops must change>
 
+**Milestones (new projects only):**
+| M | Goal (runnable increment) | Satisfies | Exit criteria | Infra in this milestone |
+|---|---|---|---|---|
+| M1 | walking skeleton: structure, build, lint, test runner, one end-to-end slice, local run | W-000.AC1 | <observable> | <local env> |
+
 **Rejected alternatives:** <option — why not>
 
 **ADRs:** <docs/adr/NNNN-...md or none>

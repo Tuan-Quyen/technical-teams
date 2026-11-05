@@ -19,7 +19,7 @@ flowchart LR
 | Tickets `blocked` / `doing` with owner role | `TASKS.md` |
 | Delivery loops stalled (same failure two rounds) or long-running, escalation step reached | `STATE.md` → `Loop log` |
 | Deferred findings still open | `STATE.md` |
-| Members and active specialists (count) | `config/members.json`, `ROSTER.md` |
+| Specialists (count) | `config/agents.json`, `ROSTER.md` |
 
 | Then | |
 |---|---|

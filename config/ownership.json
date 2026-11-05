@@ -1,5 +1,5 @@
 {
-  "$comment": "Default path ownership for the technical-team guard hook. A project can extend these lists in .claude/technical-team.json under \"paths\". First match wins, in this order: protected -> .team/ -> architecture -> docs -> infra -> tests -> specialists (from .team/ROSTER.md) -> developer (everything else). dbCommands: default prefixes of database/migration commands; when a specialist with Bash level db-local is active in a project, only it may run these (a project can replace the list with db.commands).",
+  "$comment": "Default path ownership for the technical-team guard hook. A project can extend these lists in .claude/technical-team.json under \"paths\". First match wins, in this order: protected -> .team/ -> architecture -> docs -> infra -> tests -> data (dba) -> plugin specialists (config/agents.json) -> project specialists (approved rows of .team/ROSTER.md) -> developer (everything else). dbCommands: prefixes of database, migration and pipeline commands; only dba (and specialists with Bash level db-local) may run them, against provable local/test targets (a project can replace the list with db.commands). externalAgents: non-team agents the lead may call; the guard runs them read-only. A project can replace the list in .claude/technical-team.json -> externalAgents.",
   "architecture": [
     "ARCHITECTURE.md",
     "docs/adr/**"
@@ -74,6 +74,30 @@
     "**/*Tests.cs",
     "**/*_spec.rb"
   ],
+  "data": [
+    "**/migrations/**",
+    "**/Migrations/**",
+    "db/migrate/**",
+    "**/db/migration/**",
+    "db/changelog/**",
+    "alembic/versions/**",
+    "drizzle/**",
+    "**/seeds/**",
+    "**/seeders/**",
+    "db/seeds.rb",
+    "prisma/seed.*",
+    "db/schema.rb",
+    "db/structure.sql",
+    "dbt/**",
+    "**/dbt/**",
+    "dags/**",
+    "**/dags/**",
+    "etl/**",
+    "elt/**",
+    "pipelines/data/**",
+    "warehouse/**",
+    "data-pipelines/**"
+  ],
   "dbCommands": [
     "npx prisma migrate",
     "npx prisma db",
@@ -112,6 +136,30 @@
     "mysqldump",
     "mongodump",
     "mongorestore",
-    "pg_restore"
+    "pg_restore",
+    "dbt run",
+    "dbt build",
+    "dbt seed",
+    "dbt snapshot",
+    "dbt test",
+    "dbt run-operation",
+    "dbt source",
+    "dbt retry",
+    "dbt clone",
+    "dbt show",
+    "airflow dags trigger",
+    "airflow dags backfill",
+    "airflow tasks run",
+    "airflow tasks test",
+    "dagster job execute",
+    "dagster asset materialize",
+    "prefect deployment run",
+    "bq query",
+    "bq load",
+    "snowsql",
+    "spark-submit"
+  ],
+  "externalAgents": [
+    "Explore"
   ]
 }

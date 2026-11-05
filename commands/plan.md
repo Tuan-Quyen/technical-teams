@@ -1,7 +1,7 @@
 ---
 description: "Plan only: analyst → architect → pm, stop at G1 for your approval; no code"
 argument-hint: "<goal>"
-
+disable-model-invocation: true
 ---
 # /technical-team:plan — plan (stop at G1)
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -44,7 +44,7 @@ flowchart LR
   S1 --> Q{Blocking open questions?}
   Q -- yes --> GQ[Gate report: questions]
   Q -- no --> S2[2 architect → PLAN + ADR]
-  S2 --> H[design hook: members/specialists]
+  S2 --> H[design hook: specialists]
   H --> S3[3 pm → TASKS]
   S3 --> S4[4 Lead: AC ↔ plan ↔ tickets]
   S4 --> G1{{5 G1: user approves}}
@@ -55,7 +55,7 @@ flowchart LR
 | 0 | Open work item: next `W-NNN`, pipeline `plan` (or `feature`), status `running`, gate `G1 pending`; no `.team/` → init script | lead | — |
 | 1 | Spec → `.team/SPEC.md#W-NNN` (goal, scope, constraints from the user) | analyst | every AC observable/testable; edge cases + open questions listed; gaps → send back once. Questions that block design → gate report now |
 | 2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `ARCHITECTURE.md`) | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
-| 2a | **Hook `design`**: matching members/specialists (e.g. dba when schema/data is touched) review the draft | dba / specialists | blocking issue → one architect revision; leftover disagreement → gate report |
+| 2a | **dba** when schema/data/pipelines are touched, and **hook `design`** specialists, review the draft | dba / specialists | blocking issue → one architect revision; leftover disagreement → gate report |
 | 3 | Tickets → `.team/TASKS.md#W-NNN` | pm | every plan item ticketed; disjoint file sets per parallel group; no L. "Cannot split cleanly" → architect, then pm again |
 | 4 | Consistency: AC ↔ plan ↔ tickets; flags decide who joins later | lead | gaps → re-brief the owner, never edit their file |
 | 5 | **G1**: status `waiting-for-user`, gate report §9 | lead | — |
@@ -72,7 +72,7 @@ flowchart LR
 
 | .team | |
 |---|---|
-| Reads | `STATE`, `SPEC`, `PLAN`, `TASKS`, `ROSTER`, `ARCHITECTURE.md`, `config/members.json` |
+| Reads | `STATE`, `SPEC`, `PLAN`, `TASKS`, `ROSTER`, `ARCHITECTURE.md`, `config/agents.json` |
 | Writes | lead → `STATE`; owners → their own files |
 | Hook points | `design` (2a) |
 | End | after G1 approved / changed-and-approved / rejected → final report §8 with links to `SPEC.md#W-NNN`, `PLAN.md#W-NNN`, `TASKS.md#W-NNN`; suggest `feature` |

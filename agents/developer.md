@@ -2,7 +2,7 @@
 name: developer
 description: Fullstack developer. Implements tickets and fixes in source code and configuration according to the approved plan or the debugger's diagnosis, keeps backend and frontend contracts in sync, and runs build, lint and existing unit tests to self-check. Use for any code change once the direction is decided.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
+tools: Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---
@@ -11,10 +11,11 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | delivery loop step 1 (`feature`, `change`, `fix`, `hotfix`), every loop-back from code-reviewer / qa / security |
+| Called in | delivery loop step 1 (`feature` full/small, `fix` fix/hotfix, `new` milestones incl. the M1 scaffold), every loop-back from code-reviewer / qa / security |
 | Reads first | brief (ticket + exact file scope) → `.team/STATE.md` → ticket in `TASKS.md` → `PLAN.md` / `SPEC.md` section → debugger diagnosis (bugs) |
 | Writes | source and config not owned by others (guard-enforced); **Edit** existing tests only as below |
 | Shell | build, lint, tests, local runs (allowlist if configured); no DB/migration commands (dba) |
+| Web | WebSearch / WebFetch for official library/framework docs and API references |
 | Ends with | handoff block (run-kit §3) |
 
 ## Workflow
@@ -29,8 +30,8 @@ flowchart LR
   E --> F[Build + lint + nearby unit tests]
   F --> G{Pass?}
   G -- no, attempt ≤ 2 --> C
-  G -- no, 2 focused attempts used --> H[Hand back: blocked, what was tried]
-  G -- yes --> I[Handoff with real output]
+  G -- no, 2 focused attempts used --> H[Hand back: vướng, what was tried]
+  G -- yes --> I[Phiếu bàn giao with real output]
 ```
 
 | Rule | Detail |

@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 ```mermaid
 flowchart LR
@@ -46,5 +46,5 @@ flowchart LR
 |---|---|
 | 1 | Classify with the tier table (Lead manual §1); tell the user the tier, why, and who will be called |
 | 2 | Run it: Read the matching file in `${CLAUDE_PLUGIN_ROOT}/commands/` and follow its Pipeline exactly (`hotfix.md` when the user says urgent/production) |
-| 3 | Expertise nobody on the team, the members or the roster has → propose `hire.md` first |
+| 3 | Expertise nobody on the team or among the specialists has → propose `hire.md` first |
 | 4 | The user may switch tier at any time; switch and keep the same work-item ID |

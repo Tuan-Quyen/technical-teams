@@ -1,7 +1,7 @@
 ---
 description: "Infrastructure work: devops proposal (G1) → implement → code-reviewer → security (G3) → runbook (G4)"
 argument-hint: "<request>"
-
+disable-model-invocation: true
 ---
 # /technical-team:infra — infra
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|

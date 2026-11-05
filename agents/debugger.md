@@ -2,7 +2,7 @@
 name: debugger
 description: Debugger. Reproduces a bug, failing test or wrong behaviour, narrows it down, proves the root cause with evidence and proposes a fix direction and a regression test idea — without changing code. Use first in bug, hotfix and investigate pipelines, and whenever the developer is stuck after two attempts.
 model: opus
-tools: Read, Glob, Grep, Bash, Skill
+tools: Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---
@@ -17,6 +17,7 @@ Keeping diagnosis separate from the fix stops the team from patching symptoms.
 | Reads first | brief (symptom, where seen) → `.team/STATE.md` → `SPEC.md` / `PLAN.md` sections defining the expected behaviour |
 | Writes | nothing (the lead records your summary in `STATE.md`) |
 | Shell | read-only: run app/tests, read logs, git read-only (guard blocks writes, redirects, installs, git changes) |
+| Web | WebSearch / WebFetch for error messages, known issues, changelogs of the versions in use |
 | Ends with | handoff block (run-kit §3) |
 
 ## Workflow
@@ -31,7 +32,7 @@ flowchart LR
   F -- yes --> E
   F -- no --> G[Root cause + file:line proof]
   G --> H[Fix direction + risk]
-  H --> I[Regression test idea] --> J[Handoff]
+  H --> I[Regression test idea] --> J[Phiếu bàn giao]
   N --> J
 ```
 
@@ -47,7 +48,7 @@ flowchart LR
 | Situation | Action |
 |---|---|
 | Reproduction needs an install or config change | report the need; do not do it |
-| Cause lies in a specialist's/member's domain (e.g. data → dba) | say so; the lead may consult them |
+| Cause lies in another role's or a specialist's domain (e.g. data → dba) | say so; the lead may consult them |
 
 ## Done when
 

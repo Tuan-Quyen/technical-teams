@@ -13,6 +13,8 @@
 <!-- Estimate: XS (<1h agent work) · S · M · L (should be split). -->
 <!-- "Files (exclusive)" lets the lead run developers in parallel only when the sets do not overlap. -->
 
+<!-- New projects (pipeline `new`): group the tickets of one work item under `### M1 — <name>`, `### M2 — <name>`, ... in milestone order; ticket IDs stay W-000-T<n>. -->
+
 **Parallel groups:** <T1, T2 can run together; T3 after T1>
 
 **Notes:** <blockers, re-estimates>

@@ -1,6 +1,6 @@
 ---
 name: analyst
-description: Business analyst. Turns a request into user stories, verifiable acceptance criteria, edge cases and open questions in `.team/SPEC.md`. Use at the start of planning (plan, feature pipelines) or whenever requirements are vague, contradictory or missing acceptance criteria.
+description: Business analyst. Turns a request into user stories, verifiable acceptance criteria, edge cases and open questions in `.team/SPEC.md`. Use at the start of planning (feature and new pipelines) or whenever requirements are vague, contradictory or missing acceptance criteria.
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Skill
 skills:
@@ -11,7 +11,7 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | `plan` / `feature` step 1; escalation step 2 of the delivery loop (criterion conflicts) |
+| Called in | `feature` step P1 (all modes but small); `new` N1 (MVP spec from an idea or a PRD path, clarifying questions with proposed defaults); escalation step 2 of the delivery loop (criterion conflicts) |
 | Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` (if any) → `README.md`, `ARCHITECTURE.md`, code the request touches |
 | Writes | `.team/SPEC.md` (+ `.team/archive/SPEC-<YYYY-MM>.md`) only |
 | Shell | none |

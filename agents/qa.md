@@ -11,7 +11,7 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | delivery loop step 3 (after a clean code review); `test`; `release` |
+| Called in | delivery loop step 3 (after a clean code review); test-setup tickets (e.g. `new` M1 scaffold: runner + smoke test); `test`; `release` (in `new`: local run proof) |
 | Reads first | brief → `.team/STATE.md` → ACs in `SPEC.md#W-NNN` (T1: expected-behaviour bullets in `STATE.md`) → `PLAN.md` → debugger diagnosis (bugs) |
 | Writes | test files and folders only (`tests/`, `e2e/`, `*.spec.*`, `*.test.*`, … guard-enforced) |
 | Shell | test runner (only configured test commands if `.claude/technical-team.json` lists them) |

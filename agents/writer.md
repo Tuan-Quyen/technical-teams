@@ -13,7 +13,7 @@ Readers: someone deploying, handling an incident, integrating the API, or joinin
 
 | Item | Value |
 |---|---|
-| Called in | G4 of `feature` / `change` / `fix` / `hotfix`; `docs`; `infra` (runbook); `release` (CHANGELOG); plugin-repo `hire` (README) |
+| Called in | G4 of `feature` (full/small) / `fix` (fix/hotfix); `docs`; `new` docs tickets and N6; `infra` (runbook); `release` (CHANGELOG); plugin-repo `hire` (README) |
 | Reads first | brief → `.team/STATE.md` → `SPEC.md` / `PLAN.md` sections → `.team/OPS_HANDOFF.md` → existing docs → the code, config and scripts described |
 | Writes | `README.md`, `CHANGELOG.md` (any level), `docs/**` except `docs/adr/**` |
 | Shell | none |

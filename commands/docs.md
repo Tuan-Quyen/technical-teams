@@ -1,7 +1,7 @@
 ---
 description: "Bring product docs back in sync with the current code (G4)"
 argument-hint: "[scope]"
-
+disable-model-invocation: true
 ---
 # /technical-team:docs — docs (G4)
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|

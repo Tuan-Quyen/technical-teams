@@ -1,6 +1,6 @@
 ---
 description: "Show the specialist roster and get hr's review proposal"
-
+disable-model-invocation: true
 ---
 # /technical-team:roster — roster
 
@@ -29,7 +29,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -38,7 +38,7 @@ _Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, del
 
 ```mermaid
 flowchart LR
-  A[1 Read ROSTER + members + usage] --> B{active specialists?}
+  A[1 Read ROSTER + plugin specialists + usage] --> B{active specialists?}
   B -- no --> R[report, no agent call]
   B -- yes --> C[3 hr: review proposal]
   C --> D{retire / change proposed?}
@@ -49,7 +49,7 @@ flowchart LR
 
 | # | Step | Agent |
 |---|---|---|
-| 1 | Read `.team/ROSTER.md`, `config/members.json`, "Specialist usage" in `STATE.md`; show members and active specialists (name, domain, hook points, trigger, write scope, Bash, last used) | lead |
+| 1 | Read `.team/ROSTER.md`, `config/agents.json`, "Specialist usage" in `STATE.md`; show plugin and active project specialists (name, domain, hook points, trigger, write scope, Bash, last used) | lead |
 | 2 | No active project specialists → report, stop | lead |
 | 3 | Review: unused (default: 60 days, or never used 30 days after hire), overlapping domains/triggers, scopes grown too wide, outdated profiles; update "Last used" from `STATE.md` | hr |
 | 4 | Proposals → gate. Retirement approved → hr moves the row under "Retired" (`retired`); the user deletes the agent file (give the path). Profile changes go through `hire` | lead → hr |
@@ -57,5 +57,5 @@ flowchart LR
 | | |
 |---|---|
 | .team | reads `ROSTER`, `STATE`; writes hr → `ROSTER`, lead → `STATE` |
-| Note | plugin members (such as dba) are reviewed by changing the plugin itself, not here |
+| Note | plugin specialists (`config/agents.json`) are reviewed by changing the plugin itself |
 | End | final report: roster table, proposals, decisions, files the user should delete |

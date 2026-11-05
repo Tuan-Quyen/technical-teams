@@ -9,7 +9,7 @@
     {
       "name": "technical-team",
       "source": "./",
-      "description": "Stack-agnostic engineering team: tech lead, 12 team roles (including dba), gated pipelines, run kit, guard hook and specialist hiring.",
+      "description": "Stack-agnostic engineering team: tech lead and 12 roles, gated pipelines, run kit, guard hook and specialist hiring.",
       "category": "development"
     }
   ]

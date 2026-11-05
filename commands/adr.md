@@ -1,7 +1,7 @@
 ---
 description: "Record an architecture decision (ADR) and update ARCHITECTURE.md"
 argument-hint: "<decision>"
-
+disable-model-invocation: true
 ---
 # /technical-team:adr — adr
 
@@ -30,7 +30,7 @@ The lead and its agents cannot see this conversation: "User-provided context" is
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, members/specialists §7, reports §8–§9)._
+_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
 
 | | |
 |---|---|
@@ -47,7 +47,7 @@ flowchart LR
 | # | Step | Agent |
 |---|---|---|
 | 1 | Open W-NNN (pipeline `adr`) | lead |
-| 2 | **Hook `design`**: members/specialists whose domain is affected (e.g. dba for data decisions) give their view first. Then `docs/adr/NNNN-<kebab-title>.md` from the template; status `accepted` if the user says the decision is made, else `proposed`; superseded ADR → `superseded by NNNN`; update the index and affected sections of `ARCHITECTURE.md` | specialists → architect |
+| 2 | **Hook `design`**: specialists whose domain is affected (e.g. dba for data decisions) give their view first. Then `docs/adr/NNNN-<kebab-title>.md` from the template; status `accepted` if the user says the decision is made, else `proposed`; superseded ADR → `superseded by NNNN`; update the index and affected sections of `ARCHITECTURE.md` | specialists → architect |
 | 3 | Update `STATE.md` | lead |
 
 | | |

@@ -13,10 +13,12 @@
 //   - specialist agent files may be written only by hr, only after the hire was
 //     recorded as approved in .team/STATE.md
 //   - a roster row only grants permissions when that hire is approved in STATE.md
+//   - external agents (default: Explore) may be called by the lead and always run
+//     read-only, wherever they are started from
 //   - skills: an agent may load only `run-kit` and the skills configured for its role
 //     in .claude/technical-team.json -> skills.<role>
-//   - database commands: only a specialist with Bash level `db-local` runs them, and
-//     only against a target proven to be local/test
+//   - database/pipeline commands: only dba (or a specialist with Bash level `db-local`)
+//     runs them, and only against a target proven to be local/test
 //
 // Decision: prints {"hookSpecificOutput":{"permissionDecision":"deny",...}} and exits 0.
 // No output means "no decision" and the normal permission flow continues.
@@ -29,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 export const PLUGIN = 'technical-team';
 export const CORE = [
   'lead', 'analyst', 'architect', 'pm', 'developer', 'debugger',
-  'qa', 'code-reviewer', 'security', 'devops', 'writer', 'hr',
+  'qa', 'code-reviewer', 'security', 'devops', 'writer', 'hr', 'dba',
 ];
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 const AGENT_TOOLS = new Set(['Agent', 'Task']);
@@ -38,13 +40,18 @@ const SPECIALIST_MARKER = 'technical-team:specialist';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(HERE, '..');
+const BUNDLED = new Set(Object.keys((() => { try { return JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, 'config', 'agents.json'), 'utf8')); } catch { return {}; } })()).filter((k) => !k.startsWith('$')));
 
 // ---------------------------------------------------------------- helpers
 
+// Team role for an agent type. Core roles and plugin specialists count only in
+// their plugin-scoped form (technical-team:<role>): a bare "developer" from a
+// project or user agent file is not the plugin's agent and is not a team member.
 export function roleOf(agentType) {
   if (!agentType) return null;
-  let t = String(agentType).trim();
-  if (t.startsWith(PLUGIN + ':')) t = t.slice(PLUGIN.length + 1);
+  const t = String(agentType).trim();
+  if (t.startsWith(PLUGIN + ':')) return t.slice(PLUGIN.length + 1);
+  if (CORE.includes(t) || BUNDLED.has(t)) return '__not_team__:' + t;
   return t;
 }
 
@@ -85,14 +92,14 @@ function readJson(p) {
 }
 
 export function loadMembers() {
-  const m = readJson(path.join(PLUGIN_ROOT, 'config', 'members.json')) || {};
+  const m = readJson(path.join(PLUGIN_ROOT, 'config', 'agents.json')) || {};
   const out = {};
   for (const [k, v] of Object.entries(m)) if (!k.startsWith('$') && v && typeof v === 'object') out[k] = v;
   return out;
 }
 
 // True when the session works on the technical-team plugin repository itself:
-// then `hire` adds members straight into the plugin (agents/, config/members.json).
+// then `hire` adds specialists straight into the plugin (agents/, config/agents.json).
 export function isPluginRepo(projectDir) {
   const m = readJson(path.join(projectDir, '.claude-plugin', 'plugin.json'));
   return !!(m && m.name === PLUGIN);
@@ -107,6 +114,7 @@ export function loadConfig(projectDir) {
     docs: [...(base.docs || []), ...(extra.docs || [])],
     infra: [...(base.infra || []), ...(extra.infra || [])],
     tests: [...(base.tests || []), ...(extra.tests || [])],
+    data: [...(base.data || []), ...(extra.data || [])],
     commands: proj.commands || {},
     devopsAllowRemote: proj.devopsAllowRemote === true,
     db: {
@@ -117,6 +125,7 @@ export function loadConfig(projectDir) {
     },
     invalidProjectConfig: !!proj.__invalid,
     memberPaths: extra,
+    externalAgents: Array.isArray(proj.externalAgents) ? proj.externalAgents : (base.externalAgents || []),
     skills: (proj.skills && typeof proj.skills === 'object') ? proj.skills : {},
     pluginRepo: isPluginRepo(projectDir),
   };
@@ -203,11 +212,11 @@ function toRel(projectDir, abs) {
 export function ownerOf(rel, cfg, specialists, members = {}) {
   const base = rel.split('/').pop();
 
-  // maintaining the technical-team plugin itself: hr adds team members to the plugin
+  // maintaining the technical-team plugin itself: hr adds specialists to the plugin
   if (cfg.pluginRepo) {
     const m = rel.match(/^agents\/([^/]+)\.md$/);
     if (m) return { owner: 'hr-agent-file', agentFile: m[1], scope: 'plugin' };
-    if (rel === 'config/members.json') return { owner: 'hr' };
+    if (rel === 'config/agents.json') return { owner: 'hr' };
   }
 
   // protected areas
@@ -231,6 +240,7 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };
   if (matchAny(rel, cfg.infra)) return { owner: 'devops' };
   if (matchAny(rel, cfg.tests)) return { owner: 'qa' };
+  if (matchAny(rel, cfg.data)) return { owner: 'dba' };
   for (const [name, m] of Object.entries(members)) {
     if (matchAny(rel, [...(m.write || []), ...((cfg.memberPaths || {})[name] || [])])) return { owner: name };
   }
@@ -272,7 +282,8 @@ function checkWrite(ctx, filePath) {
 function checkAgentFile(ctx, name, scope) {
   const { role, projectDir } = ctx;
   if (role !== 'hr') return `agent definitions are written only by hr after an approved hire.`;
-  if (CORE.includes(name)) return `${name} is a core team agent; hr never writes or overrides core agent files.`;
+  if (CORE.includes(name)) return `${name} is a core team agent; plugin agents are never written or replaced by hr.`;
+  if (BUNDLED.has(name) && scope !== 'plugin') return `${name} is a plugin specialist; it is never replaced by a project or user agent file.`;
   if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) return `specialist file name must be kebab-case: ${name}.md`;
   if (!hireApproved(projectDir, name)) {
     return `hire of "${name}" is not approved yet. The lead records "HIRE-APPROVED: ${name}" in .team/STATE.md only after the user approves the hire (scope: ${scope}).`;
@@ -496,7 +507,7 @@ function checkBash(ctx, command) {
     if (specialist) return specialist.bash; // none | readonly | developer | db-local
     return {
       lead: 'lead', 'code-reviewer': 'code-reviewer', debugger: 'readonly', security: 'security',
-      qa: 'qa', developer: 'developer', devops: 'devops',
+      qa: 'qa', developer: 'developer', devops: 'devops', dba: 'db-local',
     }[role] || 'none';
   })();
 
@@ -523,7 +534,7 @@ function checkBash(ctx, command) {
       continue;
     }
     if (dbOwnerActive && isDbCommand(seg, cfg)) {
-      return `database and migration commands are run only by DBA (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
+      return `database, migration and pipeline commands are run only by dba (and db-local specialists) in this project (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
     }
 
     switch (bashLevel) {
@@ -591,7 +602,7 @@ function checkBash(ctx, command) {
 
 function specialistsWithDb(ctx) {
   const members = Object.entries(ctx.members || {}).filter(([, m]) => m.bash === 'db-local').map(([name]) => ({ name }));
-  return [...members, ...ctx.specialists.filter((s) => s.bash === 'db-local')];
+  return [{ name: 'dba' }, ...members, ...ctx.specialists.filter((s) => s.bash === 'db-local')];
 }
 
 // ------------------------------------------------------------ agent spawn
@@ -602,8 +613,10 @@ function checkAgentSpawn(ctx, input) {
   const target = roleOf(input && input.subagent_type);
   if (!target) return 'lead must name a team member (subagent_type) when delegating.';
   if (target === 'lead') return 'lead does not spawn another lead.';
+  if (target.startsWith('__not_team__:')) return `"${input.subagent_type}" is not the plugin's agent. Core roles and plugin specialists are called only as technical-team:<name>; plugin agents are never replaced by project or user agent files.`;
   if (CORE.includes(target)) return null;
   if (ctx.members && ctx.members[target]) return null;
+  if ((ctx.cfg.externalAgents || []).includes(target)) return null;
   if (specialists.some((s) => s.name === target)) return null;
   return `"${input.subagent_type}" is not on the team. Delegate to a core member or an active specialist from .team/ROSTER.md; if the skill is missing, propose a hire through hr.`;
 }
@@ -628,7 +641,7 @@ function checkSkill(ctx, input) {
 // ------------------------------------------------------------------ main
 
 // Which kind of technical-team agent produced this hook input, if any:
-// 'lead' | 'member' (core role or team member like dba) | 'specialist' | null.
+// 'lead' | 'member' (core role or permanent member) | 'specialist' | null.
 export function teamAgentKind(input, env = process.env) {
   const role = roleOf(input && input.agent_type);
   if (!role) return null;
@@ -642,6 +655,7 @@ export function teamAgentKind(input, env = process.env) {
 export function decide(input, env = process.env) {
   const role = roleOf(input.agent_type);
   if (!role) return null; // your own main session: not restricted by the team guard
+  if (role.startsWith('__not_team__:')) return null; // not the plugin's agent
   const projectDir = env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
   const isCore = CORE.includes(role);
   const members = loadMembers();
@@ -649,12 +663,15 @@ export function decide(input, env = process.env) {
   const specialists = activeSpecialists(projectDir).filter((s) => !members[s.name]);
   const specialist = (isCore || member) ? null : (specialists.find((s) => s.name === role)
     || (isMarkedSpecialist(projectDir, role) ? { name: role, scope: [], bash: 'none', status: 'unlisted' } : null));
-  if (!isCore && !member && !specialist) return null; // not a technical-team agent
-
   const cfg = loadConfig(projectDir);
+  const external = !isCore && !member && !specialist && cfg.externalAgents.includes(role);
+  if (!isCore && !member && !specialist && !external) return null; // not a technical-team agent
   const ctx = {
-    role, projectDir, cfg, specialists, specialist, member, members,
-    isSpecialist: !!specialist,
+    role, projectDir, cfg, specialists, members, member,
+    // external agents run with the read-only specialist policy
+    specialist: external ? { name: role, scope: [], bash: 'readonly', status: 'external' } : specialist,
+    external,
+    isSpecialist: !!specialist || external,
     cwd: input.cwd || projectDir,
     toolName: input.tool_name,
   };
@@ -667,7 +684,7 @@ export function decide(input, env = process.env) {
   if (WRITE_TOOLS.has(tool)) return checkWrite(ctx, ti.file_path || ti.notebook_path || ti.path);
   if (tool === 'Bash') return checkBash(ctx, ti.command);
   if (AGENT_TOOLS.has(tool)) return checkAgentSpawn(ctx, ti);
-  if (SKILL_TOOLS.has(tool)) return checkSkill(ctx, ti);
+  if (SKILL_TOOLS.has(tool)) return external ? null : checkSkill(ctx, ti);
   return null;
 }
 

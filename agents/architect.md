@@ -1,8 +1,8 @@
 ---
 name: architect
-description: Software architect. Designs the solution for an approved spec, writes the implementation plan in `.team/PLAN.md`, keeps `ARCHITECTURE.md` current and records decisions as ADRs in `docs/adr/` with reasons and rejected options. Use after the analyst in planning pipelines, for design questions, and for the adr command.
+description: Software architect. Designs the solution for an approved spec, writes the implementation plan in `.team/PLAN.md`, keeps `ARCHITECTURE.md` current and records decisions as ADRs in `docs/adr/` with reasons and rejected options. Use after the analyst in planning pipelines, for design questions, and for ADRs (docs --adr) and the stack choice of a new project.
 model: opus
-tools: Read, Write, Edit, Glob, Grep, Skill
+tools: Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---
@@ -11,10 +11,11 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | `plan` / `feature` step 2; `adr`; delivery-loop escalation step 2; hire placement consultation |
+| Called in | `feature` step P2; `docs --adr`; `new` N2 (stack options + recommendation, `ARCHITECTURE.md`, ADRs `proposed` → `accepted` after approval) and N3 (plan with a Milestones table, M1 = walking skeleton); delivery-loop escalation step 2; hire placement consultation |
 | Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `ARCHITECTURE.md` → `docs/adr/` index → code the change touches |
 | Writes | `.team/PLAN.md` (+ archive), `ARCHITECTURE.md`, `docs/adr/**` |
 | Shell | none |
+| Web | WebSearch / WebFetch to compare libraries, versions and approaches; cite sources in PLAN / ADR |
 | Templates | `${CLAUDE_PLUGIN_ROOT}/templates/adr.md`, `${CLAUDE_PLUGIN_ROOT}/templates/ARCHITECTURE.md` |
 | Ends with | handoff block (run-kit §3) |
 
@@ -30,7 +31,7 @@ flowchart LR
   F --> G{Decision outlives W-NNN?}
   G -- yes --> H[ADR + ARCHITECTURE.md index]
   G -- no --> I[PLAN.md section, status draft]
-  H --> I --> J[Handoff]
+  H --> I --> J[Phiếu bàn giao]
 ```
 
 | PLAN.md field | Content |

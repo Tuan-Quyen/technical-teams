@@ -4,14 +4,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.env.CLAUDE_PLUGIN_ROOT = ROOT;
 const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-home-'));
 process.env.HOME = fakeHome;
 process.env.USERPROFILE = fakeHome;
-const { decide, parseRoster, globToRegExp } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'guard.mjs')).href);
+const { decide, parseRoster, globToRegExp } = await import(path.join(ROOT, 'hooks', 'guard.mjs'));
 
 function project({ roster = '', state = '', config } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-proj-'));
@@ -48,7 +48,7 @@ test('main session (no agent_type) is never restricted', () => {
 
 test('other plugins and built-in agents pass through', () => {
   const d = project();
-  assert.equal(write(d, 'Explore', 'src/a.ts'), null);
+  assert.equal(write(d, 'Plan', 'src/a.ts'), null);
   assert.equal(write(d, 'other-plugin:developer', '.team/SPEC.md'), null);
 });
 
@@ -242,7 +242,7 @@ test('devops: remote-changing commands need explicit opt-in', () => {
 test('only lead delegates, and only to the team', () => {
   const d = project({ roster: ROSTER, state: APPROVED });
   assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:developer' }), null);
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'qa' }), null);
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'qa' }), 'bare core name is not the plugin agent');
   assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'iot-firmware' }), null);
   assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'old-one' }), 'retired');
   assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'general-purpose' }));
@@ -278,7 +278,7 @@ test('roster rows without HIRE-APPROVED grant nothing', () => {
   assert.equal(write(d, 'technical-team:developer', 'firmware/main.c'), null, 'no carve-out without approval');
 });
 
-test('dba is default to technical-team: owns migrations/seeds in every project, no roster needed', () => {
+test('dba (core role) owns migrations, seeds, dumps and pipelines in every project', () => {
   const d = project();
   assert.equal(write(d, 'technical-team:dba', 'prisma/migrations/001_init/migration.sql'), null);
   assert.equal(write(d, 'technical-team:dba', 'app/orders/migrations/0002_add_x.py'), null);
@@ -292,8 +292,8 @@ test('dba is default to technical-team: owns migrations/seeds in every project, 
   assert.ok(write(d, 'technical-team:developer', 'db/seeds.rb'));
   assert.equal(write(d, 'technical-team:qa', 'tests/fixtures/users.json'), null, 'test fixtures stay with qa');
   assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:dba' }), null);
-  const c = project({ config: { paths: { dba: ['database/sql/**'] } } });
-  assert.equal(write(c, 'technical-team:dba', 'database/sql/001.sql'), null, 'project can extend member paths');
+  const c = project({ config: { paths: { data: ['database/sql/**'] } } });
+  assert.equal(write(c, 'technical-team:dba', 'database/sql/001.sql'), null, 'project can extend data paths');
 });
 
 test('dba: DB commands only against explicit local/test targets', () => {
@@ -338,7 +338,7 @@ test('plugin repo (maintainer mode): hire writes new members into the plugin', (
   fs.mkdirSync(path.join(d, '.claude-plugin'), { recursive: true });
   fs.writeFileSync(path.join(d, '.claude-plugin', 'plugin.json'), JSON.stringify({ name: 'technical-team' }));
   assert.equal(write(d, 'technical-team:hr', 'agents/iot-firmware.md'), null);
-  assert.equal(write(d, 'technical-team:hr', 'config/members.json'), null);
+  assert.equal(write(d, 'technical-team:hr', 'config/agents.json'), null);
   assert.ok(write(d, 'technical-team:hr', 'agents/vrm-artist.md'), 'not approved');
   assert.ok(write(d, 'technical-team:hr', 'agents/lead.md'), 'core agent');
   assert.ok(write(d, 'technical-team:developer', 'agents/iot-firmware.md'), 'only hr');
@@ -364,24 +364,61 @@ test('skills: run-kit always, otherwise only the role list from project config',
   assert.ok(call(none, 'technical-team:developer', 'Skill', { skill: 'react-native' }), 'no config, no extra skills');
 });
 
-test('handoff check: template from run-kit, required labels, evidence for "done"', async () => {
-  const { checkHandoff, handoffTemplate } = await import(pathToFileURL(path.join(ROOT, 'hooks', 'handoff-check.mjs')).href);
+test('handoff check: template from run-kit, required labels, evidence for "xong"', async () => {
+  const { checkHandoff, handoffTemplate } = await import(path.join(ROOT, 'hooks', 'handoff-check.mjs'));
   const tpl = handoffTemplate();
-  assert.match(tpl, /Handoff/);
-  for (const l of ['Result', 'Evidence', 'Files changed', 'Open items', 'Next steps']) assert.match(tpl, new RegExp(l));
-  const ok = `Done.\n### Handoff\n- **Result:** done\n- **Evidence:** npm test → 42 passed\n- **Files changed:** src/a.ts\n- **Open items:** none\n- **Next steps:** qa`;
+  assert.match(tpl, /Phiếu bàn giao/);
+  for (const l of ['Kết quả', 'Bằng chứng', 'Đã ghi vào', 'Còn mở', 'Đề xuất bước tiếp']) assert.match(tpl, new RegExp(l));
+  const ok = `Done.\n### Phiếu bàn giao\n- **Kết quả:** xong\n- **Bằng chứng:** npm test → 42 passed\n- **Đã ghi vào:** src/a.ts\n- **Còn mở:** không\n- **Đề xuất bước tiếp:** qa`;
   assert.equal(checkHandoff(ok, 'member'), null);
   assert.ok(checkHandoff('I fixed it.', 'member'));
-  assert.ok(checkHandoff(ok.replace('- **Open items:** none\n', ''), 'member'));
-  assert.ok(checkHandoff(ok.replace('npm test → 42 passed', 'none'), 'member'), 'done without evidence');
-  assert.equal(checkHandoff(ok.replace('done', 'blocked').replace('npm test → 42 passed', 'none'), 'member'), null);
-  assert.ok(checkHandoff(ok.replace('done', 'invalid_status'), 'member'));
-  // Backward compatibility with Vietnamese labels
-  const okVi = `Done.\n### Phiếu bàn giao\n- **Kết quả:** xong\n- **Bằng chứng:** npm test → 42 passed\n- **Đã ghi vào:** src/a.ts\n- **Còn mở:** không\n- **Đề xuất bước tiếp:** qa`;
-  assert.equal(checkHandoff(okVi, 'member'), null);
-  assert.equal(checkHandoff('## Report — W-001 Login\n- ...', 'lead'), null);
-  assert.equal(checkHandoff('## Waiting for approval — G1 — W-001', 'lead'), null);
+  assert.ok(checkHandoff(ok.replace('- **Còn mở:** không\n', ''), 'member'));
+  assert.ok(checkHandoff(ok.replace('npm test → 42 passed', 'không'), 'member'), 'xong without evidence');
+  assert.equal(checkHandoff(ok.replace('xong', 'vướng').replace('npm test → 42 passed', 'không'), 'member'), null);
+  assert.ok(checkHandoff(ok.replace('xong', 'ok'), 'member'));
   assert.equal(checkHandoff('## Báo cáo — W-001 Login\n- ...', 'lead'), null);
   assert.equal(checkHandoff('## Chờ duyệt — G1 — W-001', 'lead'), null);
   assert.ok(checkHandoff('done', 'lead'));
+});
+
+test('external agents (default Explore): lead may call them, they always run read-only', () => {
+  const d = project();
+  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'Explore' }), null);
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'general-purpose' }));
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'Plan' }));
+  assert.equal(bash(d, 'Explore', 'grep -rn "TODO" src | head -50'), null);
+  assert.equal(bash(d, 'Explore', 'git log --oneline -20'), null);
+  assert.ok(bash(d, 'Explore', 'rm -rf build'));
+  assert.ok(bash(d, 'Explore', 'echo x > src/a.ts'));
+  assert.ok(bash(d, 'Explore', 'npm install left-pad'));
+  assert.ok(bash(d, 'Explore', 'git push'));
+  assert.ok(bash(d, 'Explore', 'npx prisma migrate dev'), 'DB commands belong to dba');
+  assert.ok(write(d, 'Explore', 'src/a.ts'));
+  assert.ok(call(d, 'Explore', 'Agent', { subagent_type: 'general-purpose' }));
+  assert.equal(call(d, 'Explore', 'Skill', { skill: 'anything' }), null, 'skills not restricted for external agents');
+  assert.equal(write(d, 'general-purpose', 'src/a.ts'), null, 'non-listed external agents are not touched');
+  const c = project({ config: { externalAgents: [] } });
+  assert.ok(call(c, 'technical-team:lead', 'Agent', { subagent_type: 'Explore' }), 'project can turn it off');
+  assert.equal(bash(c, 'Explore', 'rm -rf build'), null, 'and then Explore is not policed');
+});
+
+test('dba also owns data pipelines; warehouse-executing commands need a provable local target', () => {
+  const d = project();
+  assert.equal(write(d, 'technical-team:dba', 'dbt/models/orders.sql'), null);
+  assert.equal(write(d, 'technical-team:dba', 'dags/daily_orders.py'), null);
+  assert.equal(write(d, 'technical-team:dba', 'etl/load_orders.py'), null);
+  assert.ok(write(d, 'technical-team:developer', 'dags/daily_orders.py'));
+  assert.ok(bash(d, 'technical-team:dba', 'dbt run --select orders'), 'remote warehouse not provable');
+  assert.ok(bash(d, 'technical-team:dba', 'bq query "select 1"'));
+  assert.ok(bash(d, 'technical-team:developer', 'dbt build'), 'only dba runs pipeline commands');
+  assert.equal(bash(d, 'technical-team:dba', 'dbt parse'), null, 'offline checks allowed');
+  assert.equal(bash(d, 'technical-team:dba', 'sqlfluff lint dbt/models'), null);
+});
+
+test('no overrides: bare core-role agents are not team members', () => {
+  const d = project();
+  assert.equal(write(d, 'developer', '.team/SPEC.md'), null, 'a project "developer" agent is not policed as the team developer');
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'developer' }), 'lead cannot call it');
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'dba' }), 'core roles only as technical-team:<role>');
+  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:developer' }), null);
 });

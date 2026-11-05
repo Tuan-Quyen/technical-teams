@@ -14,5 +14,5 @@ allowed-tools: Bash(node *)
 | Reminder | |
 |---|---|
 | `.team/` | commit it so the whole team shares it |
-| `.claude/technical-team.json` | theirs to edit: `commands` (allowlists for developer/qa/devops), `paths` (extra ownership globs, `paths.dba`), `db` (local hosts/databases for dba), `skills` (per-role skills) |
+| `.claude/technical-team.json` | theirs to edit: `commands` (allowlists for developer/qa/devops), `paths` (extra ownership globs, `paths.data`), `db` (local hosts/databases for dba), `skills` (per-role skills) |
 | `.claude/agents/` | created so specialists hired later load without a restart |

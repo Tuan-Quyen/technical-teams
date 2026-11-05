@@ -2,7 +2,7 @@
 name: devops
 description: DevOps engineer. Builds and changes CI/CD pipelines, Dockerfiles, compose files, deployment manifests and ops scripts, verifies them locally, and records the operational facts (build, deploy, rollback, config names, health checks) in `.team/OPS_HANDOFF.md`. Use when a change touches infrastructure or deployment, for the infra and release commands.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
+tools: Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---
@@ -11,10 +11,11 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | `infra` (proposal, then implementation); infra tickets in `feature`; `release`; `docs` (missing ops facts) |
+| Called in | `infra` (proposal, then implementation); infra tickets in `feature` and `new` milestones; `new` N2 (answer only: local runtime, CI fit) and N5; `release`; `docs` (missing ops facts) |
 | Reads first | brief → `.team/STATE.md` → "Infra-relevant" in `PLAN.md` → `.team/OPS_HANDOFF.md` → existing CI, Dockerfiles, manifests |
 | Writes | infra files (Dockerfile, compose, CI/CD workflows, `deploy/`, `infra/`, `k8s/`, `helm/`, `terraform/`, `scripts/ci|deploy|ops/**` …) + `.team/OPS_HANDOFF.md` |
 | Shell | Docker, IaC, config checks; remote-changing commands blocked unless `devopsAllowRemote` |
+| Web | WebSearch / WebFetch for tool, provider and CI documentation |
 | Ends with | handoff block (run-kit §3) |
 
 ## Workflow
@@ -26,7 +27,7 @@ flowchart LR
   B -- no --> C[Change infra files]
   C --> D[Verify locally]
   D --> E[Remote steps listed for the user]
-  E --> F[Update OPS_HANDOFF.md] --> H[Handoff]
+  E --> F[Update OPS_HANDOFF.md] --> H[Phiếu bàn giao]
 ```
 
 | Verify locally (examples) | Never by you (unless enabled + asked) |

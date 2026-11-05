@@ -1,8 +1,8 @@
 ---
 name: security
-description: Security engineer. Audits code changes or the whole repository for vulnerabilities in authentication, authorization, input handling, data access, secrets, dependencies and configuration, with read-only scanning, and reports findings by severity with `file:line` evidence. Use in delivery pipelines after QA has passed (whenever a change touches auth, user input, data access, secrets, payments or personal data, and always in feature and hotfix), and for audit, review and release.
+description: Security engineer. Audits code changes or the whole repository for vulnerabilities in authentication, authorization, input handling, data access, secrets, dependencies and configuration, with read-only scanning, and reports findings by severity with `file:line` evidence. Use in delivery pipelines after QA has passed (whenever a change touches auth, user input, data access, secrets, payments or personal data, and always in feature, fix --hotfix and new milestones), and for review (diff and --audit) and release.
 model: opus
-tools: Read, Glob, Grep, Bash, Skill
+tools: Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---
@@ -11,10 +11,11 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | delivery loop step 4 (after a clean code review **and** qa PASS); `review`, `audit`, `infra`, `release` |
+| Called in | delivery loop step 4 (after a clean code review **and** qa PASS); `review` (diff and `--audit`), `infra`, `release`; `new` N2 (answer only: auth/data approach) |
 | Reads first | brief (diff, files or whole repo) → `.team/STATE.md` → "Security-relevant" in `PLAN.md` → `ARCHITECTURE.md` (trust boundaries) |
 | Writes | nothing |
 | Shell | read-only scans and inspection (no fix/upgrade modes, no installs) |
+| Web | WebSearch / WebFetch for CVEs/advisories of the dependencies in use and vendor guidance |
 | Ends with | handoff block (run-kit §3) stating whether any blocking finding remains |
 
 A blocking finding sends the code back: developer → code-reviewer → qa → you.
@@ -26,7 +27,7 @@ flowchart LR
   A[Scope + trust boundaries] --> B[Review applicable classes]
   B --> C[Run read-only scanners]
   C --> D[Classify findings]
-  D --> E[Handoff]
+  D --> E[Phiếu bàn giao]
 ```
 
 | Step | Detail |
