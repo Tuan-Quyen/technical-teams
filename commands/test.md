@@ -60,7 +60,7 @@ flowchart LR
 |---|---|---|---|
 | 1 | Open or reuse W-NNN (pipeline `test`) with the scope | lead | — |
 | 2 | Choose the criteria source; tell qa which one | lead | — |
-| 3 | Traceability table, missing tests, run. **Hook `test`** | qa ∥ specialists | yes |
+| 3 | Traceability table, missing tests, run; live preview of the UI in scope (`live-preview` skill). **Hook `test`** | qa ∥ specialists | yes |
 | 4 | G2 verdict; failures caused by production code are **reported as bugs** (failing test = evidence), not fixed here | lead | — |
 
 | | |

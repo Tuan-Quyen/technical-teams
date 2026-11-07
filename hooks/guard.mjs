@@ -15,8 +15,8 @@
 //   - a roster row only grants permissions when that hire is approved in STATE.md
 //   - external agents (default: Explore) may be called by the lead and always run
 //     read-only, wherever they are started from
-//   - skills: an agent may load only `run-kit` and the skills configured for its role
-//     in .claude/technical-team.json -> skills.<role>
+//   - skills: an agent may load only `run-kit`, the plugin skills of its role (PLUGIN_SKILLS)
+//     and the skills configured for its role in .claude/technical-team.json -> skills.<role>
 //   - database/pipeline commands: only dba (or a specialist with Bash level `db-local`)
 //     runs them, and only against a target proven to be local/test
 //   - hire approval: any Write/Edit that ADDS a new "HIRE-APPROVED: <name>" line to
@@ -34,9 +34,16 @@ import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = 'technical-team';
 export const CORE = [
-  'lead', 'analyst', 'architect', 'pm', 'developer', 'debugger',
+  'lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'debugger',
   'qa', 'code-reviewer', 'security', 'devops', 'writer', 'hr', 'dba',
 ];
+// Skills shipped with the plugin that a role may load on demand (besides run-kit),
+// without listing them in .claude/technical-team.json.
+export const PLUGIN_SKILLS = {
+  qa: ['live-preview'],
+  developer: ['live-preview'],
+  designer: ['live-preview'],
+};
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 const AGENT_TOOLS = new Set(['Agent', 'Task']);
 const SKILL_TOOLS = new Set(['Skill']);
@@ -270,12 +277,12 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'analyst', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
+    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
     if (map[team[1]]) return { owner: map[team[1]] };
   }
   if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
   if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
-  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
+  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
   if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };
@@ -603,13 +610,14 @@ function checkBash(ctx, command) {
         break;
       }
       case 'qa': {
-        const tests = cfg.commands.test || [];
+        // commands.run lets qa start the app for the live preview (skill live-preview)
+        const tests = [...(cfg.commands.test || []), ...(cfg.commands.run || [])];
         if (tests.length) {
           if (startsWithAny(seg, tests) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show'])) {
             if (hasWriteRedirect(seg)) return 'qa: write test output through the test runner, not shell redirection.';
             break;
           }
-          return `qa may only run the project's test commands (${tests.join(', ')}) and read-only inspection commands.`;
+          return `qa may only run the project's test and run commands (${tests.join(', ')}) and read-only inspection commands.`;
         }
         const r = readOnlyDenials(w, seg);
         if (r) return `qa (no test allowlist configured): ${r}.`;
@@ -679,6 +687,7 @@ function checkSkill(ctx, input) {
   const name = skillName(input);
   if (!name) return 'the guard could not read which skill is being loaded; name it explicitly.';
   if (name === 'run-kit' || name === `${PLUGIN}:run-kit`) return null;
+  for (const s of PLUGIN_SKILLS[role] || []) if (name === s || name === `${PLUGIN}:${s}`) return null;
   const list = Array.isArray(cfg.skills[role]) ? cfg.skills[role] : [];
   if (list.includes(name)) return null;
   return `${role} may load only run-kit and the skills listed for it in .claude/technical-team.json -> skills.${role} (${list.length ? list.join(', ') : 'none configured'}). "${name}" is not on that list.`;

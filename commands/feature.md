@@ -61,7 +61,10 @@ flowchart LR
   S0[P0 Open W-NNN] --> S1[P1 analyst → SPEC]
   S1 --> Q{Blocking open questions?}
   Q -- yes --> GQ[Gate report: questions]
-  Q -- no --> S2[P2 architect → PLAN + ADR]
+  Q -- no --> UI{User-facing UI?}
+  UI -- yes --> S1a[P1a designer → DESIGN]
+  UI -- no --> S2
+  S1a --> S2[P2 architect → PLAN + ADR]
   S2 --> H[P2a design hook: specialists]
   H --> S3[P3 pm → TASKS]
   S3 --> S4[P4 Lead: AC ↔ plan ↔ tickets]
@@ -72,7 +75,8 @@ flowchart LR
 |---|---|---|---|
 | P0 | Open work item: next `W-NNN`, pipeline `feature (<mode>)`, status `running`, gate `G1 pending`; no `.team/` → init script | lead | — |
 | P1 | Spec → `.team/SPEC.md#W-NNN` (goal, scope, constraints from the user) | analyst | every AC observable/testable; edge cases + open questions listed; gaps → send back once. Questions that block design → gate report now |
-| P2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `.team/ARCHITECTURE.md`) | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
+| P1a | **UI design** (only when the work item has user-facing UI): users + tasks, flows, screens with URLs, state matrix, completeness per screen pattern, tokens/components, copy → `.team/DESIGN.md#W-NNN`; no `DESIGN.md` → init script `DESIGN` | designer | every AC mapped to a flow + screen; state matrix complete; missing capabilities found → analyst decides in/out of scope (one round) before P2 |
+| P2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `.team/ARCHITECTURE.md`); UI parts follow `DESIGN.md#W-NNN` | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
 | P2a | **dba** when schema/data/pipelines are touched, and **hook `design`** specialists, review the draft | dba / specialists | blocking issue → one architect revision; leftover disagreement → gate report |
 | P3 | Tickets → `.team/TASKS.md#W-NNN` | pm | every plan item ticketed; disjoint file sets per parallel group; no L. "Cannot split cleanly" → architect, then pm again |
 | P4 | Consistency: AC ↔ plan ↔ tickets; flags decide who joins later | lead | gaps → re-brief the owner, never edit their file |
@@ -80,12 +84,12 @@ flowchart LR
 
 | G1 gate report content | |
 |---|---|
-| goal · key ACs · chosen design + rejected options · ticket count/order · risks · who joins later (security, devops, writer, dba, specialists) · open questions | |
+| goal · key ACs · UI: key flows, screens and the states designed (link `DESIGN.md#W-NNN`) · chosen design + rejected options · ticket count/order · risks · who joins later (security, devops, writer, dba, designer review, specialists) · open questions | |
 
 | User answer at G1 | Next |
 |---|---|
 | approved | record `G1 approved by user on <date>: "<words>"`; plan-only → final report §8 with links to `SPEC.md#W-NNN`, `PLAN.md#W-NNN`, `TASKS.md#W-NNN`, suggest `feature W-NNN` to build; full → D1 |
-| changes | brief the owner of the first changed file (analyst / architect / pm), redo the steps after it, G1 again |
+| changes | brief the owner of the first changed file (analyst / designer / architect / pm), redo the steps after it, G1 again |
 | rejected | work item `done`, outcome "cancelled" |
 
 ### Delivery (D1–D5)
@@ -98,7 +102,11 @@ flowchart LR
   CR -- blocking --> D
   CR -- clean --> Q[D3 qa]
   Q -- FAIL --> D
-  Q -- PASS: G2 --> SEC[D4 security]
+  Q -- PASS --> UIR{UI changed?}
+  UIR -- yes --> DR[D3a designer UI review]
+  DR -- blocking --> D
+  DR -- clean: G2 --> SEC[D4 security]
+  UIR -- no: G2 --> SEC
   SEC -- blocking --> D
   SEC -- clean: G3 --> W[D5 writer ∥ pm]
   W --> G4{{G4 + final report}}
@@ -108,7 +116,8 @@ flowchart LR
 |---|---|---|---|---|
 | D1 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops (verify locally, update `OPS_HANDOFF.md`, no remote changes), migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), test-setup tickets → qa, docs wait for D5. **Hook `execute`** | developer, devops, dba, qa, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` (+ `git status --porcelain` for new files) = "Đã ghi vào"; developer stuck → debugger |
 | D2 | Code review of the W-NNN diff (and new files) with plan + ACs. **Hook `review`** (dba for DB parts) | code-reviewer + specialists | specialists ∥ reviewer | blocking → D1 |
-| D3 | Tests: all ACs in scope + changed files. **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with output = **G2** |
+| D3 | Tests: all ACs in scope + changed files; **live preview** in a real browser for any user-facing change (`live-preview` skill: ACs driven in the running app, 375/768/1280 screenshots, states, console + network clean, known-bug sweep). **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with output = **G2** when no UI changed |
+| D3a | **UI review** of qa's screenshots against `DESIGN.md#W-NNN` (only when UI changed) | designer | after qa | blocking → D1 (then D2, D3, D3a); clean = **G2** (qa PASS + clean UI review on the same code) |
 | D4 | Security on the final diff + plan's security notes | security | no | blocking → D1 (then D2, D3, D4); clean = **G3** |
 | D5 | Docs (README / API / CHANGELOG / runbooks; writer confirms with a reason if nothing changed) ∥ pm marks tickets `done` | writer ∥ pm | yes | then `STATE.md`: results, `G4 done`, status `done`; final report §8 |
 
@@ -117,7 +126,7 @@ flowchart LR
 | | |
 |---|---|
 | Input | change description (required) |
-| Guard rail | needs a design decision (new component, contract change, schema migration) → stop, propose full mode (Planning from P1, same W-NNN) |
+| Guard rail | needs a design decision (new component, contract change, schema migration, new screen or changed user flow) → stop, propose full mode (Planning from P1, same W-NNN) |
 
 ```mermaid
 flowchart LR
@@ -126,7 +135,11 @@ flowchart LR
   CR -- blocking --> D
   CR -- clean --> Q[S3 qa]
   Q -- FAIL --> D
-  Q -- PASS: G2 --> T{security triggered?}
+  Q -- PASS --> R{UI changed?}
+  R -- yes --> DR[S3a designer UI review]
+  DR -- blocking --> D
+  DR -- clean: G2 --> T
+  R -- no: G2 --> T{security triggered?}
   T -- yes --> SEC[S4 security]
   SEC -- blocking --> D
   SEC -- clean --> W
@@ -135,10 +148,11 @@ flowchart LR
 
 | # | Step | Agent | Check / on fail |
 |---|---|---|---|
-| S0 | Open W-NNN (pipeline `feature (small)`, T1); write 2–5 **expected behaviour** bullets in `STATE.md` (they replace ACs). Cannot write them without guessing → ask (main thread) or gate report with questions (subagent) | lead | — |
+| S0 | Open W-NNN (pipeline `feature (small)`, T1); write 2–5 **expected behaviour** bullets in `STATE.md` (they replace ACs). A new screen or a changed flow/layout needs design → full mode (from P1). Cannot write them without guessing → ask (main thread) or gate report with questions (subagent) | lead | — |
 | S1 | Change + bullets + exact files. Infra part → devops. **Hook `execute`** | developer (devops) | evidence of build/lint/tests |
 | S2 | Code review of the diff. **Hook `review`** | code-reviewer + specialists | blocking → S1 |
-| S3 | Tests against the bullets. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2** |
+| S3 | Tests against the bullets; live preview for any user-facing change. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2** when no UI changed |
+| S3a | UI review of qa's screenshots against `DESIGN.md` (design system) and the bullets (only when UI changed) | designer | blocking → S1 → S2 → S3 → S3a; clean = **G2** |
 | S4 | Security on the final diff (if triggered) | security | blocking → S1 → S2 → S3 → S4 |
 | S5 | **G3** = clean review (+ clean security) on the final code. Docs only if usage/API/operations changed (CHANGELOG at least when kept) → **G4**, final report | writer | — |
 
@@ -149,6 +163,6 @@ flowchart LR
 | Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/analyst → user. In small mode, needing the architect step means it was not T1: propose full mode |
 | Non-blocking findings | fix now if cheap and in scope (through the loop), otherwise deferred with a reason |
 | .team reads | all (small: `STATE`, `ROSTER`, `OPS_HANDOFF` if infra) |
-| .team writes | lead → `STATE`; analyst → `SPEC`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
+| .team writes | lead → `STATE`; analyst → `SPEC`; designer → `DESIGN`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
 | Hook points | `design` (P2a), `execute` (D1 / S1), `review` (D2 / S2), `test` (D3 / S3) |
 | End | full/small: after G4; plan-only: after G1 approved / changed-and-approved / rejected; or the user cancels/redirects. A stalled loop pauses for the user but never closes the work item as done |

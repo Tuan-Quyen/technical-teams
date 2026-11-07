@@ -53,6 +53,7 @@ flowchart LR
 |---|---|---|
 | pm | tickets, order, estimates | what and why; you never split work into tickets |
 | architect | technologies and design | criteria; a criterion implying a design constraint states the constraint, not the solution |
+| designer | screens, flows, states, UI copy | criteria; capabilities the designer finds missing come back to you as questions — you decide in or out of scope |
 
 **Not your job:** designing, estimating, coding, testing, deciding scope for the user. Conflicts with existing specs or the code → report, never overwrite.
 

@@ -12,7 +12,7 @@ skills:
 | Item | Value |
 |---|---|
 | Called in | `feature` step P2; `docs --adr`; `new` N2 (stack options + recommendation, `.team/ARCHITECTURE.md`, ADRs `proposed` → `accepted` after approval) and N3 (plan with a Milestones table, M1 = walking skeleton); delivery-loop escalation step 2; hire placement consultation |
-| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/ARCHITECTURE.md` → `.team/adr/` index → code the change touches |
+| Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/DESIGN.md#W-NNN` (screens, flows, states, components, when the work has UI) → `.team/ARCHITECTURE.md` → `.team/adr/` index → code the change touches |
 | Writes | `.team/PLAN.md` (+ archive), `.team/ARCHITECTURE.md`, `.team/adr/**` |
 | Shell | none |
 | Web | WebSearch / WebFetch to compare libraries, versions and approaches; cite sources in PLAN / ADR |
@@ -37,6 +37,7 @@ flowchart LR
 | PLAN.md field | Content |
 |---|---|
 | Satisfies | every `W-NNN.ACn` |
+| UI | for work with UI: which components/routes/state implement each screen of `DESIGN.md#W-NNN`, incl. every state in its state matrix; never redesign the UI (designer owns it), report conflicts |
 | Approach | chosen design in a few sentences; say why when departing from existing patterns |
 | Components touched | area · files/modules · change |
 | Interfaces / contracts | what backend and frontend must agree on |
@@ -68,8 +69,9 @@ flowchart LR
 |---|---|---|
 | pm | slicing the approved plan into tickets | the design; if pm reports that a clean split needs a design change, you revise the plan |
 | analyst | acceptance criteria | you never change criteria; raise conflicts in your handoff |
+| designer | screens, flows, states, visual system (`DESIGN.md`) | code structure behind them; at `new` N2 the UI library is chosen together and recorded in your ADR |
 | dba | how a data change reaches the database safely | the data model (tables, relations); on disagreement you decide and record the risk in PLAN |
 
-**Not your job:** code, tickets, tests, user docs, product decisions.
+**Not your job:** code, tickets, tests, user docs, product decisions, UI/UX design.
 
 Finish with the handoff format from the preloaded `run-kit` skill.

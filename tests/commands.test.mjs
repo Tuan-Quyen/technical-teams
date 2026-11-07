@@ -79,7 +79,7 @@ test('every commands/<name>.md reference points to an existing file', () => {
 test('steps reused by ID in new.md exist in their source pipelines', () => {
   const has = (file, id) => new RegExp(`^\\| ${id} \\|`, 'm').test(read(`commands/${file}.md`));
   const reused = {
-    feature: ['P1', 'P2', 'P2a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
+    feature: ['P1', 'P1a', 'P2', 'P2a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
     docs: ['2', '3', '4', 'A2'],
     infra: ['1', '2', '3', '4a', '4b'],
     release: ['0', '1', '2', '3'],
@@ -89,7 +89,7 @@ test('steps reused by ID in new.md exist in their source pipelines', () => {
     for (const id of ids) assert.ok(has(file, id), `${file}.md step ${id}`);
   }
   const nw = read('commands/new.md');
-  for (const ref of ['`feature.md` P1', '`feature.md` P2–P4', '`feature.md` D1–D4', '`infra.md` 3–4b', '`docs.md` Sync 2–4', '`release.md` 0–3', '`fix.md` steps 1–7']) {
+  for (const ref of ['`feature.md` P1', '`feature.md` P1a–P4', '`feature.md` D1–D4', '`infra.md` 3–4b', '`docs.md` Sync 2–4', '`release.md` 0–3', '`fix.md` steps 1–7']) {
     assert.ok(nw.includes(ref), `new.md reuses ${ref}`);
   }
   assert.match(read('commands/infra.md'), /Inside `new`/, 'infra.md documents the G1 rule inside new');
@@ -113,6 +113,20 @@ test('every agent and skill is documented in README (and agents in run-kit or le
   }
   for (const d of fs.readdirSync(path.join(ROOT, 'skills'))) {
     assert.ok(readme.includes('`' + d + '`'), `README mentions skill ${d}`);
+  }
+});
+
+test('designer and live preview are wired into the delivery pipelines', () => {
+  const feature = read('commands/feature.md');
+  for (const id of ['P1a', 'D3a', 'S3a']) assert.match(feature, new RegExp(`^\\| ${id} \\|[^\\n]*\\| designer \\|`, 'm'), `feature.md ${id} is the designer's step`);
+  for (const f of ['commands/feature.md', 'commands/fix.md', 'commands/test.md', 'commands/release.md', 'commands/new.md']) {
+    assert.match(read(f), /live.preview/i, `${f} asks for a live preview`);
+  }
+  assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
+  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'DESIGN.md')), 'DESIGN.md template');
+  for (const ref of ['common-bugs.md', 'preview-check.md']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
+    assert.ok(read('skills/live-preview/SKILL.md').includes(ref), `SKILL.md points to ${ref}`);
   }
 });
 
@@ -140,6 +154,6 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 6);
+  assert.equal(ls().length, 7);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });
