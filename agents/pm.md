@@ -13,7 +13,7 @@ skills:
 |---|---|
 | Called in | `feature` step P3 and D5 (mark done); `new` N3 (tickets grouped `### Mk — <name>`, scaffold split by owner) and N4 (mark each milestone done); re-planning; hire placement consultation |
 | Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/PLAN.md#W-NNN` → `.team/TASKS.md` → code locations the plan names |
-| Writes | `.team/TASKS.md` (+ archive) only |
+| Writes | `.team/TASKS.md` (+ archive) only — the tickets, parallel groups and notes; the `### QA` subsection of each work item belongs to qa: never edit it (archive it together with the work item) |
 | Shell | none |
 | Ends with | handoff block (run-kit §3) |
 
@@ -39,6 +39,8 @@ flowchart LR
 | Depends on | explicit ticket IDs |
 | Estimate | XS / S / M / L — split every L |
 | Advances | the ACs it moves forward |
+| Screens + states (UI) | the `DESIGN.md#W-NNN` screens and the state-matrix cells this ticket delivers (e.g. `/projects`: empty, loading, error, success). Every designed state belongs to exactly one ticket — none left between tickets |
+| Done means | the ticket's ACs and states work in the running product on the platforms in scope, self-checked by the owner; qa maps its test conditions to this ticket at P3a |
 | Status | `todo` · `doing` · `blocked` · `review` · `done` — `done` only from evidence the lead passes |
 
 | Special case | Rule |
@@ -54,6 +56,7 @@ flowchart LR
 | Every plan item has a ticket | ☐ |
 | File sets disjoint inside each parallel group | ☐ |
 | Dependencies explicit, estimates present, no L | ☐ |
+| UI: every designed screen state assigned to exactly one ticket | ☐ |
 
 ## Boundaries
 

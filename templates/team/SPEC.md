@@ -17,6 +17,9 @@
 <!-- Each criterion must be checkable by a test or an observable result. -->
 - **W-000.AC1** Given <context>, when <action>, then <observable result>.
 
+### Quality targets
+- **W-000.QT** platforms + form factors: <…> · accessibility: WCAG 2.2 AA · performance: <threshold or n/a> · locales: <…> (assumptions marked)
+
 ### Edge cases
 - **W-000.E1** <case> → <expected behaviour>
 

@@ -11,7 +11,7 @@ skills:
 
 | Item | Value |
 |---|---|
-| Called in | delivery loop step 4 (after a clean code review **and** qa PASS); `review` (diff and `--audit`), `infra`, `release`; `new` N2 (answer only: auth/data approach) |
+| Called in | delivery loop: first review in parallel with the code-reviewer on the same diff, then after G2 a review of the **delta** only (files changed since your first pass, from the brief); `review` (diff and `--audit`), `infra`, `release`; `new` N2 (answer only: auth/data approach) |
 | Reads first | brief (diff, files or whole repo) → `.team/STATE.md` → "Security-relevant" in `PLAN.md` → `.team/ARCHITECTURE.md` (trust boundaries) |
 | Writes | nothing |
 | Shell | read-only scans and inspection (no fix/upgrade modes, no installs) |

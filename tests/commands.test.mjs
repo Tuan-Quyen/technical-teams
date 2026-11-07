@@ -21,7 +21,7 @@ function frontmatter(name) {
 }
 
 function docFiles() {
-  const out = ['README.md', 'skills/run-kit/SKILL.md'];
+  const out = ['README.md', 'skills/run-kit/SKILL.md', 'skills/run-kit/references/usage.md'];
   for (const dir of ['agents', 'commands', 'templates', 'templates/team']) {
     for (const f of fs.readdirSync(path.join(ROOT, dir))) if (f.endsWith('.md')) out.push(`${dir}/${f}`);
   }
@@ -44,9 +44,9 @@ test('every command has a description; pipelines with input have an argument-hin
 });
 
 test('run-kit and README list every command, and only those', () => {
-  const kit = read('skills/run-kit/SKILL.md');
+  const kit = read('skills/run-kit/references/usage.md');
   const kitCmds = [...kit.matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]).filter((c) => !c.startsWith('-'));
-  assert.deepEqual([...new Set(kitCmds)].sort(), EXPECTED, 'run-kit §1.2 table');
+  assert.deepEqual([...new Set(kitCmds)].sort(), EXPECTED, 'run-kit usage §2 table');
   const readme = read('README.md');
   const start = readme.search(/^## \d+\. Lệnh workflow/m);
   assert.ok(start >= 0, 'README has a "Lệnh workflow" section');
@@ -79,7 +79,7 @@ test('every commands/<name>.md reference points to an existing file', () => {
 test('steps reused by ID in new.md exist in their source pipelines', () => {
   const has = (file, id) => new RegExp(`^\\| ${id} \\|`, 'm').test(read(`commands/${file}.md`));
   const reused = {
-    feature: ['P1', 'P2', 'P2a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
+    feature: ['P1', 'P1a', 'P2', 'P2a', 'P3a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
     docs: ['2', '3', '4', 'A2'],
     infra: ['1', '2', '3', '4a', '4b'],
     release: ['0', '1', '2', '3'],
@@ -89,7 +89,7 @@ test('steps reused by ID in new.md exist in their source pipelines', () => {
     for (const id of ids) assert.ok(has(file, id), `${file}.md step ${id}`);
   }
   const nw = read('commands/new.md');
-  for (const ref of ['`feature.md` P1', '`feature.md` P2–P4', '`feature.md` D1–D4', '`infra.md` 3–4b', '`docs.md` Sync 2–4', '`release.md` 0–3', '`fix.md` steps 1–7']) {
+  for (const ref of ['`feature.md` P1', '`feature.md` P1a–P4', '`feature.md` D1–D4', '`infra.md` 3–4b', '`docs.md` Sync 2–4', '`release.md` 0–3', '`fix.md` steps 1–7']) {
     assert.ok(nw.includes(ref), `new.md reuses ${ref}`);
   }
   assert.match(read('commands/infra.md'), /Inside `new`/, 'infra.md documents the G1 rule inside new');
@@ -116,6 +116,61 @@ test('every agent and skill is documented in README (and agents in run-kit or le
   }
 });
 
+test('designer and live preview are wired into the delivery pipelines', () => {
+  const feature = read('commands/feature.md');
+  for (const id of ['P1a', 'D3a', 'S3a']) assert.match(feature, new RegExp(`^\\| ${id} \\|[^\\n]*\\| designer \\|`, 'm'), `feature.md ${id} is the designer's step`);
+  for (const f of ['commands/feature.md', 'commands/fix.md', 'commands/test.md', 'commands/release.md', 'commands/new.md']) {
+    assert.match(read(f), /live.preview/i, `${f} asks for a live preview`);
+  }
+  assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
+  assert.match(read('agents/qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
+  assert.match(feature, /^\| P3a \|[^\n]*\| qa \|/m, 'feature.md P3a is the qa test plan');
+  assert.ok(!fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'no separate QA.md: qa works in TASKS.md');
+  assert.match(read('templates/team/TASKS.md'), /^### QA — W-000/m, 'TASKS template has the QA subsection');
+  for (const ref of ['techniques.md', 'quality-checklist.md', 'ux-verification.md', 'defects-and-reports.md']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'test-process', 'references', ref)), ref);
+    assert.ok(read('skills/test-process/SKILL.md').includes(ref), `test-process SKILL.md points to ${ref}`);
+  }
+  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'DESIGN.md')), 'DESIGN.md template');
+  for (const ref of ['common-bugs.md', 'web.md', 'mobile.md', 'desktop.md', 'cli.md', 'service.md']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
+    assert.ok(read('skills/live-preview/SKILL.md').includes(ref), `SKILL.md points to ${ref}`);
+  }
+});
+
+test('qa gate calibration and upstream alignment stay wired', () => {
+  const tp = read('skills/test-process/references/process.md');
+  for (const rule of ['Scope lock', 'Target lock', 'Depth per tier', 'Round focus', 'Severity needs evidence', '## 5. Micro verify']) assert.ok(tp.includes(rule), `test-process process.md: ${rule}`);
+  const tps = read('skills/test-process/SKILL.md');
+  for (const rule of ['Scope lock', 'Target lock', 'Depth by tier', 'Severity']) assert.ok(tps.includes(rule), `test-process SKILL.md: ${rule}`);
+  assert.match(read('agents/lead.md'), /\*\*open in-scope blocker\/critical\/major defects\*\*/, 'lead: progress = fewer open in-scope defects');
+  assert.match(read('agents/lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
+  assert.match(read('agents/developer.md'), /RTM conditions/, 'developer builds to qa conditions');
+  assert.match(read('agents/pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
+  assert.match(read('agents/code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
+  assert.match(read('agents/developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
+  assert.match(read('agents/architect.md'), /## Design escalation/, 'architect: design escalation workflow');
+  assert.match(read('agents/lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
+});
+
+test('preloaded skills stay small; detail lives in references', () => {
+  const words = (f) => read(f).split(/\s+/).length;
+  for (const f of ['skills/run-kit/SKILL.md', 'skills/test-process/SKILL.md', 'skills/live-preview/SKILL.md']) {
+    assert.ok(words(f) <= 800, `${f} has ${words(f)} words (preloaded: keep <= 800, move detail to references/)`);
+  }
+  assert.ok(read('skills/live-preview/SKILL.md').includes('pass.md'), 'live-preview points to pass.md');
+  assert.ok(read('skills/test-process/SKILL.md').includes('process.md'), 'test-process points to process.md');
+  assert.ok(read('skills/run-kit/SKILL.md').includes('references/usage.md'), 'run-kit points to usage.md');
+});
+
+test('parallel review and micro verify are wired', () => {
+  const feature = read('commands/feature.md');
+  assert.match(feature, /^\| D2 \|[^\n]*security reviews the same diff in parallel/m, 'D2: security in parallel on first pass');
+  assert.match(feature, /^\| D4 \|[^\n]*\*\*delta\*\*/m, 'D4: delta only');
+  assert.match(feature, /^\| S2m \|[^\n]*\| qa \|/m, 'S2m micro verify by qa');
+  assert.match(read('agents/lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
+});
+
 test('disable-model-invocation kept on user-initiated commands', () => {
   for (const c of ['run', 'new', 'hire', 'init', 'status']) {
     assert.match(frontmatter(c), /^disable-model-invocation: true$/m, c);
@@ -140,6 +195,6 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 6);
+  assert.equal(ls().length, 7);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });

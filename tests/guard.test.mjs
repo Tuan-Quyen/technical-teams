@@ -52,13 +52,13 @@ test('other plugins and built-in agents pass through', () => {
   assert.equal(write(d, 'other-plugin:developer', '.team/SPEC.md'), null);
 });
 
-test('each .team file has exactly one writer', () => {
+test('each .team file has its writers (TASKS.md: pm + qa for its QA subsection)', () => {
   const d = project();
-  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'PLAN.md': 'architect', 'TASKS.md': 'pm', 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
+  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': ['pm', 'qa'], 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
   for (const [file, owner] of Object.entries(owners)) {
-    for (const role of ['lead', 'analyst', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
+    for (const role of ['lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
       const r = write(d, `technical-team:${role}`, `.team/${file}`);
-      if (role === owner) assert.equal(r, null, `${role} should write ${file}`);
+      if ([].concat(owner).includes(role)) assert.equal(r, null, `${role} should write ${file}`);
       else assert.ok(r, `${role} must not write ${file}`);
     }
   }
@@ -244,7 +244,13 @@ test('qa: allowlisted test runner when configured', () => {
   assert.equal(bash(c, a, 'npx playwright test e2e/login.spec.ts'), null);
   assert.equal(bash(c, a, 'npm test 2>&1 | tail -30'), null);
   assert.ok(bash(c, a, 'npm run build'));
+  assert.ok(bash(c, a, 'npm run dev'), 'run command not configured');
+  const r = project({ config: { commands: { test: ['npx playwright test'], run: ['npm run dev', 'npm run preview'] } } });
+  assert.equal(bash(r, a, 'npm run dev'), null, 'qa starts the app for the live preview');
+  assert.equal(bash(r, a, 'npm run preview -- --port 4173'), null);
+  assert.ok(bash(r, a, 'npm run build'));
   const d = project();
+  assert.equal(bash(d, a, 'npm run dev'), null, 'denylist mode: starting the app is allowed');
   assert.equal(bash(d, a, 'pytest -q'), null);
   assert.ok(bash(d, a, 'pip install pytest'));
 });
@@ -472,4 +478,36 @@ test('hire gate: a deny from ownership wins over the ask', () => {
   const d = project({ state: '# State\n' });
   const r = call(d, 'technical-team:analyst', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
   assert.equal(typeof r, 'string', 'analyst may not write STATE.md at all');
+});
+
+test('designer: writes only .team/DESIGN.md, no shell; is a core member the lead may call', () => {
+  const d = project();
+  const a = 'technical-team:designer';
+  assert.equal(write(d, a, '.team/DESIGN.md'), null);
+  assert.equal(write(d, a, '.team/archive/DESIGN-2026-11.md'), null);
+  for (const f of ['src/App.tsx', 'src/theme.ts', '.team/PLAN.md', '.team/SPEC.md', 'README.md', 'e2e/a.spec.ts']) assert.ok(write(d, a, f), f);
+  assert.ok(bash(d, a, 'ls'), 'no shell');
+  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:designer', prompt: 'x' }), null);
+  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'designer', prompt: 'x' }), 'bare name is not the plugin agent');
+});
+
+test('skills: test-process for qa, live-preview for qa, developer, designer only', () => {
+  {
+    const d0 = project();
+    assert.equal(call(d0, 'technical-team:qa', 'Skill', { skill: 'technical-team:test-process' }), null);
+    assert.ok(call(d0, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
+    assert.equal(write(d0, 'technical-team:qa', '.team/TASKS.md'), null, 'qa writes its QA subsection in TASKS.md');
+    assert.equal(write(d0, 'technical-team:qa', '.team/archive/TASKS-2026-11.md'), null);
+    assert.ok(write(d0, 'technical-team:qa', '.team/QA.md'), 'no separate QA.md');
+    assert.ok(write(d0, 'technical-team:developer', '.team/TASKS.md'));
+  }
+  const d = project({ config: { skills: { designer: ['ui-ux-pro'] } } });
+  const sk = (agent, skill) => call(d, agent, 'Skill', { skill });
+  for (const r of ['qa', 'developer', 'designer']) {
+    assert.equal(sk(`technical-team:${r}`, 'technical-team:live-preview'), null, r);
+    assert.equal(sk(`technical-team:${r}`, 'live-preview'), null, r);
+  }
+  for (const r of ['architect', 'writer', 'pm']) assert.ok(sk(`technical-team:${r}`, 'technical-team:live-preview'), r);
+  assert.equal(sk('technical-team:designer', 'ui-ux-pro'), null, 'designer skills come from project config');
+  assert.ok(sk('technical-team:developer', 'ui-ux-pro'), 'only the role it is listed for');
 });

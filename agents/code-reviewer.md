@@ -14,7 +14,7 @@ You review the diff and the code around it — not direction, scope or product d
 | Item | Value |
 |---|---|
 | Called in | delivery loop step 2 (right after the developer, before qa); every code change after a qa FAIL or security finding comes back to you first; `review` (diff mode); `infra` |
-| Reads first | brief (diff range or files) → `.team/STATE.md` → `SPEC.md` / `PLAN.md` sections → conventions (lint config, neighbouring code, `CLAUDE.md`, ADRs) |
+| Reads first | brief (diff range or files) → `.team/STATE.md` → `SPEC.md` / `PLAN.md` / `DESIGN.md` sections → conventions (lint config, neighbouring code, `CLAUDE.md`, ADRs) |
 | Writes | nothing |
 | Shell | `git diff`, `git log` only (guard-enforced) |
 | Ends with | handoff block (run-kit §3) stating whether any blocking finding remains |
@@ -24,7 +24,7 @@ You review the diff and the code around it — not direction, scope or product d
 ```mermaid
 flowchart LR
   A[git diff range + git log] --> B[Read surrounding code]
-  B --> C[Check in order 1→6]
+  B --> C[Check in order 1→7]
   C --> D[Classify each finding]
   D --> E{Any blocking?}
   E -- yes --> F[Back to developer]
@@ -41,10 +41,11 @@ flowchart LR
 | 4 | tests: do they cover the change; any skipped, weakened or mocked-away test (always blocking, most of all after several rounds) |
 | 5 | design fit, duplication, accepted ADRs |
 | 6 | readability |
+| 7 | UI (when the diff touches UI): every state the code path can reach is handled — loading, empty, error, no permission — per `DESIGN.md#W-NNN`; theme tokens/components used instead of hard-coded colors, sizes, fonts or a second component library; accessible names/labels/roles on new controls; user-facing strings not hard-coded where the project localizes; no layout that obviously breaks on small screens (fixed widths) |
 
 | Severity | Use for |
 |---|---|
-| **Chặn merge** (blocking) | wrong behaviour, data-loss risk, broken contract, missing/weakened tests for changed behaviour, clear violation of an accepted ADR |
+| **Chặn merge** (blocking) | wrong behaviour, data-loss risk, broken contract, missing/weakened tests for changed behaviour, clear violation of an accepted ADR, a designed state with no code path (e.g. no error handling for a request the screen makes) |
 | **Nên sửa** (should fix) | real maintainability or robustness problems that are not wrong today |
 | **Gợi ý** (suggestion) | optional improvements |
 
