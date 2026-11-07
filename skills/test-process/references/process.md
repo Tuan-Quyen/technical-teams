@@ -25,10 +25,10 @@ flowchart LR
   R -- no --> DF[Defects → developer\nretest + regression next round]
   DF --> E
   R -- yes --> C[Completion: test summary,\nverdict, lessons]
-  M[Monitoring + control: QA.md\nprogress every round] -.-> E
+  M[Monitoring + control: TASKS.md QA section\nprogress every round] -.-> E
 ```
 
-| ISTQB activity | When in the pipeline | QA does | Output in `.team/QA.md#W-NNN` |
+| ISTQB activity | When in the pipeline | QA does | Output in `.team/TASKS.md#W-NNN` → `### QA` |
 |---|---|---|---|
 | Test planning | `feature` **P3a** (after pm tickets, before G1); `new` N3; `fix` at step 5 (short); small mode at S3 (short) | scope in/out, risks ranked (likelihood × impact), test types chosen per risk (`quality-checklist.md`), levels (unit/integration/system/e2e), platforms and form factors, test data, environment + drivers needed (tell the lead now what is missing: emulator, browser runner, seeds), entry and exit criteria | **Test plan** |
 | Static testing | same step | review ACs, edge cases and `DESIGN.md` for ambiguity, untestable wording, missing states, contradictions between SPEC / DESIGN / PLAN → findings to the lead for analyst / designer / architect **before** code exists (cheapest defects) | **Review findings** |

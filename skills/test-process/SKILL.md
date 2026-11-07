@@ -19,7 +19,7 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/test-process/reference
 
 ## Where each activity happens
 
-| Step | Do | Output in `.team/QA.md#W-NNN` |
+| Step | Do | Output in `.team/TASKS.md#W-NNN` → `### QA` |
 |---|---|---|
 | P3a (before G1) | risk-ranked test plan; static review of ACs, edge cases, DESIGN states; RTM conditions mapped to tickets; name missing drivers/environment now | test plan, review findings, RTM |
 | D3 / S3 round 1 | entry criteria → smoke → tests with techniques → live preview → UI/UX verification → exploratory → defects | execution log, defects |

@@ -12,7 +12,7 @@ skills:
 | Item | Value |
 |---|---|
 | Called in | delivery loop step 1 (`feature` full/small, `fix` fix/hotfix, `new` milestones incl. the M1 scaffold), every loop-back from code-reviewer / qa / security |
-| Reads first | brief (ticket + exact file scope) → `.team/STATE.md` → ticket in `TASKS.md` → `PLAN.md` / `SPEC.md` section → `DESIGN.md` (design system + W-NNN section) for UI tickets → `QA.md#W-NNN`: the RTM conditions mapped to your ticket and, on a loop-back, the open defects assigned to you → debugger diagnosis (bugs) |
+| Reads first | brief (ticket + exact file scope) → `.team/STATE.md` → ticket in `TASKS.md` → `PLAN.md` / `SPEC.md` section → `DESIGN.md` (design system + W-NNN section) for UI tickets → the `### QA` subsection of `TASKS.md#W-NNN`: the RTM conditions mapped to your ticket and, on a loop-back, the open defects assigned to you → debugger diagnosis (bugs) |
 | Writes | source and config not owned by others (guard-enforced); **Edit** existing tests only as below |
 | Shell | build, lint, tests, local runs (allowlist if configured); no DB/migration commands (dba) |
 | Web | WebSearch / WebFetch for official library/framework docs and API references |

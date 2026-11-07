@@ -116,7 +116,7 @@ Tên đầy đủ có tiền tố plugin: `technical-team:<tên>`. Model dùng a
 | `pm` | Project manager | sonnet | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
 | `developer` | Developer fullstack | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau |
 | `debugger` | Debugger | opus | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa; không sửa code |
-| `qa` | QA, người giữ cổng chất lượng sản phẩm | sonnet | quy trình kiểm thử đầy đủ: test plan + review tĩnh spec/design trước khi code (P3a), thiết kế test case bằng kỹ thuật, test tự động, **live preview** trên sản phẩm đang chạy (web, mobile, desktop, CLI, API), **xác minh UI/UX** (khớp `DESIGN.md`, heuristic usability, accessibility), exploratory, báo lỗi có severity/priority, retest + regression, test summary, kết luận PASS/FAIL; ghi `.team/QA.md` |
+| `qa` | QA, người giữ cổng chất lượng sản phẩm | sonnet | quy trình kiểm thử đầy đủ: test plan + review tĩnh spec/design trước khi code (P3a), thiết kế test case bằng kỹ thuật, test tự động, **live preview** trên sản phẩm đang chạy (web, mobile, desktop, CLI, API), **xác minh UI/UX** (khớp `DESIGN.md`, heuristic usability, accessibility), exploratory, báo lỗi có severity/priority, retest + regression, test summary, kết luận PASS/FAIL; ghi section `### QA` của từng work item trong `.team/TASKS.md` |
 | `code-reviewer` | Code reviewer | sonnet | review **code** (diff), không review project; phân mức chặn merge / nên sửa / gợi ý |
 | `security` | Security | opus | audit code, dependency, secrets, phân quyền, cấu hình |
 | `devops` | DevOps | sonnet | CI/CD, Docker, deploy, hạ tầng; ghi `.team/OPS_HANDOFF.md` |
@@ -290,7 +290,7 @@ flowchart TD
 | REQ | phạm vi MVP (trong/ngoài), story chính, câu hỏi đánh số kèm đáp án mặc định, giả định | trả lời, hoặc "OK" = nhận hết mặc định |
 | STACK | 2–3 phương án stack, phương án đề xuất, thư viện UI + định hướng thiết kế, tóm tắt kiến trúc, ADR, máy bạn cần cài gì | duyệt / chọn phương án khác / chỉnh |
 | G1 | bảng milestone, số ticket mỗi milestone, rủi ro, ước lượng số lượt agent | duyệt một lần cho cả MVP |
-| Mk | đã xong gì, bằng chứng test, screenshot live preview, review/security, lỗi theo severity từ `QA.md`, chỗ lệch kế hoạch, lệnh chạy thử local, lệnh commit gợi ý | đi tiếp / chỉnh / dừng |
+| Mk | đã xong gì, bằng chứng test, screenshot live preview, review/security, lỗi theo severity từ phần QA trong `TASKS.md`, chỗ lệch kế hoạch, lệnh chạy thử local, lệnh commit gợi ý | đi tiếp / chỉnh / dừng |
 | RELEASE | GO/NO-GO kèm lý do, version (mặc định `0.1.0`), lệnh commit/tag/push/deploy/rollback | chấp nhận / sửa các mục NO-GO / đóng ở NO-GO |
 
 | Lưu ý | |
@@ -329,7 +329,7 @@ Tài liệu Claude Code xác nhận ba điều sau, và cả ba ảnh hưởng t
 | pm | Read, Write, Edit, Glob, Grep, Skill | chỉ `.team/TASKS.md` | không có |
 | developer | Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch | mọi đường dẫn **không** thuộc ai khác; test cũ chỉ bằng Edit | build, lint, test, chạy local; không lệnh DB/migrate/pipeline |
 | debugger | Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch | không | chỉ-đọc |
-| qa | Read, Write, Edit, Glob, Grep, Bash, Skill | file/thư mục test + `.team/QA.md` | chỉ-đọc + chạy app, hoặc chỉ lệnh `commands.test` + `commands.run` đã cấu hình |
+| qa | Read, Write, Edit, Glob, Grep, Bash, Skill | file/thư mục test + section `### QA` trong `.team/TASKS.md` | chỉ-đọc + chạy app, hoặc chỉ lệnh `commands.test` + `commands.run` đã cấu hình |
 | code-reviewer | Read, Glob, Grep, Bash, Skill | không | chỉ `git diff`, `git log` (+ bộ lọc) |
 | security | Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch | không | chỉ-đọc (chặn `audit fix`) |
 | devops | Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch | file hạ tầng + `.team/OPS_HANDOFF.md` | Docker/IaC/kiểm tra config; không thay đổi môi trường từ xa trừ khi bật |
@@ -348,7 +348,7 @@ Guard đi qua các bước dưới đây theo thứ tự, gặp bước khớp �
 | # | Đường dẫn | Chủ |
 |---|---|---|
 | 1 | `.git/**`, `.claude/**` (trừ file agent đã duyệt cho hr), `.env`, `.env.*` (trừ `*.example`/`*.sample`/`*.template`), file lạ trong `.team/` | không ai |
-| 2 | `.team/STATE.md` · `SPEC.md` · `DESIGN.md` · `PLAN.md` · `TASKS.md` · `QA.md` · `OPS_HANDOFF.md` · `ROSTER.md` (kể cả `archive/<FILE>-<YYYY-MM>.md`) | lead · analyst · designer · architect · pm · qa · devops · hr |
+| 2 | `.team/STATE.md` · `SPEC.md` · `DESIGN.md` · `PLAN.md` · `TASKS.md` · `OPS_HANDOFF.md` · `ROSTER.md` (kể cả `archive/<FILE>-<YYYY-MM>.md`) | lead · analyst · designer · architect · pm (+ qa ghi section `### QA` của `TASKS.md`) · devops · hr |
 | 3 | `.team/ARCHITECTURE.md`, `.team/adr/**` | architect |
 | 4 | `README.md`, `CHANGELOG.md` (mọi cấp), `.team/docs/**` | writer |
 | 5 | hạ tầng: Dockerfile, compose, `.github/workflows/**`, `.gitlab-ci.yml`, `Jenkinsfile`, `infra/`, `deploy/`, `k8s/`, `helm/`, `terraform/`, `ops/`, `scripts/ci|deploy|ops/**`… | devops |
@@ -480,9 +480,8 @@ flowchart TD
 | `.team/STATE.md` | lead | work item, tầng/pipeline, cổng, phê duyệt, `Loop log`, kết quả, phát hiện hoãn, `HIRE-APPROVED`, lần dùng specialist, báo cáo cuối |
 | `.team/SPEC.md` | analyst | user story, acceptance criteria, trường hợp biên |
 | `.team/DESIGN.md` | designer | design system (đầu file); mỗi work item: flow, màn hình, ma trận trạng thái, copy |
-| `.team/QA.md` | qa | mỗi work item: test plan, kết quả review tĩnh, RTM, nhật ký từng vòng, danh sách lỗi, test summary |
 | `.team/PLAN.md` | architect | plan triển khai |
-| `.team/TASKS.md` | pm | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
+| `.team/TASKS.md` | pm (ticket) + qa (section `### QA`) | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái; mỗi work item có section QA: test plan, review tĩnh, RTM, nhật ký từng vòng, lỗi, test summary. Hai bên không sửa phần của nhau (guard chỉ phân quyền theo file, không theo section) |
 | `.team/OPS_HANDOFF.md` | devops | thông tin vận hành thô cho writer |
 | `.team/ROSTER.md` | hr | specialist của project |
 | `.team/ARCHITECTURE.md` | architect | tổng quan kiến trúc |

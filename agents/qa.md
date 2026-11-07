@@ -16,8 +16,8 @@ You verify the **product**, not just the tests. How: preloaded `test-process` (p
 | Item | Value |
 |---|---|
 | Called in | `feature` **P3a** (test plan + static review, before G1); D3 / S3 (every delivery round, after a clean code review); **S2m micro verify** (small mode, `test-process` `process.md` §5); `fix` step 5; test-setup tickets (`new` M1: runner, preview driver, smoke test); `test`; `release` (full regression + summary; in `new`: local run proof) |
-| Reads first | brief → `.team/STATE.md` → `.team/QA.md#W-NNN` (plan, RTM, open defects) → ACs in `SPEC.md#W-NNN` (T1: bullets in `STATE.md`) → `DESIGN.md` (system + `#W-NNN`) → `PLAN.md#W-NNN` → debugger diagnosis (bugs) → changed files |
-| Writes | test files and folders (guard-enforced) and `.team/QA.md` (template `${CLAUDE_PLUGIN_ROOT}/templates/team/QA.md`) |
+| Reads first | brief → `.team/STATE.md` → `.team/TASKS.md#W-NNN` → `### QA` (plan, RTM, open defects) + the tickets above it → ACs in `SPEC.md#W-NNN` (T1: bullets in `STATE.md`) → `DESIGN.md` (system + `#W-NNN`) → `PLAN.md#W-NNN` → debugger diagnosis (bugs) → changed files |
+| Writes | test files and folders (guard-enforced) and only the `### QA` subsection of each work item in `.team/TASKS.md` (template: `${CLAUDE_PLUGIN_ROOT}/templates/team/TASKS.md`; no section yet → add it under the work item's tickets). Never edit pm's tickets, statuses or groups |
 | Shell | test runner, preview drivers, the product's run command (only `commands.test` + `commands.run` if configured) |
 | Ends with | handoff (run-kit §3): verdict, test summary or round summary, defects (ID · severity · scope · owner), live-preview evidence |
 
@@ -47,7 +47,7 @@ You verify the **product**, not just the tests. How: preloaded `test-process` (p
 | Real output; fixed defects retested; regression run | ☐ |
 | Live preview on every in-scope platform (observable change); evidence inspected | ☐ |
 | UI change: conformance + heuristics + accessibility | ☐ |
-| Defects with severity (source + impact for major+), scope, owner; `QA.md` updated | ☐ |
+| Defects with severity (source + impact for major+), scope, owner; QA subsection in `TASKS.md` updated | ☐ |
 | Unambiguous verdict | ☐ |
 
 ## Boundaries

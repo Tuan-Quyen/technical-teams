@@ -52,13 +52,13 @@ test('other plugins and built-in agents pass through', () => {
   assert.equal(write(d, 'other-plugin:developer', '.team/SPEC.md'), null);
 });
 
-test('each .team file has exactly one writer', () => {
+test('each .team file has its writers (TASKS.md: pm + qa for its QA subsection)', () => {
   const d = project();
-  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'QA.md': 'qa', 'PLAN.md': 'architect', 'TASKS.md': 'pm', 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
+  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': ['pm', 'qa'], 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
   for (const [file, owner] of Object.entries(owners)) {
     for (const role of ['lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
       const r = write(d, `technical-team:${role}`, `.team/${file}`);
-      if (role === owner) assert.equal(r, null, `${role} should write ${file}`);
+      if ([].concat(owner).includes(role)) assert.equal(r, null, `${role} should write ${file}`);
       else assert.ok(r, `${role} must not write ${file}`);
     }
   }
@@ -496,7 +496,10 @@ test('skills: test-process for qa, live-preview for qa, developer, designer only
     const d0 = project();
     assert.equal(call(d0, 'technical-team:qa', 'Skill', { skill: 'technical-team:test-process' }), null);
     assert.ok(call(d0, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
-    assert.equal(write(d0, 'technical-team:qa', '.team/archive/QA-2026-11.md'), null);
+    assert.equal(write(d0, 'technical-team:qa', '.team/TASKS.md'), null, 'qa writes its QA subsection in TASKS.md');
+    assert.equal(write(d0, 'technical-team:qa', '.team/archive/TASKS-2026-11.md'), null);
+    assert.ok(write(d0, 'technical-team:qa', '.team/QA.md'), 'no separate QA.md');
+    assert.ok(write(d0, 'technical-team:developer', '.team/TASKS.md'));
   }
   const d = project({ config: { skills: { designer: ['ui-ux-pro'] } } });
   const sk = (agent, skill) => call(d, agent, 'Skill', { skill });

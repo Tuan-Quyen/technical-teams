@@ -277,12 +277,14 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', QA: 'qa', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
-    if (map[team[1]]) return { owner: map[team[1]] };
+    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
+    // TASKS.md: pm owns the tickets, qa its `### QA` subsection per work item (sections are not guard-enforced)
+    const shared = { TASKS: ['qa'] };
+    if (map[team[1]]) return { owner: map[team[1]], also: shared[team[1]] || [] };
   }
   if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
   if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
-  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, QA, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
+  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
   if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };
@@ -320,6 +322,7 @@ function checkWrite(ctx, filePath) {
   if (own.owner === 'hr-agent-file') return checkAgentFile(ctx, own.agentFile, own.scope || 'project');
   if (own.owner === '__nobody__') return `${rel}: ${own.reason}.`;
   if (own.owner === role) return null;
+  if (own.also && own.also.includes(role)) return null;
 
   // developer may repair existing tests broken by an intended behaviour change,
   // with Edit only (no new test files, no full overwrite).

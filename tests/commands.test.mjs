@@ -125,7 +125,8 @@ test('designer and live preview are wired into the delivery pipelines', () => {
   assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
   assert.match(read('agents/qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
   assert.match(feature, /^\| P3a \|[^\n]*\| qa \|/m, 'feature.md P3a is the qa test plan');
-  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'QA.md template');
+  assert.ok(!fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'no separate QA.md: qa works in TASKS.md');
+  assert.match(read('templates/team/TASKS.md'), /^### QA — W-000/m, 'TASKS template has the QA subsection');
   for (const ref of ['techniques.md', 'quality-checklist.md', 'ux-verification.md', 'defects-and-reports.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'test-process', 'references', ref)), ref);
     assert.ok(read('skills/test-process/SKILL.md').includes(ref), `test-process SKILL.md points to ${ref}`);
@@ -194,6 +195,6 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 8);
+  assert.equal(ls().length, 7);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });

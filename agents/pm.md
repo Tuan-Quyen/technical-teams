@@ -13,7 +13,7 @@ skills:
 |---|---|
 | Called in | `feature` step P3 and D5 (mark done); `new` N3 (tickets grouped `### Mk — <name>`, scaffold split by owner) and N4 (mark each milestone done); re-planning; hire placement consultation |
 | Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/PLAN.md#W-NNN` → `.team/TASKS.md` → code locations the plan names |
-| Writes | `.team/TASKS.md` (+ archive) only |
+| Writes | `.team/TASKS.md` (+ archive) only — the tickets, parallel groups and notes; the `### QA` subsection of each work item belongs to qa: never edit it (archive it together with the work item) |
 | Shell | none |
 | Ends with | handoff block (run-kit §3) |
 

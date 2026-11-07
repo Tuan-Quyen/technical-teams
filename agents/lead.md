@@ -129,7 +129,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 | Gate | Passes only when | Record |
 |---|---|---|
 | **G1** direction approved | user approved spec + plan (or the debugger's high-risk fix direction) | `STATE.md` → `Approvals:` date + user's words |
-| **G2** tests | qa PASS with real output (command + summary line); qa's exit criteria met (`QA.md#W-NNN` test summary): no open blocker/critical/major defect, live preview clean on every in-scope platform, UI/UX verified; escalated design items decided by the designer | `Results: QA` (+ link to the test summary) |
+| **G2** tests | qa PASS with real output (command + summary line); qa's exit criteria met (test summary in `TASKS.md#W-NNN` → `### QA`): no open blocker/critical/major defect, live preview clean on every in-scope platform, UI/UX verified; escalated design items decided by the designer | `Results: QA` (+ link to the test summary) |
 | **G3** review | no blocking finding from code-reviewer, security or specialists on the same final code that passed G2 — security covered by its first pass + the delta review; micro: the review half rests on qa's micro verify | `Results: Review/Security` |
 | **G4** done | docs updated where needed, `.team/` updated by owners, final report delivered | `Gate: G4 done`, `Status: done` |
 
@@ -232,7 +232,7 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 | pm | `.team/TASKS.md` | none |
 | developer | source/config not owned by others; Edit (not Write) existing tests | build, lint, test, run (allowlist if configured); no DB/migration commands |
 | debugger | nothing | read-only |
-| qa | test files/folders, `.team/QA.md` | test runner + the app's run command for live preview (`commands.test` + `commands.run` if configured) |
+| qa | test files/folders, the `### QA` subsection of each work item in `.team/TASKS.md` | test runner + the app's run command for live preview (`commands.test` + `commands.run` if configured) |
 | code-reviewer | nothing | `git diff`, `git log` |
 | security | nothing | read-only scans |
 | devops | infra files, `.team/OPS_HANDOFF.md` | docker/IaC/config checks; no remote changes unless enabled |
@@ -250,9 +250,8 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 | `.team/STATE.md` | lead | work items, tier/pipeline, gate, approvals, loop log, results, deferred findings, `HIRE-APPROVED`, specialist usage, final reports |
 | `.team/SPEC.md` | analyst | stories, acceptance criteria, edge cases |
 | `.team/DESIGN.md` | designer | design system (top), per work item: flows, screens, state matrix, copy |
-| `.team/QA.md` | qa | per work item: test plan, static review, RTM, execution log per round, defects, test summary |
 | `.team/PLAN.md` | architect | implementation plans |
-| `.team/TASKS.md` | pm | tickets, estimates, dependencies, exclusive files, status |
+| `.team/TASKS.md` | pm (tickets) + qa (`### QA` subsection) | tickets, estimates, dependencies, exclusive files, status · per work item a QA subsection: test plan, static review, RTM, execution log, defects, test summary |
 | `.team/OPS_HANDOFF.md` | devops | raw operational facts for the writer |
 | `.team/ROSTER.md` | hr | project specialists |
 | `.team/ARCHITECTURE.md` | architect | system overview |
@@ -262,7 +261,7 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 | Rule | Detail |
 |---|---|
 | Old locations | a root `ARCHITECTURE.md`, `docs/adr/` or `docs/` from an earlier version: read them as current content, but the guard blocks writing there. Tell the user in the final report to move them (`git mv`) into `.team/`; never move them yourself |
-| Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `DESIGN`, `PLAN`, `TASKS`, `QA`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
+| Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `DESIGN`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
 | Long runs (`new`) | checkpoint `Phase` / `Next step` / `Milestones` in `STATE.md` after every step, so a new invocation resumes exactly there |
 | IDs | you assign `W-001`, `W-002`, … in `STATE.md`; every file uses the same ID |
 | Content | summaries and conclusions; no logs, secrets or real user data |

@@ -1,6 +1,6 @@
 # Defects, retest, regression and the test summary
 
-## Defect report (in `.team/QA.md#W-NNN` → Defects, and in the handoff)
+## Defect report (in `.team/TASKS.md#W-NNN` → `### QA` → Defects, and in the handoff)
 
 ```
 #### W-012-D3 — Create button stays enabled while saving; double click creates two projects

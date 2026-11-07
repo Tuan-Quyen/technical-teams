@@ -53,7 +53,7 @@ qa verifies the built product against your design and usability and owns the ver
 
 | Step | Rule |
 |---|---|
-| Input | qa's escalated items (screen, form factor, screenshot path, what DESIGN.md says or does not say) and `QA.md#W-NNN` |
+| Input | qa's escalated items (screen, form factor, screenshot path, what DESIGN.md says or does not say) and `.team/TASKS.md#W-NNN` → `### QA` |
 | Look | open the screenshots of each escalated item with Read; compare with the screen spec, state matrix, tokens and platform conventions |
 | Missing evidence | an item without a screenshot → ask qa for it (handoff `vướng`), do not guess |
 | Decide | per item: **fix** (say what the design requires; update DESIGN.md if the case was missing) or **accept** (say why it is acceptable; update DESIGN.md so the next round has the answer) |
