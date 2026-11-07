@@ -12,7 +12,7 @@ skills:
 | Item | Value |
 |---|---|
 | Called in | delivery loop step 1 (`feature` full/small, `fix` fix/hotfix, `new` milestones incl. the M1 scaffold), every loop-back from code-reviewer / qa / security |
-| Reads first | brief (ticket + exact file scope) → `.team/STATE.md` → ticket in `TASKS.md` → `PLAN.md` / `SPEC.md` section → `DESIGN.md` (design system + W-NNN section) for UI tickets → debugger diagnosis (bugs) |
+| Reads first | brief (ticket + exact file scope) → `.team/STATE.md` → ticket in `TASKS.md` → `PLAN.md` / `SPEC.md` section → `DESIGN.md` (design system + W-NNN section) for UI tickets → `QA.md#W-NNN`: the RTM conditions mapped to your ticket and, on a loop-back, the open defects assigned to you → debugger diagnosis (bugs) |
 | Writes | source and config not owned by others (guard-enforced); **Edit** existing tests only as below |
 | Shell | build, lint, tests, local runs (allowlist if configured); no DB/migration commands (dba) |
 | Web | WebSearch / WebFetch for official library/framework docs and API references |
@@ -40,8 +40,10 @@ flowchart LR
 | Contracts | types, API client, validation, error shapes agree on both sides |
 | Style | existing patterns, naming, error handling; no speculative abstractions |
 | Plan mismatch | plan does not match the code → stop and report, never improvise a new design |
+| Build to the check | qa will verify exactly the RTM conditions of your ticket (AC, edge cases, designed states, platforms/form factors in the test plan). Implement all of them, not only the happy path; one you cannot deliver → say so in the handoff before qa finds it |
+| Defect fixes | fix each assigned defect from its steps and expected result; reproduce it first, then confirm with the same steps; list defect IDs fixed; never close a defect yourself (qa retests) |
 | UI tickets | build what `DESIGN.md#W-NNN` specifies: every state in its state matrix (empty, loading, error, success, no permission), the named components and theme tokens — no hard-coded colors/sizes, no second component library. Design unclear or not buildable → ask through the handoff (designer owns it), never redesign silently. Load the UI skills the brief lists (`skills.developer`) |
-| Self-check | before handing off a ticket with an observable change, a quick live preview (`technical-team:live-preview`, steps 1–4 + 6 on what changed, with the platform's driver): the product starts, no errors in its log, the changed screens / commands / endpoints behave. Paste the summary; it is not the gate (qa owns G2) |
+| Self-check | before handing off a ticket with an observable change, a quick live preview (`technical-team:live-preview`, steps 1–4 + 6 on what changed, with the platform's driver): the product starts, no errors in its log, the ticket's RTM conditions behave — for UI every designed state (empty, loading, error, success, no permission) on the main and the smallest form factor, keyboard reachable, labels present, no hard-coded colors/sizes. Paste the summary (checked / not checked + why); it is not the gate (qa owns G2) |
 | Stuck | 2 focused attempts on the same problem → hand back; the lead routes it to the debugger |
 | Loop-backs | fix the reported cause; never touch a test to make a failure disappear |
 
@@ -62,6 +64,9 @@ flowchart LR
 | Ticket change complete | ☐ |
 | Build and lint pass (real output) | ☐ |
 | Related existing tests pass, or intended breakages explained and fixed | ☐ |
+| Every RTM condition of the ticket implemented (or the gap reported) | ☐ |
+| Observable change: self-check live preview done; UI: every designed state built | ☐ |
+| Loop-back: every assigned defect reproduced, fixed and re-checked with its steps | ☐ |
 | Every changed file listed | ☐ |
 
 ## Boundaries

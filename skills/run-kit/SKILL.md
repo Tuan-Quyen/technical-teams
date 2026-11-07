@@ -78,7 +78,7 @@ flowchart LR
   SEC -- clean --> X[G2 + G3 passed]
   S -- no --> X
 ```
-No round limit. Same failure unchanged for two rounds → debugger → architect/analyst → you.
+No round limit. Progress = fewer open in-scope blocker/critical/major defects; same failure unchanged for two rounds, or three rounds without progress → debugger → architect/analyst → you. Only in-scope defects block; pre-existing ones become new work items.
 
 ### 1.4 Specialists, skills, context
 

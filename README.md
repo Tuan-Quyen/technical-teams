@@ -116,7 +116,7 @@ Tên đầy đủ có tiền tố plugin: `technical-team:<tên>`. Model dùng a
 | `pm` | Project manager | sonnet | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
 | `developer` | Developer fullstack | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau |
 | `debugger` | Debugger | opus | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa; không sửa code |
-| `qa` | QA, người giữ cổng chất lượng sản phẩm | opus | quy trình kiểm thử đầy đủ: test plan + review tĩnh spec/design trước khi code (P3a), thiết kế test case bằng kỹ thuật, test tự động, **live preview** trên sản phẩm đang chạy (web, mobile, desktop, CLI, API), **xác minh UI/UX** (khớp `DESIGN.md`, heuristic usability, accessibility), exploratory, báo lỗi có severity/priority, retest + regression, test summary, kết luận PASS/FAIL; ghi `.team/QA.md` |
+| `qa` | QA, người giữ cổng chất lượng sản phẩm | sonnet | quy trình kiểm thử đầy đủ: test plan + review tĩnh spec/design trước khi code (P3a), thiết kế test case bằng kỹ thuật, test tự động, **live preview** trên sản phẩm đang chạy (web, mobile, desktop, CLI, API), **xác minh UI/UX** (khớp `DESIGN.md`, heuristic usability, accessibility), exploratory, báo lỗi có severity/priority, retest + regression, test summary, kết luận PASS/FAIL; ghi `.team/QA.md` |
 | `code-reviewer` | Code reviewer | sonnet | review **code** (diff), không review project; phân mức chặn merge / nên sửa / gợi ý |
 | `security` | Security | opus | audit code, dependency, secrets, phân quyền, cấu hình |
 | `devops` | DevOps | sonnet | CI/CD, Docker, deploy, hạ tầng; ghi `.team/OPS_HANDOFF.md` |
@@ -199,7 +199,9 @@ flowchart LR
 |---|---|
 | Mọi lần sửa code đi lại từ code-reviewer | không code nào tới qa khi chưa review sạch, không code nào tới security khi chưa qua G2 |
 | Không giới hạn số vòng | không cổng nào mở sớm, không work item nào đóng khi còn lỗi |
-| Leo thang khi **cùng một lỗi còn nguyên qua 2 vòng** | debugger → architect (+ analyst nếu dính AC) → tạm dừng hỏi bạn |
+| Leo thang khi **cùng một lỗi còn nguyên qua 2 vòng**, hoặc **3 vòng liền không tiến triển** | debugger → architect (+ analyst nếu dính AC) → tạm dừng hỏi bạn |
+| Tiến triển | số lỗi blocker/critical/major **trong phạm vi** còn mở (cộng phát hiện chặn của review/security) phải **giảm**; tập lỗi chỉ đổi mà không giảm thì không tính |
+| Hiệu chỉnh gate của qa | ngưỡng không hạ (lỗi blocker/critical/major trong phạm vi luôn là FAIL), nhưng áp lên **đích cố định**: chỉ lỗi do thay đổi gây ra hoặc phạm AC/DESIGN của work item mới chặn; lỗi có sẵn từ trước thành work item mới. Exit criteria khóa ở G1. Độ sâu theo tầng (T2 đầy đủ, T1 nhẹ hơn, fix, hotfix). Major trở lên phải có nguồn + tác động lên người dùng, lead được trả lại lỗi xếp hạng không có căn cứ |
 | Chống "làm cho test xanh" | test bị skip, xóa, nới assertion, mock mất phần đang kiểm tra = chặn merge (code-reviewer) và FAIL (qa) |
 | Nhật ký | `STATE.md` → `Loop log` |
 
@@ -550,12 +552,12 @@ Live preview cần driver của nền tảng: `@playwright/test` (web, Electron)
 
 | Giới hạn | Chi tiết |
 |---|---|
-| Chưa chạy end-to-end với model thật | đã kiểm chứng: `claude plugin validate --strict` (plugin + marketplace), cài thử và `claude plugin details`, 50 unit test (guard, phiếu bàn giao, tính nhất quán của bộ lệnh), chạy thử `init` |
+| Chưa chạy end-to-end với model thật | đã kiểm chứng: `claude plugin validate --strict` (plugin + marketplace), cài thử và `claude plugin details`, 51 unit test (guard, phiếu bàn giao, tính nhất quán của bộ lệnh), chạy thử `init` |
 | Live preview | cần driver của nền tảng có sẵn (Playwright, Maestro/Detox, emulator Android, Xvfb…); qa không tự cài được (guard chặn) mà dừng ở `cần quyết định`. Máy không chạy được nền tảng đó (iOS simulator cần macOS, app chỉ chạy trên Windows) thì qa preview phần chạy được và ghi rõ phần chưa preview. Subagent không dùng được preview pane của app Claude; bằng chứng là output của runner, screenshot/transcript trong `test-results/`, qa và designer xem ảnh bằng Read |
 | Chất lượng UI | designer chỉ đặc tả và review; code UI vẫn do developer viết. Kết quả đẹp hay không phụ thuộc vào skill frontend bạn khai cho `skills.developer` và thư viện UI của project |
 | Chưa kiểm chứng được | giá trị `agent_type` thực tế cho agent plugin; preload skill bằng tên có tiền tố (`technical-team:run-kit`); tên trường input của tool `Skill` (guard chặn khi không đọc được tên); trường `last_assistant_message` của `SubagentStop` (thiếu thì hook không chặn) |
 | Thử nhanh sau khi cài | `/technical-team:status`, rồi nhờ `technical-team:pm` ghi thử vào `README.md` → guard phải từ chối |
-| Chi phí | `feature` gọi khoảng 10–12 lượt agent (đã gồm designer P1a, qa P3a); qa chạy opus và mỗi vòng D3 làm nhiều việc hơn (live preview, UI/UX, exploratory) (nhiều hơn nếu có vòng lặp, specialist); dùng `run` để lead chọn tầng nhẹ nhất |
+| Chi phí | `feature` gọi khoảng 10–12 lượt agent (đã gồm designer P1a, qa P3a); mỗi vòng D3 làm nhiều việc hơn (live preview, UI/UX, exploratory), từ vòng 2 qa chỉ retest + regression + phần mới đổi (nhiều hơn nếu có vòng lặp, specialist); dùng `run` để lead chọn tầng nhẹ nhất |
 | Commit/push | mọi agent bị chặn, kể cả khi bạn yêu cầu; lead đưa lệnh để bạn tự chạy |
 | Lead gọi agent ngoài | chỉ những agent trong `externalAgents` (mặc định `Explore`, chỉ-đọc); `general-purpose`, `Plan`, fork, agent plugin khác bị chặn; kết quả của Explore chỉ là ngữ cảnh, không phải bằng chứng cho cổng |
 | Explore ở session chính | hook không biết ai gọi Explore, nên khi bạn tự dùng nó cũng chạy chỉ-đọc |

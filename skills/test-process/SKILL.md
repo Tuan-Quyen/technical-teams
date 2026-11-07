@@ -35,7 +35,7 @@ flowchart LR
 |---|---|---|---|
 | Test planning | `feature` **P3a** (after pm tickets, before G1); `new` N3; `fix` at step 5 (short); small mode at S3 (short) | scope in/out, risks ranked (likelihood × impact), test types chosen per risk (`quality-checklist.md`), levels (unit/integration/system/e2e), platforms and form factors, test data, environment + drivers needed (tell the lead now what is missing: emulator, browser runner, seeds), entry and exit criteria | **Test plan** |
 | Static testing | same step | review ACs, edge cases and `DESIGN.md` for ambiguity, untestable wording, missing states, contradictions between SPEC / DESIGN / PLAN → findings to the lead for analyst / designer / architect **before** code exists (cheapest defects) | **Review findings** |
-| Test analysis | first D3 / S3 round (or P3a when the design is final) | test conditions: every AC, edge case, designed screen state, risk, quality characteristic in scope | **Traceability (RTM)**: condition → source |
+| Test analysis | P3a (design is final at G1), refined in the first D3 / S3 round | test conditions: every AC, edge case, designed screen state, risk, quality characteristic in scope — **each mapped to the ticket that delivers it**, so the developer knows before coding what you will check | **Traceability (RTM)**: condition → source → ticket |
 | Test design | same | test cases with techniques (`techniques.md`); expected results from the spec/design, never from the current behaviour | RTM: condition → test case |
 | Test implementation | same | automated tests in the project's layout, preview scripts (`live-preview`), test data/fixtures, exploratory charters; check entry criteria | test files; RTM: test case → file |
 | Test execution | every D3 / S3 round | run the suite; live preview on every platform; **UI/UX verification** (`ux-verification.md`); time-boxed exploratory session(s); compare actual vs expected; log defects; retest fixed defects; regression around the change | **Execution log** per round, **Defects** |
@@ -50,11 +50,25 @@ flowchart LR
 | Exit (= QA PASS) | every condition in the RTM executed · all AC/edge/state test cases pass · live preview clean on every in-scope platform/form factor · **UI/UX verification: no blocker/critical/major defect** · exploratory session(s) done with no blocker/critical/major · regression suite green · no open defect of severity blocker/critical/major in scope · minor/trivial defects listed for the lead (fix now or defer with reason) · no weakened/skipped test |
 | Suspension | product does not start, environment broken, > 30 % of conditions blocked → stop execution, report `vướng` with the cause; do not "test around" it |
 
+## 2a. Calibration — a high bar that converges
+
+The bar does not drop: an in-scope blocker/critical/major is always a FAIL. What keeps the loop finite is applying it to a **fixed target**, at the **right depth**, with **evidence-backed severity**.
+
+| Rule | Detail |
+|---|---|
+| Scope lock | a defect blocks G2 only if it is **in scope**: introduced by this work item's change (it worked before, or the changed code causes it) **or** it breaks an AC, edge case or designed state of this work item. Anything else is **pre-existing**: log it with `Scope: pre-existing`, severity as usual, never blocking; the lead opens a new work item (a pre-existing blocker/critical goes to the user in the report) |
+| Target lock | exit criteria and the RTM conditions are fixed when G1 passes (small mode: at S0 with the bullets). A criterion you want to add later goes to the lead as a proposal with the reason; it applies only if the lead (and, for a direction change, the user) agrees |
+| Depth per tier | **T2 / `new`**: full process. **T1 small**: short plan; ACs/bullets + regression of the touched area + live preview of what changed on the main form factor of each in-scope platform (+ smallest form factor for UI); UI/UX conformance + heuristics on the changed screens; exploratory only if a core flow is touched. **Bug fix**: reproduce → regression test → retest → regression around the fix → UI/UX of touched screens. **Hotfix**: reproduce + fix verified + the most relevant suite; everything not done listed as residual risk |
+| Round focus | round 1: everything in the plan, incl. exploratory. Round ≥ 2: retest every `fixed` defect, regression around each change since the last round, re-run the suite, live preview of the screens/commands that changed; new exploration only on newly changed areas. Do not re-explore unchanged areas looking for more |
+| Severity needs evidence | blocker/critical/major must cite the **source** (AC, edge case, DESIGN state, heuristic, WCAG criterion, platform convention) **and** the concrete **user impact** ("user cannot finish checkout on 375 px"). Without both it is at most minor. When unsure between two levels, take the lower one and say why |
+| Rejected severity | the lead may return a defect whose severity is not backed as above; re-rate it or add the evidence — never silently drop it |
+
+
 ## 3. Verdict
 
 | Verdict | When |
 |---|---|
-| **PASS** | exit criteria met — test summary attached |
+| **PASS** | exit criteria met for in-scope defects — test summary attached, pre-existing defects listed separately |
 | **FAIL** | any exit criterion not met — defect list with severity, priority, owner; the loop goes back to D1 |
 | **PASS pending design decision** | everything passes, but a UI/UX deviation needs a design judgment (DESIGN.md has no answer for the case, or the deviation may be acceptable) → the lead asks the designer only about those items; designer "fix" = FAIL, "accept" = PASS |
 | **Blocked** (`vướng` / `cần quyết định`) | entry criteria not met; say exactly what is missing |

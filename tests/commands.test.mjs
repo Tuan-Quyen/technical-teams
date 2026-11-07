@@ -137,6 +137,16 @@ test('designer and live preview are wired into the delivery pipelines', () => {
   }
 });
 
+test('qa gate calibration and upstream alignment stay wired', () => {
+  const tp = read('skills/test-process/SKILL.md');
+  for (const rule of ['Scope lock', 'Target lock', 'Depth per tier', 'Round focus', 'Severity needs evidence']) assert.ok(tp.includes(rule), `test-process: ${rule}`);
+  assert.match(read('agents/lead.md'), /open \*\*in-scope blocker\/critical\/major defects\*\*/, 'lead: progress = fewer open in-scope defects');
+  assert.match(read('agents/lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
+  assert.match(read('agents/developer.md'), /RTM conditions/, 'developer builds to qa conditions');
+  assert.match(read('agents/pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
+  assert.match(read('agents/code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
+});
+
 test('disable-model-invocation kept on user-initiated commands', () => {
   for (const c of ['run', 'new', 'hire', 'init', 'status']) {
     assert.match(frontmatter(c), /^disable-model-invocation: true$/m, c);

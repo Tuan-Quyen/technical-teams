@@ -39,6 +39,8 @@ flowchart LR
 | Depends on | explicit ticket IDs |
 | Estimate | XS / S / M / L — split every L |
 | Advances | the ACs it moves forward |
+| Screens + states (UI) | the `DESIGN.md#W-NNN` screens and the state-matrix cells this ticket delivers (e.g. `/projects`: empty, loading, error, success). Every designed state belongs to exactly one ticket — none left between tickets |
+| Done means | the ticket's ACs and states work in the running product on the platforms in scope, self-checked by the owner; qa maps its test conditions to this ticket at P3a |
 | Status | `todo` · `doing` · `blocked` · `review` · `done` — `done` only from evidence the lead passes |
 
 | Special case | Rule |
@@ -54,6 +56,7 @@ flowchart LR
 | Every plan item has a ticket | ☐ |
 | File sets disjoint inside each parallel group | ☐ |
 | Dependencies explicit, estimates present, no L | ☐ |
+| UI: every designed screen state assigned to exactly one ticket | ☐ |
 
 ## Boundaries
 

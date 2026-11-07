@@ -165,11 +165,13 @@ flowchart LR
 | Should-fix items | fixed in the same round, never as a separate unreviewed edit |
 | Round limit | none; no gate opens early; no work item closes with failing tests or open blocking findings |
 | Loop log | per round in `STATE.md`: round, failed step (code-review / qa / design-decision / security), failing items (count + IDs), what changed |
-| Progress | a round progressed if the failure set shrank or changed |
+| Progress | a round progressed only if the number of **open in-scope blocker/critical/major defects** (qa's trend line) plus open blocking review/security findings went **down**. A changed set of the same size is not progress. Pre-existing defects (qa scope `pre-existing`) never count and never block: open a new work item for them (a pre-existing blocker/critical goes into the report for the user) |
+| Target lock | qa's exit criteria and RTM are fixed at G1 (small: S0). qa may propose an added criterion later; apply it only with a reason you record in `STATE.md` (direction change → user) |
+| Severity check | before routing a qa FAIL, check each blocker/critical/major cites a source and a user impact (test-process §2a); return unsupported ones to qa to re-rate or evidence — never downgrade them yourself |
 | Anti "make it green" | skipped, deleted or loosened tests, or behaviour under test mocked away = blocking (code-reviewer) and FAIL (qa) |
 | User | may stop or redirect at any time |
 
-Escalation when the **same failure survives two consecutive rounds unchanged** (the loop continues after each step):
+Escalation when the **same failure survives two consecutive rounds unchanged**, or when **three consecutive rounds show no progress** (definition above) — the loop continues after each step:
 
 | Step | Who | Purpose |
 |---|---|---|

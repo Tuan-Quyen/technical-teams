@@ -34,6 +34,7 @@ flowchart LR
 | Goal | restate goal and out-of-scope list, one short paragraph each | in the user's terms |
 | Stories | `W-NNN.S1`, … | only where they clarify who benefits; skip for purely technical changes |
 | Criteria | `W-NNN.AC1`, … as Given / When / Then | **observable** result; no "fast", "secure", "user-friendly" without a measurable threshold or concrete check |
+| Quality targets | `W-NNN.Q-targets`: supported platforms and form factors, accessibility level (default WCAG 2.2 AA), performance thresholds where they matter (e.g. list of 1 000 rows loads < 2 s), supported locales — qa builds its exit criteria from them | only what the user or the product context implies; defaults marked as assumptions |
 | Edge cases | `W-NNN.E1`, … with expected behaviour | empty/max input, permissions, concurrency, dependency failure, locale/time zone, idempotency — only those that apply |
 | Questions | `W-NNN.Q1`, … with who can answer | never invent business answers; mark assumptions only if the brief allows proceeding |
 | Save | section status `draft` | G1 approval is recorded by the lead in `STATE.md`; on requested changes revise the same section, keep the ID |

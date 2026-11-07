@@ -160,7 +160,7 @@ flowchart LR
 
 | Rule | Detail |
 |---|---|
-| Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/analyst → user. In small mode, needing the architect step means it was not T1: propose full mode |
+| Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; progress = fewer open in-scope blocker/critical/major defects + blocking findings (Lead manual §3); the same failure unchanged for two rounds, or three rounds without progress → debugger → architect/analyst → user. qa depth follows the tier (test-process §2a: full here, lighter in small mode). In small mode, needing the architect step means it was not T1: propose full mode |
 | Non-blocking findings | fix now if cheap and in scope (through the loop), otherwise deferred with a reason |
 | .team reads | all (small: `STATE`, `ROSTER`, `OPS_HANDOFF` if infra) |
 | .team writes | lead → `STATE`; analyst → `SPEC`; designer → `DESIGN`; qa → `QA`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
