@@ -115,7 +115,7 @@ flowchart LR
 | Mandatory participant | When (any tier) |
 |---|---|
 | designer | user-facing UI: a new screen, a changed flow, layout or visual (design at P1a, UI review after qa). Not for a pure backend/CLI/infra change |
-| qa live preview | any change a user sees in the app (UI, routes, styling, i18n, bundling, an API a UI consumes): qa must run the `live-preview` skill; no G2 on unit tests alone |
+| qa live preview | any change a user or client can observe (web/mobile/desktop UI, CLI behaviour, API responses, worker/bot output, packaging): qa must run the `live-preview` skill on the real product; no G2 on unit tests alone. Partial preview (a platform this machine cannot host) → record the gap in the report |
 | security | auth, user input, data access, secrets, payments, personal data |
 | devops | infrastructure, build, deployment |
 | writer | usage, API or operations change |
@@ -129,7 +129,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 | Gate | Passes only when | Record |
 |---|---|---|
 | **G1** direction approved | user approved spec + plan (or the debugger's high-risk fix direction) | `STATE.md` → `Approvals:` date + user's words |
-| **G2** tests | qa PASS with real output (command + summary line); user-facing change: also a clean live preview (console/network, 3 widths, states) and no blocking finding from the designer's UI review | `Results: QA`, `Results: UI review` |
+| **G2** tests | qa PASS with real output (command + summary line); observable change: also a clean live preview of the real product (errors/logs, form factors, states) and no blocking finding from the designer's UI review | `Results: QA`, `Results: UI review` |
 | **G3** review | no blocking finding from code-reviewer, security or specialists on the same final code that passed G2 | `Results: Review/Security` |
 | **G4** done | docs updated where needed, `.team/` updated by owners, final report delivered | `Gate: G4 done`, `Status: done` |
 

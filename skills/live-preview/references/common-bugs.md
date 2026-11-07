@@ -1,6 +1,6 @@
 # Bugs that slip past green test suites
 
-Each row: **symptom** the user sees → **how to catch it in the live preview** → **usual cause**. Sweep the categories that match the diff and list the IDs you checked in the handoff. Add a row whenever a bug escapes to the user (report it in "Còn mở" so the plugin maintainer adds it).
+Each row: **symptom** the user sees → **how to catch it in the live preview** → **usual cause**. Sections B–P are written with web examples but apply to every product with a UI (read "console" as the platform's log, "viewport" as the device/window/terminal size); sections M, K, C, V are platform-specific. Sweep the sections that match the product and the diff and list the IDs you checked in the handoff. Add a row whenever a bug escapes to the user (report it in "Còn mở" so the plugin maintainer adds it).
 
 ## B — Build, environment, config
 
@@ -105,3 +105,70 @@ Each row: **symptom** the user sees → **how to catch it in the live preview** 
 | P-01 | Slow first load | note load time in the runner; check bundle size in build output | huge dependency imported for one function, no code splitting |
 | P-02 | Typing lags | type in search/filter with a large list | expensive render on every keystroke, no debounce |
 | P-03 | Request waterfall | count sequential requests on page load | fetch in nested components instead of parallel |
+
+## M — Mobile
+
+| ID | Symptom | Catch it by | Usual cause |
+|---|---|---|---|
+| M-01 | Works in debug, crashes or blank in release | preview a release build (`assembleRelease`, `flutter build apk --release`, Expo release) | ProGuard/R8 stripping classes, Hermes/minifier differences, dev-only polyfills, missing release env/config |
+| M-02 | Keyboard covers the field or the submit button | fill every form on the small phone | no `KeyboardAvoidingView` / `windowSoftInputMode=adjustResize` / scroll on focus |
+| M-03 | Content under notch, status bar or home indicator | screenshot on a notched device, both orientations | safe-area insets ignored |
+| M-04 | State lost after backgrounding, rotation or process death | home → reopen; rotate mid-form; "Don't keep activities" | state not saved/restored, ViewModel/redux not persisted |
+| M-05 | Hardware back exits the app or skips screens | press back on every screen (Android) | navigation stack misuse, back handler missing on modals |
+| M-06 | Denied permission leaves a dead screen or a crash | deny / deny forever camera, location, notifications | permission result not handled, no settings link |
+| M-07 | App hangs or shows nothing offline / on slow network | airplane mode, slow network profile | no timeout, no offline state, retry loop |
+| M-08 | Text clipped or overlapping with large system font | font scale 1.3–2.0 | fixed heights, `allowFontScaling` assumptions |
+| M-09 | "RenderFlex overflowed" / yellow-black stripes, layout broken on small phones | small phone screenshot, Flutter log | fixed widths, Row without Expanded/Flexible |
+| M-10 | Deep link or push notification opens the wrong screen or a blank one | `adb shell am start -d …`, `xcrun simctl openurl`, `simctl push`, from cold start and from background | link handled only when the app is already running, auth guard order |
+| M-11 | Images/assets missing on one platform | screenshot every changed screen on each platform | asset not declared (`pubspec.yaml`, iOS asset catalog), case-sensitive path |
+| M-12 | ANR / jank on lists | scroll a long list, watch logcat for `ANR`, frame drops | work on the main/UI thread, unvirtualized list, images not resized |
+| M-13 | Duplicate request or double navigation on fast taps | double-tap buttons | no debounce / pending state |
+| M-14 | iOS-only or Android-only behaviour broken | run both when the environment allows, else report "not previewed" | platform-specific code path untested |
+
+## K — Desktop
+
+| ID | Symptom | Catch it by | Usual cause |
+|---|---|---|---|
+| K-01 | Dev build works, packaged app fails to start | run the packaged binary | native module not rebuilt for the runtime, files missing from the package/asar, wrong resource paths |
+| K-02 | Paths with spaces/unicode or on another drive break | open/save files under such paths | string-concatenated paths, URL vs file path confusion |
+| K-03 | Second launch opens a second broken instance | start the app twice | missing single-instance lock, locked database file |
+| K-04 | Unsaved work lost on close/quit | edit then close the window and quit from the menu/dock | no close guard, `beforeunload` not wired to the native close |
+| K-05 | Layout broken at the minimum window size or on HiDPI | screenshot at the min size and at 150–200 % scale | fixed sizes, raster assets without @2x |
+| K-06 | Shortcuts wrong on one OS (Ctrl vs Cmd) | try the documented shortcuts | hard-coded modifier |
+| K-07 | Settings/data written to the install folder | check where files land; run without write access to the install dir | wrong app-data path |
+| K-08 | Renderer can access what it shouldn't / crashes on IPC | renderer console errors on IPC calls | contextIsolation/IPC contract mismatch (hand security issues to security) |
+| K-09 | App freezes during long work | trigger the long operation, check responsiveness | heavy work on the UI/main thread |
+
+## C — CLI / TUI
+
+| ID | Symptom | Catch it by | Usual cause |
+|---|---|---|---|
+| C-01 | Exit code 0 on failure (scripts continue after an error) | `echo $?` after every failure case | error printed but not returned |
+| C-02 | Stack trace instead of a message | wrong flag, missing file, no network | uncaught exceptions at the top level |
+| C-03 | Hangs in CI / pipes | run with stdin not a TTY (`</dev/null`, `\| cat`) | interactive prompt without TTY check |
+| C-04 | Colors / spinner escape codes in piped output or logs | pipe to `cat -v`; `NO_COLOR=1` | no `isatty` check |
+| C-05 | Data and diagnostics mixed on stdout; `--json` not parseable | `--json \| jq .` | logs written to stdout |
+| C-06 | "Broken pipe" trace with `head` | `cmd \| head -1` | EPIPE/SIGPIPE not handled |
+| C-07 | Works only from the repo root | run from another directory | paths relative to cwd instead of the binary/config |
+| C-08 | First run on a clean machine fails | empty `HOME`/config dir | config assumed to exist, migration of old config missing |
+| C-09 | `--dry-run` changes files; destructive command without confirmation | diff the file system before/after | flag not threaded through |
+| C-10 | Ctrl+C leaves half-written files or a broken terminal | interrupt mid-operation; TUI: interrupt and check the terminal | no signal handling, no atomic writes, raw mode not restored |
+| C-11 | Windows line endings / encodings break parsing | CRLF input, UTF-8 with BOM, non-ASCII file names | naive splitting/decoding |
+
+## V — API / service / worker
+
+| ID | Symptom (for the client) | Catch it by | Usual cause |
+|---|---|---|---|
+| V-01 | Client breaks after a "small" backend change | compare responses with the OpenAPI/schema and the frontend's types | renamed/removed field, null where a value was promised, changed date format |
+| V-02 | 500 for a bad request | send invalid/missing/extra fields | validation missing, exceptions not mapped |
+| V-03 | 200 with an error in the body (GraphQL / legacy APIs) | check the body, not only the status | error handling conventions |
+| V-04 | Another user's data reachable | request a resource of another seeded user | missing ownership check (hand to security) |
+| V-05 | Duplicate records on retry / double submit | send the same create twice, replay a webhook | no idempotency key / unique constraint |
+| V-06 | Request hangs when a dependency is down | stop the cache/broker/stub container | no timeout, unbounded retry |
+| V-07 | Works on an empty DB, slow or wrong on real volume | seeded realistic volume; watch query log | N+1 queries, missing index, unbounded result |
+| V-08 | Pagination returns duplicates or skips | page through a list while sorting by a non-unique column | unstable ordering, offset with concurrent inserts |
+| V-09 | Timezone shifts in stored or returned dates | create near midnight with a non-UTC client offset | naive datetimes, server-local time |
+| V-10 | Worker message lost or processed twice | kill the worker mid-message; send a poison message | ack before processing, no dead-letter queue |
+| V-11 | Works locally, fails in the container | run through compose / the Docker image | env var missing, host vs service name, file permissions |
+| V-12 | Secrets or personal data in logs | read the service log of the whole run | logging full requests/headers |
+| V-13 | CORS / cookie issues only for the browser client | call from the web app's origin, check `Access-Control-*` and `Set-Cookie` attributes | config differs per environment |

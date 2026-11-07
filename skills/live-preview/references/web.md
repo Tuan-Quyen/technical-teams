@@ -1,4 +1,4 @@
-# Preview spec template (Playwright)
+# Web app (and browser extension) — live preview with Playwright
 
 Adapt to the project's language, folder and config; follow an existing `playwright.config.*` if there is one (its `baseURL`, `webServer`, projects). If the config has a `webServer` block, Playwright starts and stops the app itself — prefer that over a manual background server.
 
@@ -89,6 +89,7 @@ test.describe('W-012 live preview', () => {
 |---|---|
 | Cypress project | same checks: `cy.on('uncaught:exception')`, `cy.intercept` for empty/error states, `cy.viewport` |
 | No JS (Django/Rails templates) | Playwright still works against the server; Python projects can use `pytest-playwright` with the same structure |
-| Mobile app (React Native / Flutter) | not a browser: use the project's device runner (Detox, Maestro, `flutter drive`) with the same states and screenshots; web build when it exists |
 | Auth | log in once in a `setup` project with a **seeded test user**, save `storageState`; never real credentials |
+| Browser extension | `chromium.launchPersistentContext(dir, { args: ['--disable-extensions-except=' + ext, '--load-extension=' + ext] })`; open the popup via `chrome-extension://<id>/popup.html`; listen to the service worker (`context.serviceWorkers()`) for errors; test on a real target page |
+| PWA / offline | `context.setOffline(true)` after first load; check the offline page and that queued actions sync after going online |
 | Slow API | `page.route(..., async r => { await new Promise(s => setTimeout(s, 1500)); await r.continue(); })` to screenshot the loading state — a delay to *create* a state is fine, a `waitForTimeout` to *hide* a race is not |

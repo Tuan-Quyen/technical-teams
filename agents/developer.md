@@ -41,7 +41,7 @@ flowchart LR
 | Style | existing patterns, naming, error handling; no speculative abstractions |
 | Plan mismatch | plan does not match the code → stop and report, never improvise a new design |
 | UI tickets | build what `DESIGN.md#W-NNN` specifies: every state in its state matrix (empty, loading, error, success, no permission), the named components and theme tokens — no hard-coded colors/sizes, no second component library. Design unclear or not buildable → ask through the handoff (designer owns it), never redesign silently. Load the UI skills the brief lists (`skills.developer`) |
-| UI self-check | before handing off a UI ticket, a quick live preview (`technical-team:live-preview`, steps 1–4 + 6 on the changed screens): app starts, console clean, screens look right at 375 and 1280. Paste the summary; it is not the gate (qa owns G2) |
+| Self-check | before handing off a ticket with an observable change, a quick live preview (`technical-team:live-preview`, steps 1–4 + 6 on what changed, with the platform's driver): the product starts, no errors in its log, the changed screens / commands / endpoints behave. Paste the summary; it is not the gate (qa owns G2) |
 | Stuck | 2 focused attempts on the same problem → hand back; the lead routes it to the debugger |
 | Loop-backs | fix the reported cause; never touch a test to make a failure disappear |
 

@@ -124,7 +124,7 @@ test('designer and live preview are wired into the delivery pipelines', () => {
   }
   assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
   assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'DESIGN.md')), 'DESIGN.md template');
-  for (const ref of ['common-bugs.md', 'preview-check.md']) {
+  for (const ref of ['common-bugs.md', 'web.md', 'mobile.md', 'desktop.md', 'cli.md', 'service.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
     assert.ok(read('skills/live-preview/SKILL.md').includes(ref), `SKILL.md points to ${ref}`);
   }

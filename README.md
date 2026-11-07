@@ -4,7 +4,7 @@ Plugin Claude Code dựng một team kỹ thuật cho nhiều dự án sản ph�
 
 - **14 agent**: 14 vai trò do một tech lead điều phối, có UI/UX designer.
 - **12 lệnh workflow**: mỗi lệnh chứa luôn pipeline của nó, có `argument-hint`; biến thể chọn bằng cờ; `new` chạy trọn một project mới.
-- **2 skill**: `run-kit` (tài liệu sử dụng, quy tắc chung, phiếu bàn giao) và `live-preview` (chạy app thật trong trình duyệt để kiểm thử, kèm danh mục lỗi hay lọt).
+- **2 skill**: `run-kit` (tài liệu sử dụng, quy tắc chung, phiếu bàn giao) và `live-preview` (chạy sản phẩm thật để kiểm thử: web, mobile, desktop, CLI, API/service, worker/bot; kèm danh mục lỗi hay lọt theo nền tảng).
 - **2 hook**: guard thực thi phân quyền, và kiểm tra phiếu bàn giao.
 - **Không gian làm việc chung `.team/`** trong repo của từng project.
 
@@ -116,7 +116,7 @@ Tên đầy đủ có tiền tố plugin: `technical-team:<tên>`. Model dùng a
 | `pm` | Project manager | sonnet | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái |
 | `developer` | Developer fullstack | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau |
 | `debugger` | Debugger | opus | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa; không sửa code |
-| `qa` | QA | sonnet | AC → test, viết và chạy test, **live preview** trên app đang chạy (trình duyệt thật, 3 kích thước màn hình, console/network), kết luận PASS/FAIL, regression test |
+| `qa` | QA | sonnet | AC → test, viết và chạy test, **live preview** trên sản phẩm đang chạy qua đúng giao diện người dùng dùng (web, mobile, desktop, CLI, API), kết luận PASS/FAIL, regression test |
 | `code-reviewer` | Code reviewer | sonnet | review **code** (diff), không review project; phân mức chặn merge / nên sửa / gợi ý |
 | `security` | Security | opus | audit code, dependency, secrets, phân quyền, cấu hình |
 | `devops` | DevOps | sonnet | CI/CD, Docker, deploy, hạ tầng; ghi `.team/OPS_HANDOFF.md` |
@@ -159,7 +159,7 @@ Lead dùng `inherit`, nên session chạy sonnet thì lead cũng là sonnet và 
 | Tham gia bắt buộc (mọi tầng) | Khi |
 |---|---|
 | designer | có giao diện người dùng: màn hình mới, đổi flow, layout, giao diện (thiết kế ở P1a, review UI sau qa) |
-| qa live preview | mọi thay đổi người dùng nhìn thấy: qa bắt buộc chạy app thật; không có G2 chỉ dựa trên unit test |
+| qa live preview | mọi thay đổi người dùng hay client quan sát được (UI web/mobile/desktop, CLI, response API, output của worker/bot, đóng gói): qa bắt buộc chạy sản phẩm thật; không có G2 chỉ dựa trên unit test |
 | security | chạm auth, input người dùng, truy cập dữ liệu, secrets, thanh toán, dữ liệu cá nhân |
 | devops | chạm hạ tầng, build, deploy |
 | writer | ảnh hưởng cách dùng, API, vận hành |
@@ -173,7 +173,7 @@ Lead luôn nói đã chọn tầng nào và vì sao; bạn có thể yêu cầu 
 | Cổng | Điều kiện qua |
 |---|---|
 | **G1** duyệt hướng làm | bạn duyệt spec + plan (hoặc hướng sửa rủi ro cao của debugger) |
-| **G2** test | qa PASS, có output thật, trên bản code cuối; nếu có UI thì thêm live preview sạch và designer review UI không còn lỗi chặn |
+| **G2** test | qa PASS, có output thật, trên bản code cuối; nếu thay đổi quan sát được thì thêm live preview sạch; nếu có UI thì designer review UI không còn lỗi chặn |
 | **G3** review | không còn phát hiện "chặn merge" từ code-reviewer / security / specialist, trên đúng bản code đã qua G2 |
 | **G4** hoàn tất | tài liệu cập nhật (nếu cần), `.team/` cập nhật, báo cáo đã gửi |
 
@@ -183,7 +183,7 @@ Lead luôn nói đã chọn tầng nào và vì sao; bạn có thể yêu cầu 
 flowchart LR
   D[developer] --> CR[code-reviewer]
   CR -- chặn merge --> D
-  CR -- sạch --> Q[qa + live preview nếu có UI]
+  CR -- sạch --> Q[qa + live preview]
   Q -- FAIL --> D
   Q -- PASS --> U{đổi UI?}
   U -- có --> DR[designer review UI]
@@ -206,7 +206,7 @@ flowchart LR
 
 `infra` không có qa: devops → code-reviewer → security. `review` (cả `--audit`), `release` chỉ kiểm tra rồi kết luận nên chạy song song.
 
-> PASS QA nghĩa là đạt AC, các test hiện có pass, và (với UI) app chạy thật không lỗi console/network qua các luồng chính. Nó vẫn không chứng minh được là hết lỗi. Chất lượng phụ thuộc nhiều nhất vào việc AC ở G1 có đủ và đúng hay không.
+> PASS QA nghĩa là đạt AC, các test hiện có pass, và sản phẩm chạy thật không lỗi qua các luồng chính. Nó vẫn không chứng minh được là hết lỗi. Chất lượng phụ thuộc nhiều nhất vào việc AC ở G1 có đủ và đúng hay không.
 
 ---
 
@@ -395,7 +395,7 @@ Danh sách đầy đủ nằm ở `config/ownership.json`; mỗi project mở r�
 
 | Thành phần | Ở đâu | Nạp thế nào | Nội dung |
 |---|---|---|---|
-| `live-preview` | `skills/live-preview/SKILL.md` + `references/common-bugs.md`, `references/preview-check.md` | preload vào **qa**; developer (tự kiểm tra trước khi bàn giao ticket UI) và designer nạp khi cần, không cần cấu hình | khởi động app ở nền, chạy từng AC trên trình duyệt thật (mặc định Playwright), bắt lỗi console/page/request, screenshot 375/768/1280, trạng thái rỗng/tải/lỗi, bàn phím, deep link, back; danh mục lỗi hay lọt qua test xanh (build/env, dữ liệu, state, form, điều hướng, layout, a11y, i18n/giờ, auth, hiệu năng) |
+| `live-preview` | `skills/live-preview/SKILL.md` + `references/`: `common-bugs.md`, `web.md`, `mobile.md`, `desktop.md`, `cli.md`, `service.md` | preload vào **qa**; developer (tự kiểm tra trước khi bàn giao) và designer nạp khi cần, không cần cấu hình | nhận diện loại sản phẩm → build và chạy bản thật ở nền → điều khiển từng AC qua đúng giao diện: web/extension (Playwright), mobile (Maestro/Detox/`integration_test`/Espresso/XCUITest trên emulator/simulator), desktop (Playwright-Electron, WebDriver, framework UI test; `xvfb-run` khi headless), CLI/TUI (transcript: args, stdin, exit code, pty), API/service/worker/bot (HTTP/gRPC/queue với dependency thật). Thu lỗi/log/crash, screenshot hoặc transcript theo form factor, trạng thái rỗng/tải/lỗi, vòng đời; danh mục lỗi hay lọt qua test xanh, có nhóm riêng cho mobile, desktop, CLI, service |
 | `run-kit` | `skills/run-kit/SKILL.md` | preload vào **mọi** agent; session chính nạp khi bạn hỏi cách dùng; `/technical-team:run-kit` để xem | cách dùng (chế độ, bảng lệnh, cổng, vòng lặp, specialist, skill), quy tắc làm việc, **phiếu bàn giao** |
 | Lead manual | `agents/lead.md`, phần cuối | system prompt của lead | tầng, cổng, vòng lặp, mẫu brief, bảng quyền, `.team/`, điểm gắn, mẫu báo cáo |
 | Pipeline | `commands/<lệnh>.md` → `## Pipeline` | lead đọc bằng Read khi chạy | các bước, agent, song song, cổng, vòng lặp, file `.team/`, điểm gắn, kết thúc |
@@ -541,7 +541,7 @@ Mọi tùy biến nằm trong `.claude/technical-team.json`. File này do `init`
 
 Skill chỉ thêm kiến thức, không thêm quyền. Skill UI/UX bạn cài từ GitHub thì khai vào `skills.designer`; skill frontend tương ứng khai vào `skills.developer`, vì developer mới là người dựng UI. Lead tự chọn skill phù hợp cho từng brief. `live-preview` đi kèm plugin nên không cần khai.
 
-Live preview cần project có trình chạy trình duyệt (vd. `@playwright/test`). qa không được cài dependency (guard chặn), nên với project chưa có thì qa dừng ở `cần quyết định` để developer thêm dev dependency. Với `new`, việc này nằm sẵn trong scaffold M1. File build/release mobile như Fastlane hay `eas.json` nên khai vào `paths.infra`.
+Live preview cần driver của nền tảng: `@playwright/test` (web, Electron), Maestro/Detox/`integration_test` + emulator (mobile), `xvfb-run` (desktop Linux headless), Hurl/curl (API). qa không được cài (guard chặn), nên với project chưa có thì qa dừng ở `cần quyết định` để developer/devops thêm. Với `new`, việc này nằm sẵn trong scaffold M1. Ở chế độ allowlist, thêm lệnh khởi động vào `commands.run` và lệnh driver (`maestro test`, `adb`, `xvfb-run …`) vào `commands.test`. File build/release mobile như Fastlane hay `eas.json` nên khai vào `paths.infra`.
 
 ---
 
@@ -550,7 +550,7 @@ Live preview cần project có trình chạy trình duyệt (vd. `@playwright/te
 | Giới hạn | Chi tiết |
 |---|---|
 | Chưa chạy end-to-end với model thật | đã kiểm chứng: `claude plugin validate --strict` (plugin + marketplace), cài thử và `claude plugin details`, 50 unit test (guard, phiếu bàn giao, tính nhất quán của bộ lệnh), chạy thử `init` |
-| Live preview | cần trình chạy trình duyệt trong project (Playwright/Cypress); qa không tự cài được. Subagent không dùng được preview pane của app Claude, nên qa chạy headless bằng Bash. Bằng chứng là output của runner và screenshot trong `test-results/`; qa và designer xem ảnh bằng Read |
+| Live preview | cần driver của nền tảng có sẵn (Playwright, Maestro/Detox, emulator Android, Xvfb…); qa không tự cài được (guard chặn) mà dừng ở `cần quyết định`. Máy không chạy được nền tảng đó (iOS simulator cần macOS, app chỉ chạy trên Windows) thì qa preview phần chạy được và ghi rõ phần chưa preview. Subagent không dùng được preview pane của app Claude; bằng chứng là output của runner, screenshot/transcript trong `test-results/`, qa và designer xem ảnh bằng Read |
 | Chất lượng UI | designer chỉ đặc tả và review; code UI vẫn do developer viết. Kết quả đẹp hay không phụ thuộc vào skill frontend bạn khai cho `skills.developer` và thư viện UI của project |
 | Chưa kiểm chứng được | giá trị `agent_type` thực tế cho agent plugin; preload skill bằng tên có tiền tố (`technical-team:run-kit`); tên trường input của tool `Skill` (guard chặn khi không đọc được tên); trường `last_assistant_message` của `SubagentStop` (thiếu thì hook không chặn) |
 | Thử nhanh sau khi cài | `/technical-team:status`, rồi nhờ `technical-team:pm` ghi thử vào `README.md` → guard phải từ chối |
@@ -589,7 +589,7 @@ technical-team/
 ├── agents/                 14 vai trò
 ├── commands/               12 lệnh, mỗi lệnh chứa pipeline của nó (biến thể = cờ)
 ├── skills/run-kit/         tài liệu sử dụng + quy tắc chung + phiếu bàn giao
-├── skills/live-preview/    kiểm thử trên app đang chạy + references/ (lỗi hay gặp, mẫu spec Playwright)
+├── skills/live-preview/    kiểm thử trên sản phẩm đang chạy + references/ (lỗi hay gặp, web, mobile, desktop, cli, service)
 ├── hooks/
 │   ├── hooks.json          PreToolUse → guard.mjs, SubagentStop → handoff-check.mjs
 │   ├── guard.mjs           thực thi phân quyền

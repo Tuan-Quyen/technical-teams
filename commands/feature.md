@@ -116,7 +116,7 @@ flowchart LR
 |---|---|---|---|---|
 | D1 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops (verify locally, update `OPS_HANDOFF.md`, no remote changes), migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), test-setup tickets → qa, docs wait for D5. **Hook `execute`** | developer, devops, dba, qa, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` (+ `git status --porcelain` for new files) = "Đã ghi vào"; developer stuck → debugger |
 | D2 | Code review of the W-NNN diff (and new files) with plan + ACs. **Hook `review`** (dba for DB parts) | code-reviewer + specialists | specialists ∥ reviewer | blocking → D1 |
-| D3 | Tests: all ACs in scope + changed files; **live preview** in a real browser for any user-facing change (`live-preview` skill: ACs driven in the running app, 375/768/1280 screenshots, states, console + network clean, known-bug sweep). **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with output = **G2** when no UI changed |
+| D3 | Tests: all ACs in scope + changed files; **live preview** for any observable change (`live-preview` skill: the real product — web, mobile, desktop, CLI, API — started and driven through its interface per AC, form factors, states, logs/errors clean, known-bug sweep). **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with output = **G2** when no UI changed |
 | D3a | **UI review** of qa's screenshots against `DESIGN.md#W-NNN` (only when UI changed) | designer | after qa | blocking → D1 (then D2, D3, D3a); clean = **G2** (qa PASS + clean UI review on the same code) |
 | D4 | Security on the final diff + plan's security notes | security | no | blocking → D1 (then D2, D3, D4); clean = **G3** |
 | D5 | Docs (README / API / CHANGELOG / runbooks; writer confirms with a reason if nothing changed) ∥ pm marks tickets `done` | writer ∥ pm | yes | then `STATE.md`: results, `G4 done`, status `done`; final report §8 |
@@ -151,7 +151,7 @@ flowchart LR
 | S0 | Open W-NNN (pipeline `feature (small)`, T1); write 2–5 **expected behaviour** bullets in `STATE.md` (they replace ACs). A new screen or a changed flow/layout needs design → full mode (from P1). Cannot write them without guessing → ask (main thread) or gate report with questions (subagent) | lead | — |
 | S1 | Change + bullets + exact files. Infra part → devops. **Hook `execute`** | developer (devops) | evidence of build/lint/tests |
 | S2 | Code review of the diff. **Hook `review`** | code-reviewer + specialists | blocking → S1 |
-| S3 | Tests against the bullets; live preview for any user-facing change. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2** when no UI changed |
+| S3 | Tests against the bullets; live preview for any observable change. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2** when no UI changed |
 | S3a | UI review of qa's screenshots against `DESIGN.md` (design system) and the bullets (only when UI changed) | designer | blocking → S1 → S2 → S3 → S3a; clean = **G2** |
 | S4 | Security on the final diff (if triggered) | security | blocking → S1 → S2 → S3 → S4 |
 | S5 | **G3** = clean review (+ clean security) on the final code. Docs only if usage/API/operations changed (CHANGELOG at least when kept) → **G4**, final report | writer | — |

@@ -16,7 +16,9 @@
 | Color roles | <surface, text, muted, primary, danger, success, warning, border — light / dark> |
 | Radius · elevation · motion | <…> |
 
-**Layout shell:** <navigation model, breakpoints 375 / 768 / 1280, what collapses>
+**Platforms + form factors:** <web 375 / 768 / 1280 · mobile small + large phone · desktop min + typical window · TUI 80×24 — what stacks or collapses>
+
+**Layout shell:** <navigation model per platform>
 
 **Glossary:** <term — meaning — never call it>
 

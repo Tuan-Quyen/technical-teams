@@ -40,22 +40,22 @@ flowchart LR
 | Users + jobs | from `SPEC.md`; rank tasks by frequency; the most frequent task gets the fewest steps. Unclear user or context → question in "Còn mở", never invent a persona |
 | Flows | mermaid per key task, including cancel, validation error, system error, retry, back |
 | IA | navigation model (sidebar / top bar / tabs / bottom nav on mobile), ≤ 7 top-level items, every screen with its URL; filters, tabs and selection deep-linkable |
-| Screen spec | purpose · **one** primary action · content in priority order · layout at 375 px and 1280 px (ASCII wireframe is enough) · components used |
+| Screen spec | purpose · **one** primary action · content in priority order · layout per form factor of the platform (web: 375 / 1280 px · mobile: small + large phone, tablet if supported · desktop: minimum + typical window · TUI: 80×24) — ASCII wireframe is enough · components used |
 | State matrix | every screen: first use/empty (why + what to do + action), loading (skeleton matching layout), partial, success (visible without reload, undo for reversible deletes), validation error (next to the field, input kept), system/offline error (human message + retry), no permission, edge content (long text, 0/1/many, missing image). Each cell designed or `n/a — why` |
 | Completeness | pick the screen's pattern and check what users expect from it, beyond the literal AC: **list/table** search, sort, filter chips, pagination with total, distinct empty vs no-results, bulk actions, mobile card layout, URL state · **form** inline validation, server errors on fields, pending/disabled submit, cancel with unsaved-changes guard, success destination, defaults, correct input types · **detail** key facts first, primary next step, back keeps list state, not-found/no-access, history · **dashboard** "what needs my attention", every number drills down, time range, first-use version · **settings** grouped, obvious save model, danger zone · **auth** sign in/up, forgot/reset, return to target page, password-manager friendly · **cross-cutting** active nav, page titles, 404 page, keyboard. Each gap: designed, or listed for the analyst as out of scope — never silently dropped |
 | Visual system | reuse the project's component library and theme (MUI, shadcn/ui, Ant, Vuetify, Tailwind config, Flutter theme…) and design **within** it; tokens go into its theme, not per-component overrides. No system yet → propose one (with the architect at `new` N2). Tokens: type scale with ≥ 3 clear levels, 4/8 px spacing scale, color **roles** (surface, text, muted, primary, danger, success, warning, border) with AA contrast and dark values if dark mode is in scope, radius, elevation, motion. Hierarchy by size, weight and space before color |
 | Copy | product language; verbs on buttons ("Create project", not "Submit"); empty states that explain and invite; errors that say what happened and what to do; one glossary term per concept |
-| A11y + responsive | WCAG 2.2 AA floor: contrast, visible focus, keyboard order = visual order, labels (not placeholders), icon buttons named, 44×44 px touch targets; breakpoints 375 / 768 / 1280 and what stacks or collapses |
+| A11y + responsive | WCAG 2.2 AA floor: contrast, visible focus, keyboard order = visual order, labels (not placeholders), icon buttons named, 44×44 px touch targets; per-platform conventions (iOS HIG, Material, desktop menus/shortcuts, CLI help and output style); form factors and what stacks or collapses |
 
 ## UI review workflow (D3a / S3a, after qa's live preview)
 
 | Step | Rule |
 |---|---|
-| Input | qa's handoff: screenshot paths per screen × width, states checked, console/request findings |
-| Look | open every screenshot with Read; compare with `DESIGN.md#W-NNN` screen specs, state matrix and tokens; sweep `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/references/common-bugs.md` sections L (layout) and A (accessibility) |
-| Missing evidence | a designed state or width without a screenshot → ask qa for it (handoff `vướng`), do not guess |
-| Classify | **blocking**: a user cannot complete a task, data-loss risk, inaccessible control, broken on a required width, AC or designed state missing · **should-fix**: friction, inconsistency with tokens/components, weak hierarchy, unclear copy · **suggestion**: polish |
-| Report | finding → screen, width, screenshot file, what is wrong, what the design says, suggested fix, owner (developer; analyst if the spec is the problem) |
+| Input | qa's handoff: screenshot (or TUI capture) paths per screen × form factor, states checked, error findings |
+| Look | open every screenshot with Read; compare with `DESIGN.md#W-NNN` screen specs, state matrix and tokens; sweep `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/references/common-bugs.md` sections L (layout), A (accessibility) and the platform's section (M mobile, K desktop, C CLI) |
+| Missing evidence | a designed state or form factor without a screenshot → ask qa for it (handoff `vướng`), do not guess |
+| Classify | **blocking**: a user cannot complete a task, data-loss risk, inaccessible control, broken on a required form factor, AC or designed state missing · **should-fix**: friction, inconsistency with tokens/components, weak hierarchy, unclear copy · **suggestion**: polish |
+| Report | finding → screen, form factor, screenshot file, what is wrong, what the design says, suggested fix, owner (developer; analyst if the spec is the problem) |
 
 Blocking findings send the work back to the developer like a failing test and hold G3.
 
