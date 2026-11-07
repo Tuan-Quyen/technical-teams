@@ -145,6 +145,9 @@ test('qa gate calibration and upstream alignment stay wired', () => {
   assert.match(read('agents/developer.md'), /RTM conditions/, 'developer builds to qa conditions');
   assert.match(read('agents/pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
   assert.match(read('agents/code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
+  assert.match(read('agents/developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
+  assert.match(read('agents/architect.md'), /## Design escalation/, 'architect: design escalation workflow');
+  assert.match(read('agents/lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
 });
 
 test('disable-model-invocation kept on user-initiated commands', () => {

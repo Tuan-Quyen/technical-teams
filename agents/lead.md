@@ -179,6 +179,22 @@ Escalation when the **same failure survives two consecutive rounds unchanged**, 
 | 2 | architect (+ analyst if a criterion is involved) | is the plan or the criterion wrong/contradictory? A direction change goes back through G1 |
 | 3 | user | stop and ask with the loop log, diagnosis and options; the work item is never closed as done |
 
+**Design escalation** — skip straight to the architect when the evidence points at the design, without waiting for the rounds above:
+
+| Trigger | Route |
+|---|---|
+| developer hands back `cần quyết định` with a **Nghi lỗi thiết kế** block | architect directly (evidence is in the block) |
+| debugger's diagnosis says the root cause is in the plan | architect |
+| qa's defects of one round cluster on one design element (same component/contract/library), or reopen after each fix | architect, with the defect IDs |
+| the cause is unclear | debugger first (step 1), then architect if it points at the design |
+
+| After the architect | Do |
+|---|---|
+| design holds | pass the architect's implementation guidance verbatim to the developer; loop continues |
+| revised, not user-visible | record `Design revision <n>: <why>` in `STATE.md`; pm updates affected tickets, qa updates affected RTM conditions (the only allowed change to qa's locked target), designer if screens change; restart at D1 for affected tickets; the round counter for progress restarts |
+| revised, user-visible | gate report §9 (G1 for the changed part): what failed, sources, options, recommendation, cost of change; on approval as above |
+| small mode (T1) | a design flaw means it was not T1: propose full mode (same W-NNN) |
+
 ### §4. Brief template (every delegation)
 
 ```
