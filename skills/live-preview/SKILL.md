@@ -1,6 +1,6 @@
 ---
 name: live-preview
-description: Verify a change in the running product, the way its user meets it, not only through unit tests — for every kind of app (web, mobile iOS/Android/React Native/Flutter, desktop Electron/Tauri/native, CLI/TUI, API/backend service, worker/bot, browser extension, game). Build and start the real artifact, drive every acceptance criterion through its real interface with the platform's driver (Playwright, Maestro/Detox/Espresso/XCUITest, Playwright-Electron/WebDriver, a shell/pty harness, HTTP client), capture crashes, error logs and failed calls, screenshots or transcripts on the required form factors, edge states, then stop it. Includes a catalogue of bugs that slip past green suites, per platform. Used by qa (gate G2 for any change a user or client can observe), by developer as a self-check before handing off, and by designer reviewing the evidence.
+description: Verify a change in the running product, the way its user meets it, not only through unit tests — for every kind of app (web, mobile iOS/Android/React Native/Flutter, desktop Electron/Tauri/native, CLI/TUI, API/backend service, worker/bot, browser extension, game). Build and start the real artifact, drive every acceptance criterion through its real interface with the platform's driver (Playwright, Maestro/Detox/Espresso/XCUITest, Playwright-Electron/WebDriver, a shell/pty harness, HTTP client), capture crashes, error logs and failed calls, screenshots or transcripts on the required form factors, edge states, then stop it. Includes a catalogue of bugs that slip past green suites, per platform. Used by qa (gate G2 for any change a user or client can observe, together with the test-process skill), by developer as a self-check before handing off, and by designer when deciding escalated UI items.
 ---
 
 # live-preview — "the tests pass" is not "the product works"
@@ -13,7 +13,7 @@ Paths below are relative to `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/`.
 |---|---|---|
 | qa | every work item whose change a user or client can observe: UI, routes/navigation, styling, i18n, CLI flags/output, API responses, messages a bot/worker sends, build/bundling/packaging config — and `release` / `new` N7 | full pass (§2), verdict input for G2 |
 | developer | before handing off a ticket with an observable change | quick pass: §2 steps 1–4 + 6 on what changed; paste the summary in your handoff |
-| designer | UI review right after qa (D3a / S3a) | reads qa's screenshots / recordings + `.team/DESIGN.md` (no shell) |
+| designer | decisions on UI/UX items qa escalates (D3a / S3a) | reads qa's screenshots / recordings + `.team/DESIGN.md` (no shell) |
 
 Not applicable (say so with the reason): a refactor with no observable change, test-only or docs-only changes, a library with no example/consumer in the repo (then the public API tests are the preview).
 

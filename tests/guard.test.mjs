@@ -54,7 +54,7 @@ test('other plugins and built-in agents pass through', () => {
 
 test('each .team file has exactly one writer', () => {
   const d = project();
-  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': 'pm', 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
+  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'QA.md': 'qa', 'PLAN.md': 'architect', 'TASKS.md': 'pm', 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
   for (const [file, owner] of Object.entries(owners)) {
     for (const role of ['lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
       const r = write(d, `technical-team:${role}`, `.team/${file}`);
@@ -491,7 +491,13 @@ test('designer: writes only .team/DESIGN.md, no shell; is a core member the lead
   assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'designer', prompt: 'x' }), 'bare name is not the plugin agent');
 });
 
-test('skills: live-preview ships with the plugin for qa, developer, designer only', () => {
+test('skills: test-process for qa, live-preview for qa, developer, designer only', () => {
+  {
+    const d0 = project();
+    assert.equal(call(d0, 'technical-team:qa', 'Skill', { skill: 'technical-team:test-process' }), null);
+    assert.ok(call(d0, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
+    assert.equal(write(d0, 'technical-team:qa', '.team/archive/QA-2026-11.md'), null);
+  }
   const d = project({ config: { skills: { designer: ['ui-ux-pro'] } } });
   const sk = (agent, skill) => call(d, agent, 'Skill', { skill });
   for (const r of ['qa', 'developer', 'designer']) {

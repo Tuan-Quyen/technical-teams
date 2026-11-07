@@ -67,7 +67,8 @@ flowchart LR
   S1a --> S2[P2 architect → PLAN + ADR]
   S2 --> H[P2a design hook: specialists]
   H --> S3[P3 pm → TASKS]
-  S3 --> S4[P4 Lead: AC ↔ plan ↔ tickets]
+  S3 --> S3a[P3a qa → test plan + static review]
+  S3a --> S4[P4 Lead: AC ↔ design ↔ plan ↔ tickets ↔ test plan]
   S4 --> G1{{P5 G1: user approves}}
 ```
 
@@ -79,17 +80,18 @@ flowchart LR
 | P2 | Plan → `.team/PLAN.md#W-NNN` (+ ADR, `.team/ARCHITECTURE.md`); UI parts follow `DESIGN.md#W-NNN` | architect | `Satisfies:` covers every AC; files, interfaces, flags, rejected options present |
 | P2a | **dba** when schema/data/pipelines are touched, and **hook `design`** specialists, review the draft | dba / specialists | blocking issue → one architect revision; leftover disagreement → gate report |
 | P3 | Tickets → `.team/TASKS.md#W-NNN` | pm | every plan item ticketed; disjoint file sets per parallel group; no L. "Cannot split cleanly" → architect, then pm again |
-| P4 | Consistency: AC ↔ plan ↔ tickets; flags decide who joins later | lead | gaps → re-brief the owner, never edit their file |
+| P3a | **Test plan + static review** → `.team/QA.md#W-NNN` (`test-process` skill): risks, quality characteristics in scope, levels/types, platforms × form factors, data, drivers, entry/exit criteria; review ACs, edge cases and DESIGN states for testability and contradictions; no `QA.md` → init script `QA` | qa | static-review findings → owner (analyst / designer / architect) revises once before P4; drivers/environment qa says are missing → listed for the user at G1 |
+| P4 | Consistency: AC ↔ design ↔ plan ↔ tickets ↔ test plan; flags decide who joins later | lead | gaps → re-brief the owner, never edit their file |
 | P5 | **G1**: status `waiting-for-user`, gate report §9 | lead | — |
 
 | G1 gate report content | |
 |---|---|
-| goal · key ACs · UI: key flows, screens and the states designed (link `DESIGN.md#W-NNN`) · chosen design + rejected options · ticket count/order · risks · who joins later (security, devops, writer, dba, designer review, specialists) · open questions | |
+| goal · key ACs · UI: key flows, screens and the states designed (link `DESIGN.md#W-NNN`) · test plan: risks, platforms, what is tested less and why, environment/drivers you must provide (link `QA.md#W-NNN`) · chosen design + rejected options · ticket count/order · risks · who joins later (security, devops, writer, dba, designer review, specialists) · open questions | |
 
 | User answer at G1 | Next |
 |---|---|
 | approved | record `G1 approved by user on <date>: "<words>"`; plan-only → final report §8 with links to `SPEC.md#W-NNN`, `PLAN.md#W-NNN`, `TASKS.md#W-NNN`, suggest `feature W-NNN` to build; full → D1 |
-| changes | brief the owner of the first changed file (analyst / designer / architect / pm), redo the steps after it, G1 again |
+| changes | brief the owner of the first changed file (analyst / designer / architect / pm / qa), redo the steps after it, G1 again |
 | rejected | work item `done`, outcome "cancelled" |
 
 ### Delivery (D1–D5)
@@ -102,11 +104,10 @@ flowchart LR
   CR -- blocking --> D
   CR -- clean --> Q[D3 qa]
   Q -- FAIL --> D
-  Q -- PASS --> UIR{UI changed?}
-  UIR -- yes --> DR[D3a designer UI review]
-  DR -- blocking --> D
-  DR -- clean: G2 --> SEC[D4 security]
-  UIR -- no: G2 --> SEC
+  Q -- PASS: G2 --> SEC[D4 security]
+  Q -- PASS pending design decision --> DR[D3a designer decides escalated items]
+  DR -- fix --> D
+  DR -- accept: G2 --> SEC
   SEC -- blocking --> D
   SEC -- clean: G3 --> W[D5 writer ∥ pm]
   W --> G4{{G4 + final report}}
@@ -116,8 +117,8 @@ flowchart LR
 |---|---|---|---|---|
 | D1 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops (verify locally, update `OPS_HANDOFF.md`, no remote changes), migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), test-setup tickets → qa, docs wait for D5. **Hook `execute`** | developer, devops, dba, qa, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` (+ `git status --porcelain` for new files) = "Đã ghi vào"; developer stuck → debugger |
 | D2 | Code review of the W-NNN diff (and new files) with plan + ACs. **Hook `review`** (dba for DB parts) | code-reviewer + specialists | specialists ∥ reviewer | blocking → D1 |
-| D3 | Tests: all ACs in scope + changed files; **live preview** for any observable change (`live-preview` skill: the real product — web, mobile, desktop, CLI, API — started and driven through its interface per AC, form factors, states, logs/errors clean, known-bug sweep). **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with output = **G2** when no UI changed |
-| D3a | **UI review** of qa's screenshots against `DESIGN.md#W-NNN` (only when UI changed) | designer | after qa | blocking → D1 (then D2, D3, D3a); clean = **G2** (qa PASS + clean UI review on the same code) |
+| D3 | **Quality verification** per the test plan (`test-process` skill): entry criteria → smoke → RTM tests with techniques → retest fixed defects + regression → **live preview** of the real product on every in-scope platform/form factor (`live-preview`) → **UI/UX verification** (conformance to `DESIGN.md`, usability heuristics, accessibility) → exploratory session → defects with severity/priority → exit criteria → test summary in `QA.md#W-NNN`. **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with test summary = **G2**; "PASS pending design decision" → D3a |
+| D3a | **Design decision on qa's escalated UI/UX items only** (DESIGN.md has no answer, or a deviation may be acceptable): fix / accept per item, DESIGN.md updated if the design changes | designer | after qa | any "fix" → D1 (then D2, D3); all "accept" = **G2** |
 | D4 | Security on the final diff + plan's security notes | security | no | blocking → D1 (then D2, D3, D4); clean = **G3** |
 | D5 | Docs (README / API / CHANGELOG / runbooks; writer confirms with a reason if nothing changed) ∥ pm marks tickets `done` | writer ∥ pm | yes | then `STATE.md`: results, `G4 done`, status `done`; final report §8 |
 
@@ -135,11 +136,10 @@ flowchart LR
   CR -- blocking --> D
   CR -- clean --> Q[S3 qa]
   Q -- FAIL --> D
-  Q -- PASS --> R{UI changed?}
-  R -- yes --> DR[S3a designer UI review]
-  DR -- blocking --> D
-  DR -- clean: G2 --> T
-  R -- no: G2 --> T{security triggered?}
+  Q -- PASS: G2 --> T{security triggered?}
+  Q -- PASS pending design decision --> DR[S3a designer decides escalated items]
+  DR -- fix --> D
+  DR -- accept: G2 --> T
   T -- yes --> SEC[S4 security]
   SEC -- blocking --> D
   SEC -- clean --> W
@@ -151,8 +151,8 @@ flowchart LR
 | S0 | Open W-NNN (pipeline `feature (small)`, T1); write 2–5 **expected behaviour** bullets in `STATE.md` (they replace ACs). A new screen or a changed flow/layout needs design → full mode (from P1). Cannot write them without guessing → ask (main thread) or gate report with questions (subagent) | lead | — |
 | S1 | Change + bullets + exact files. Infra part → devops. **Hook `execute`** | developer (devops) | evidence of build/lint/tests |
 | S2 | Code review of the diff. **Hook `review`** | code-reviewer + specialists | blocking → S1 |
-| S3 | Tests against the bullets; live preview for any observable change. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2** when no UI changed |
-| S3a | UI review of qa's screenshots against `DESIGN.md` (design system) and the bullets (only when UI changed) | designer | blocking → S1 → S2 → S3 → S3a; clean = **G2** |
+| S3 | Quality verification against the bullets: short test plan in `QA.md#W-NNN`, tests, retest + regression, live preview for any observable change, UI/UX verification against the design system and heuristics, defects, test summary. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2**; "PASS pending design decision" → S3a |
+| S3a | Design decision on qa's escalated UI/UX items only | designer | any "fix" → S1 → S2 → S3; all "accept" = **G2** |
 | S4 | Security on the final diff (if triggered) | security | blocking → S1 → S2 → S3 → S4 |
 | S5 | **G3** = clean review (+ clean security) on the final code. Docs only if usage/API/operations changed (CHANGELOG at least when kept) → **G4**, final report | writer | — |
 
@@ -163,6 +163,6 @@ flowchart LR
 | Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/analyst → user. In small mode, needing the architect step means it was not T1: propose full mode |
 | Non-blocking findings | fix now if cheap and in scope (through the loop), otherwise deferred with a reason |
 | .team reads | all (small: `STATE`, `ROSTER`, `OPS_HANDOFF` if infra) |
-| .team writes | lead → `STATE`; analyst → `SPEC`; designer → `DESIGN`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
+| .team writes | lead → `STATE`; analyst → `SPEC`; designer → `DESIGN`; qa → `QA`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF` (small: `SPEC`/`PLAN`/`TASKS` not used) |
 | Hook points | `design` (P2a), `execute` (D1 / S1), `review` (D2 / S2), `test` (D3 / S3) |
 | End | full/small: after G4; plan-only: after G1 approved / changed-and-approved / rejected; or the user cancels/redirects. A stalled loop pauses for the user but never closes the work item as done |

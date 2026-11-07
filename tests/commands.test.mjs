@@ -79,7 +79,7 @@ test('every commands/<name>.md reference points to an existing file', () => {
 test('steps reused by ID in new.md exist in their source pipelines', () => {
   const has = (file, id) => new RegExp(`^\\| ${id} \\|`, 'm').test(read(`commands/${file}.md`));
   const reused = {
-    feature: ['P1', 'P1a', 'P2', 'P2a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
+    feature: ['P1', 'P1a', 'P2', 'P2a', 'P3a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
     docs: ['2', '3', '4', 'A2'],
     infra: ['1', '2', '3', '4a', '4b'],
     release: ['0', '1', '2', '3'],
@@ -123,6 +123,13 @@ test('designer and live preview are wired into the delivery pipelines', () => {
     assert.match(read(f), /live.preview/i, `${f} asks for a live preview`);
   }
   assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
+  assert.match(read('agents/qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
+  assert.match(feature, /^\| P3a \|[^\n]*\| qa \|/m, 'feature.md P3a is the qa test plan');
+  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'QA.md template');
+  for (const ref of ['techniques.md', 'quality-checklist.md', 'ux-verification.md', 'defects-and-reports.md']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'test-process', 'references', ref)), ref);
+    assert.ok(read('skills/test-process/SKILL.md').includes(ref), `test-process SKILL.md points to ${ref}`);
+  }
   assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'DESIGN.md')), 'DESIGN.md template');
   for (const ref of ['common-bugs.md', 'web.md', 'mobile.md', 'desktop.md', 'cli.md', 'service.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
@@ -154,6 +161,6 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 7);
+  assert.equal(ls().length, 8);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });

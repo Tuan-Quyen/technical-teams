@@ -40,7 +40,7 @@ export const CORE = [
 // Skills shipped with the plugin that a role may load on demand (besides run-kit),
 // without listing them in .claude/technical-team.json.
 export const PLUGIN_SKILLS = {
-  qa: ['live-preview'],
+  qa: ['test-process', 'live-preview'],
   developer: ['live-preview'],
   designer: ['live-preview'],
 };
@@ -277,12 +277,12 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
+    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', QA: 'qa', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
     if (map[team[1]]) return { owner: map[team[1]] };
   }
   if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
   if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
-  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
+  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, QA, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
   if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };

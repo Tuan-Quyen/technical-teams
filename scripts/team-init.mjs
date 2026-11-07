@@ -2,7 +2,7 @@
 // Creates .team/ files from the plugin templates, on demand.
 //
 //   node team-init.mjs                 -> .team/STATE.md only (what every run needs)
-//   node team-init.mjs SPEC PLAN ...   -> just the named files (STATE, SPEC, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER)
+//   node team-init.mjs SPEC PLAN ...   -> just the named files (STATE, SPEC, DESIGN, PLAN, TASKS, QA, OPS_HANDOFF, ROSTER)
 //   node team-init.mjs --config        -> also .claude/technical-team.json (only /technical-team:init passes it)
 //   node team-init.mjs --all           -> every .team file + .claude/agents/ + config (the old up-front setup)
 //
