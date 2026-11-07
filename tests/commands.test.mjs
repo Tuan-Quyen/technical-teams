@@ -21,7 +21,7 @@ function frontmatter(name) {
 }
 
 function docFiles() {
-  const out = ['README.md', 'skills/run-kit/SKILL.md'];
+  const out = ['README.md', 'skills/run-kit/SKILL.md', 'skills/run-kit/references/usage.md'];
   for (const dir of ['agents', 'commands', 'templates', 'templates/team']) {
     for (const f of fs.readdirSync(path.join(ROOT, dir))) if (f.endsWith('.md')) out.push(`${dir}/${f}`);
   }
@@ -44,9 +44,9 @@ test('every command has a description; pipelines with input have an argument-hin
 });
 
 test('run-kit and README list every command, and only those', () => {
-  const kit = read('skills/run-kit/SKILL.md');
+  const kit = read('skills/run-kit/references/usage.md');
   const kitCmds = [...kit.matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]).filter((c) => !c.startsWith('-'));
-  assert.deepEqual([...new Set(kitCmds)].sort(), EXPECTED, 'run-kit §1.2 table');
+  assert.deepEqual([...new Set(kitCmds)].sort(), EXPECTED, 'run-kit usage §2 table');
   const readme = read('README.md');
   const start = readme.search(/^## \d+\. Lệnh workflow/m);
   assert.ok(start >= 0, 'README has a "Lệnh workflow" section');
@@ -138,8 +138,10 @@ test('designer and live preview are wired into the delivery pipelines', () => {
 });
 
 test('qa gate calibration and upstream alignment stay wired', () => {
-  const tp = read('skills/test-process/SKILL.md');
-  for (const rule of ['Scope lock', 'Target lock', 'Depth per tier', 'Round focus', 'Severity needs evidence']) assert.ok(tp.includes(rule), `test-process: ${rule}`);
+  const tp = read('skills/test-process/references/process.md');
+  for (const rule of ['Scope lock', 'Target lock', 'Depth per tier', 'Round focus', 'Severity needs evidence', '## 5. Micro verify']) assert.ok(tp.includes(rule), `test-process process.md: ${rule}`);
+  const tps = read('skills/test-process/SKILL.md');
+  for (const rule of ['Scope lock', 'Target lock', 'Depth by tier', 'Severity']) assert.ok(tps.includes(rule), `test-process SKILL.md: ${rule}`);
   assert.match(read('agents/lead.md'), /\*\*open in-scope blocker\/critical\/major defects\*\*/, 'lead: progress = fewer open in-scope defects');
   assert.match(read('agents/lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
   assert.match(read('agents/developer.md'), /RTM conditions/, 'developer builds to qa conditions');
@@ -148,6 +150,24 @@ test('qa gate calibration and upstream alignment stay wired', () => {
   assert.match(read('agents/developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
   assert.match(read('agents/architect.md'), /## Design escalation/, 'architect: design escalation workflow');
   assert.match(read('agents/lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
+});
+
+test('preloaded skills stay small; detail lives in references', () => {
+  const words = (f) => read(f).split(/\s+/).length;
+  for (const f of ['skills/run-kit/SKILL.md', 'skills/test-process/SKILL.md', 'skills/live-preview/SKILL.md']) {
+    assert.ok(words(f) <= 800, `${f} has ${words(f)} words (preloaded: keep <= 800, move detail to references/)`);
+  }
+  assert.ok(read('skills/live-preview/SKILL.md').includes('pass.md'), 'live-preview points to pass.md');
+  assert.ok(read('skills/test-process/SKILL.md').includes('process.md'), 'test-process points to process.md');
+  assert.ok(read('skills/run-kit/SKILL.md').includes('references/usage.md'), 'run-kit points to usage.md');
+});
+
+test('parallel review and micro verify are wired', () => {
+  const feature = read('commands/feature.md');
+  assert.match(feature, /^\| D2 \|[^\n]*security reviews the same diff in parallel/m, 'D2: security in parallel on first pass');
+  assert.match(feature, /^\| D4 \|[^\n]*\*\*delta\*\*/m, 'D4: delta only');
+  assert.match(feature, /^\| S2m \|[^\n]*\| qa \|/m, 'S2m micro verify by qa');
+  assert.match(read('agents/lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
 });
 
 test('disable-model-invocation kept on user-initiated commands', () => {

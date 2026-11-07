@@ -3,85 +3,41 @@ name: test-process
 description: The QA engineer's full test process, adapted from ISTQB (planning, monitoring and control, analysis, design, implementation, execution, completion) and the STLC — risk-based test planning with entry/exit criteria, static review of acceptance criteria and design, test design techniques (equivalence partitioning, boundary values, decision tables, state transitions, exploratory charters), the quality characteristics to cover (ISO/IEC 25010:2023 — functional suitability, interaction capability/UX, compatibility, performance, reliability, security, maintainability, portability), UI/UX verification against the design and usability heuristics, defect reports with severity and priority, retest and regression, and the test summary report that backs the G2 verdict. Preloaded into qa; QA owns product quality sign-off.
 ---
 
-# test-process — QA is the gate for product quality, not only for green tests
+# test-process — QA is the gate for product quality
 
-A QA PASS means: **the product does what the spec says (verification), the user can actually use it (validation), and nothing that worked before is broken (regression)** — with evidence. Unit tests are one input; the running product (`live-preview`) and the design are the others.
+PASS = the product does what the spec says (**verification**), a real user can use it (**validation**), nothing that worked is broken (**regression**) — with evidence.
 
-Paths below are relative to `${CLAUDE_PLUGIN_ROOT}/skills/test-process/`.
+Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/test-process/references/`):
 
-| Reference | Use it for |
+| File | When |
 |---|---|
-| `references/techniques.md` | deriving test cases: EP, BVA, decision tables, state transitions, pairwise, error guessing, exploratory charters; test levels and types |
-| `references/quality-checklist.md` | quality characteristics to consider per work item (ISO/IEC 25010:2023) and how to test each one here |
-| `references/ux-verification.md` | verifying UI/UX: design conformance against `DESIGN.md`, Nielsen's 10 heuristics, accessibility, platform conventions, copy |
-| `references/defects-and-reports.md` | defect report format, severity × priority, defect lifecycle, retest/regression, test summary report |
+| `process.md` | writing the test plan (ISTQB activities → pipeline steps, outputs), full entry/exit and calibration rules, micro verify |
+| `techniques.md` | designing test cases (EP, BVA, decision table, state transition, pairwise, exploratory charters), levels and types |
+| `quality-checklist.md` | choosing quality characteristics in scope (ISO/IEC 25010:2023) and depth by risk |
+| `ux-verification.md` | verifying UI/UX: conformance to `DESIGN.md`, Nielsen heuristics, WCAG 2.2 AA, UX severity |
+| `defects-and-reports.md` | defect report format, severity × priority, lifecycle, retest/regression, test summary |
 
-## 1. The process inside the team's pipelines
+## Where each activity happens
 
-```mermaid
-flowchart LR
-  P[Planning + static review\nP3a] --> A[Analysis: test conditions\nfrom AC, DESIGN, risks]
-  A --> D[Design: test cases\nwith techniques]
-  D --> I[Implementation: tests, data,\nenvironment, preview scripts]
-  I --> E[Execution: run, live preview,\nUX verification, exploratory]
-  E --> R{Exit criteria met?}
-  R -- no --> DF[Defects → developer\nretest + regression next round]
-  DF --> E
-  R -- yes --> C[Completion: test summary,\nverdict, lessons]
-  M[Monitoring + control: QA.md\nprogress every round] -.-> E
-```
+| Step | Do | Output in `.team/QA.md#W-NNN` |
+|---|---|---|
+| P3a (before G1) | risk-ranked test plan; static review of ACs, edge cases, DESIGN states; RTM conditions mapped to tickets; name missing drivers/environment now | test plan, review findings, RTM |
+| D3 / S3 round 1 | entry criteria → smoke → tests with techniques → live preview → UI/UX verification → exploratory → defects | execution log, defects |
+| Round ≥ 2 | retest `fixed` defects + regression around changes + changed areas only | execution log |
+| Passing round, `release` | exit criteria check, test summary, lessons | test summary |
 
-| ISTQB activity | When in the pipeline | QA does | Output in `.team/QA.md#W-NNN` |
-|---|---|---|---|
-| Test planning | `feature` **P3a** (after pm tickets, before G1); `new` N3; `fix` at step 5 (short); small mode at S3 (short) | scope in/out, risks ranked (likelihood × impact), test types chosen per risk (`quality-checklist.md`), levels (unit/integration/system/e2e), platforms and form factors, test data, environment + drivers needed (tell the lead now what is missing: emulator, browser runner, seeds), entry and exit criteria | **Test plan** |
-| Static testing | same step | review ACs, edge cases and `DESIGN.md` for ambiguity, untestable wording, missing states, contradictions between SPEC / DESIGN / PLAN → findings to the lead for analyst / designer / architect **before** code exists (cheapest defects) | **Review findings** |
-| Test analysis | P3a (design is final at G1), refined in the first D3 / S3 round | test conditions: every AC, edge case, designed screen state, risk, quality characteristic in scope — **each mapped to the ticket that delivers it**, so the developer knows before coding what you will check | **Traceability (RTM)**: condition → source → ticket |
-| Test design | same | test cases with techniques (`techniques.md`); expected results from the spec/design, never from the current behaviour | RTM: condition → test case |
-| Test implementation | same | automated tests in the project's layout, preview scripts (`live-preview`), test data/fixtures, exploratory charters; check entry criteria | test files; RTM: test case → file |
-| Test execution | every D3 / S3 round | run the suite; live preview on every platform; **UI/UX verification** (`ux-verification.md`); time-boxed exploratory session(s); compare actual vs expected; log defects; retest fixed defects; regression around the change | **Execution log** per round, **Defects** |
-| Monitoring and control | every round | progress (conditions passed/failed/blocked), defect trend, risks that changed; blocked → tell the lead what unblocks it | round summary |
-| Test completion | the round that passes, and `release` | check exit criteria, test summary report, open/deferred defects with reasons, lessons learned (escaped bugs → `live-preview` catalogue, missing ACs → analyst) | **Test summary** |
+## Binding rules
 
-## 2. Entry and exit criteria (defaults; the test plan may tighten them)
-
-| | Criteria |
+| Rule | |
 |---|---|
-| Entry to execution | clean code review on this code (D2) · build passes · product starts in the preview environment · test data available · drivers available for every platform in scope (or the gap accepted by the lead) |
-| Exit (= QA PASS) | every condition in the RTM executed · all AC/edge/state test cases pass · live preview clean on every in-scope platform/form factor · **UI/UX verification: no blocker/critical/major defect** · exploratory session(s) done with no blocker/critical/major · regression suite green · no open defect of severity blocker/critical/major in scope · minor/trivial defects listed for the lead (fix now or defer with reason) · no weakened/skipped test |
-| Suspension | product does not start, environment broken, > 30 % of conditions blocked → stop execution, report `vướng` with the cause; do not "test around" it |
+| Exit (PASS) | every RTM condition executed · AC/edge/state cases pass · live preview clean on in-scope platforms · UI/UX verified · regression green · **no open in-scope blocker/critical/major** · no weakened/skipped test |
+| Scope lock | only defects introduced by the change or breaking its AC/DESIGN block G2; pre-existing ones are logged (`Scope: pre-existing`) and become new work items |
+| Target lock | exit criteria + RTM fixed at G1 (small: S0); additions only as a proposal to the lead; a design revision (architect) is the one allowed update |
+| Depth by tier | T2/`new` full · T1 small: ACs + regression of touched area + live preview of what changed, exploratory only for core flows · fix: reproduce → regression test → retest · hotfix: minimal + residual risks listed · micro: `process.md` §5 |
+| Severity | major+ cites a source (AC, DESIGN state, heuristic, WCAG, convention) **and** a concrete user impact, else at most minor; unsure → lower level |
+| Independence | expected results from SPEC/DESIGN/docs/conventions, never from current behaviour |
+| Usability | spec-compliant but unusable = defect; caused by the design → escalate as a design question |
 
-## 2a. Calibration — a high bar that converges
+## Verdict
 
-The bar does not drop: an in-scope blocker/critical/major is always a FAIL. What keeps the loop finite is applying it to a **fixed target**, at the **right depth**, with **evidence-backed severity**.
-
-| Rule | Detail |
-|---|---|
-| Scope lock | a defect blocks G2 only if it is **in scope**: introduced by this work item's change (it worked before, or the changed code causes it) **or** it breaks an AC, edge case or designed state of this work item. Anything else is **pre-existing**: log it with `Scope: pre-existing`, severity as usual, never blocking; the lead opens a new work item (a pre-existing blocker/critical goes to the user in the report) |
-| Target lock | exit criteria and the RTM conditions are fixed when G1 passes (small mode: at S0 with the bullets). A criterion you want to add later goes to the lead as a proposal with the reason; it applies only if the lead (and, for a direction change, the user) agrees |
-| Depth per tier | **T2 / `new`**: full process. **T1 small**: short plan; ACs/bullets + regression of the touched area + live preview of what changed on the main form factor of each in-scope platform (+ smallest form factor for UI); UI/UX conformance + heuristics on the changed screens; exploratory only if a core flow is touched. **Bug fix**: reproduce → regression test → retest → regression around the fix → UI/UX of touched screens. **Hotfix**: reproduce + fix verified + the most relevant suite; everything not done listed as residual risk |
-| Round focus | round 1: everything in the plan, incl. exploratory. Round ≥ 2: retest every `fixed` defect, regression around each change since the last round, re-run the suite, live preview of the screens/commands that changed; new exploration only on newly changed areas. Do not re-explore unchanged areas looking for more |
-| Severity needs evidence | blocker/critical/major must cite the **source** (AC, edge case, DESIGN state, heuristic, WCAG criterion, platform convention) **and** the concrete **user impact** ("user cannot finish checkout on 375 px"). Without both it is at most minor. When unsure between two levels, take the lower one and say why |
-| Rejected severity | the lead may return a defect whose severity is not backed as above; re-rate it or add the evidence — never silently drop it |
-
-
-## 3. Verdict
-
-| Verdict | When |
-|---|---|
-| **PASS** | exit criteria met for in-scope defects — test summary attached, pre-existing defects listed separately |
-| **FAIL** | any exit criterion not met — defect list with severity, priority, owner; the loop goes back to D1 |
-| **PASS pending design decision** | everything passes, but a UI/UX deviation needs a design judgment (DESIGN.md has no answer for the case, or the deviation may be acceptable) → the lead asks the designer only about those items; designer "fix" = FAIL, "accept" = PASS |
-| **Blocked** (`vướng` / `cần quyết định`) | entry criteria not met; say exactly what is missing |
-
-## 4. Rules
-
-| Rule | Detail |
-|---|---|
-| Independence | expected results come from SPEC / DESIGN / docs / platform conventions, never from "what the code does now" |
-| User's eyes | for every flow ask: can a first-time user complete it without help, and does it match how they think? A spec-compliant but unusable flow is a defect (validation), reported with the heuristic it breaks |
-| Risk-based depth | more techniques and exploration where impact × likelihood is high (money, data, auth, core flows, new code, complex logic); state what was deliberately tested less and why |
-| Evidence | every result has a command + output, screenshot or transcript; "looks fine" is not evidence |
-| One defect, one report | reproducible steps, expected vs actual, evidence, severity, priority, suspected owner (`defects-and-reports.md`) |
-| Retest + regression | every fixed defect is retested with its original steps; the area around the fix is regression-tested; the regression test stays in the suite |
-| Don't fix code | you report; the developer fixes. You may fix a test that is wrong, and say why |
-| Escaped defects | a defect found after your PASS: add its test, record it in the test summary "lessons", propose a catalogue row |
+**PASS** · **FAIL** (defects with severity, priority, owner) · **PASS pending design decision** (UI/UX items for the designer only) · **`vướng` / `cần quyết định`** (entry criteria not met — name what is missing).

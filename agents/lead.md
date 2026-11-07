@@ -130,7 +130,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 |---|---|---|
 | **G1** direction approved | user approved spec + plan (or the debugger's high-risk fix direction) | `STATE.md` → `Approvals:` date + user's words |
 | **G2** tests | qa PASS with real output (command + summary line); qa's exit criteria met (`QA.md#W-NNN` test summary): no open blocker/critical/major defect, live preview clean on every in-scope platform, UI/UX verified; escalated design items decided by the designer | `Results: QA` (+ link to the test summary) |
-| **G3** review | no blocking finding from code-reviewer, security or specialists on the same final code that passed G2 | `Results: Review/Security` |
+| **G3** review | no blocking finding from code-reviewer, security or specialists on the same final code that passed G2 — security covered by its first pass + the delta review; micro: the review half rests on qa's micro verify | `Results: Review/Security` |
 | **G4** done | docs updated where needed, `.team/` updated by owners, final report delivered | `Gate: G4 done`, `Status: done` |
 
 | Rule | Detail |
@@ -145,15 +145,19 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 
 ```mermaid
 flowchart LR
-  D[developer] --> CR[code-reviewer + review specialists]
+  D[developer] --> M{micro? small mode only}
+  M -- yes --> MV[qa micro verify]
+  MV -- FAIL --> D
+  MV -- PASS = G2 + G3 --> X
+  M -- no --> CR[code-reviewer + review specialists ∥ security first pass if required]
   CR -- blocking --> D
-  CR -- clean --> Q[qa + test specialists, live preview for UI]
+  CR -- clean --> Q[qa + test specialists]
   Q -- FAIL --> D
   Q -- PASS = G2 --> S{security required?}
   Q -- PASS pending design decision --> DR[designer decides escalated items]
   DR -- fix --> D
   DR -- accept = G2 --> S
-  S -- yes --> SEC[security]
+  S -- yes --> SEC[security on the delta since its first pass]
   SEC -- blocking --> D
   SEC -- clean --> X[exit: G2 + G3 on the same code]
   S -- no --> X
@@ -161,7 +165,9 @@ flowchart LR
 
 | Rule | Detail |
 |---|---|
-| Restart point | any code change restarts at code-reviewer; no code reaches qa without a clean review, none reaches security without G2 (qa PASS, or PASS pending design decision resolved as accept) |
+| Restart point | any code change restarts at code-reviewer; no code reaches qa without a clean review; the final security step runs only after G2 (qa PASS, or PASS pending design decision resolved as accept) |
+| Parallel review | security required → on the **first** review of the work item, brief code-reviewer and security in parallel on the same diff (both read-only, so nothing conflicts); record the files security reviewed in `STATE.md`. Later rounds: code-reviewer only. After G2, security reviews only the **delta** (files changed since its first pass; none → no call). Any blocking from either → developer |
+| Micro (small mode only) | after S1, check on `git diff --stat` + `git status --porcelain`: **all** of ≤ 3 files · ≤ 40 changed lines · no test, infra, data, dependency manifest/lockfile or build-config file · no security trigger (§1) · no API/contract, shared component or public interface change · no new screen or flow · no `.team/DESIGN.md` change needed. All true → S2m (qa micro verify replaces code-reviewer + qa); any false or unsure → normal S2 → S3. qa may answer "not micro" → S2. Record `Micro: yes — <why>` in `STATE.md` and in the final report |
 | Should-fix items | fixed in the same round, never as a separate unreviewed edit |
 | Round limit | none; no gate opens early; no work item closes with failing tests or open blocking findings |
 | Loop log | per round in `STATE.md`: round, failed step (code-review / qa / design-decision / security), failing items (count + IDs), what changed |

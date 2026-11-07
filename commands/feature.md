@@ -100,11 +100,11 @@ Input: G1-approved tickets of W-NNN (or the subset the calling pipeline names, e
 
 ```mermaid
 flowchart LR
-  D[D1 developer / devops / dba per ticket] --> CR[D2 code-reviewer]
+  D[D1 developer / devops / dba per ticket] --> CR[D2 code-reviewer ∥ security first pass]
   CR -- blocking --> D
   CR -- clean --> Q[D3 qa]
   Q -- FAIL --> D
-  Q -- PASS: G2 --> SEC[D4 security]
+  Q -- PASS: G2 --> SEC[D4 security on the delta since its pass]
   Q -- PASS pending design decision --> DR[D3a designer decides escalated items]
   DR -- fix --> D
   DR -- accept: G2 --> SEC
@@ -116,10 +116,10 @@ flowchart LR
 | # | Step | Agent | Parallel | Check / on fail |
 |---|---|---|---|---|
 | D1 | Implementation, tickets in dependency order: developer tickets → developer, infra → devops (verify locally, update `OPS_HANDOFF.md`, no remote changes), migrations/seeds → dba (hand-written: parallel with developer; ORM-generated: after the model change), test-setup tickets → qa, docs wait for D5. **Hook `execute`** | developer, devops, dba, qa, specialists | same parallel group **and** disjoint files | evidence of build/lint/tests; `git diff --stat` (+ `git status --porcelain` for new files) = "Đã ghi vào"; developer stuck → debugger |
-| D2 | Code review of the W-NNN diff (and new files) with plan + ACs. **Hook `review`** (dba for DB parts) | code-reviewer + specialists | specialists ∥ reviewer | blocking → D1 |
+| D2 | Code review of the W-NNN diff (and new files) with plan + ACs. **Hook `review`** (dba for DB parts). **First D2 of the work item:** security reviews the same diff in parallel (static review of the code + the plan's security notes); record the reviewed file list in `STATE.md`. Later D2 rounds: code-reviewer only | code-reviewer + specialists (+ security on the first pass) | yes, all on the same diff | any blocking → D1 |
 | D3 | **Quality verification** per the test plan (`test-process` skill): entry criteria → smoke → RTM tests with techniques → retest fixed defects + regression → **live preview** of the real product on every in-scope platform/form factor (`live-preview`) → **UI/UX verification** (conformance to `DESIGN.md`, usability heuristics, accessibility) → exploratory session → defects with severity/priority → exit criteria → test summary in `QA.md#W-NNN`. **Hook `test`** | qa + specialists | specialists ∥ qa | FAIL → D1 (then D2, D3); PASS with test summary = **G2**; "PASS pending design decision" → D3a |
 | D3a | **Design decision on qa's escalated UI/UX items only** (DESIGN.md has no answer, or a deviation may be acceptable): fix / accept per item, DESIGN.md updated if the design changes | designer | after qa | any "fix" → D1 (then D2, D3); all "accept" = **G2** |
-| D4 | Security on the final diff + plan's security notes | security | no | blocking → D1 (then D2, D3, D4); clean = **G3** |
+| D4 | Security on the **delta**: files changed since its first-pass review (from `git diff` + the recorded list). No change since → nothing to run, the first pass covers the final code | security | no | blocking → D1 (then D2, D3, D4); clean = **G3** (code-review + security clean on the code that passed G2) |
 | D5 | Docs (README / API / CHANGELOG / runbooks; writer confirms with a reason if nothing changed) ∥ pm marks tickets `done` | writer ∥ pm | yes | then `STATE.md`: results, `G4 done`, status `done`; final report §8 |
 
 ### Small (S0–S5, T1)
@@ -132,7 +132,12 @@ flowchart LR
 ```mermaid
 flowchart LR
   S0[S0 Expected behaviour bullets] --> D[S1 developer]
-  D --> CR[S2 code-reviewer]
+  D --> M{micro criteria met?}
+  M -- yes --> MV[S2m qa micro verify]
+  MV -- FAIL --> D
+  MV -- not micro --> CR
+  MV -- PASS: G2 + review --> W
+  M -- no --> CR[S2 code-reviewer ∥ security if triggered]
   CR -- blocking --> D
   CR -- clean --> Q[S3 qa]
   Q -- FAIL --> D
@@ -140,7 +145,7 @@ flowchart LR
   Q -- PASS pending design decision --> DR[S3a designer decides escalated items]
   DR -- fix --> D
   DR -- accept: G2 --> T
-  T -- yes --> SEC[S4 security]
+  T -- yes --> SEC[S4 security on the delta]
   SEC -- blocking --> D
   SEC -- clean --> W
   T -- no --> W[S5 writer if needed → G4]
@@ -150,10 +155,11 @@ flowchart LR
 |---|---|---|---|
 | S0 | Open W-NNN (pipeline `feature (small)`, T1); write 2–5 **expected behaviour** bullets in `STATE.md` (they replace ACs). A new screen or a changed flow/layout needs design → full mode (from P1). Cannot write them without guessing → ask (main thread) or gate report with questions (subagent) | lead | — |
 | S1 | Change + bullets + exact files. Infra part → devops. **Hook `execute`** | developer (devops) | evidence of build/lint/tests |
-| S2 | Code review of the diff. **Hook `review`** | code-reviewer + specialists | blocking → S1 |
+| S2m | **Micro verify** — only when the lead confirms every micro criterion (Lead manual §3) on `git diff --stat` + `git status --porcelain` after S1: one qa run does the code check and the test part (`test-process` `process.md` §5) | qa | FAIL → S1 → S2m; "not micro" → S2; PASS = **G2** + review half of **G3** → S5 |
+| S2 | Code review of the diff. **Hook `review`**. Security triggered → security reviews the same diff in parallel (first pass) | code-reviewer + specialists (∥ security) | any blocking → S1 |
 | S3 | Quality verification against the bullets: short test plan in `QA.md#W-NNN`, tests, retest + regression, live preview for any observable change, UI/UX verification against the design system and heuristics, defects, test summary. **Hook `test`** | qa + specialists | FAIL → S1 → S2 → S3; PASS = **G2**; "PASS pending design decision" → S3a |
 | S3a | Design decision on qa's escalated UI/UX items only | designer | any "fix" → S1 → S2 → S3; all "accept" = **G2** |
-| S4 | Security on the final diff (if triggered) | security | blocking → S1 → S2 → S3 → S4 |
+| S4 | Security on the delta since its S2 pass (if triggered; no change → nothing to run) | security | blocking → S1 → S2 → S3 → S4 |
 | S5 | **G3** = clean review (+ clean security) on the final code. Docs only if usage/API/operations changed (CHANGELOG at least when kept) → **G4**, final report | writer | — |
 
 ### Rules (all modes)
