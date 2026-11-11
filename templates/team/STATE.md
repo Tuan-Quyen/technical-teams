@@ -13,7 +13,7 @@
 - **Status:** running | waiting-for-user | blocked | done
 - **Gate:** G1 pending | G1 approved | G2 passed | G3 passed | G4 done
 - **Approvals:** <gate> approved by user on <YYYY-MM-DD>: "<user's words>"
-- **Loop log:** round <n>: <failing items: count + IDs> → <what changed> · escalation: none | debugger | architect/analyst | waiting for user
+- **Loop log:** round <n>: <failing items: count + IDs> → <what changed> · escalation: none | debugger | architect/ba | waiting for user
 - **Results:**
   - QA: <PASS/FAIL + command + counts>
   - Review: <blocking n / should-fix n / suggestions n>

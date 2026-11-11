@@ -188,6 +188,31 @@ test('squads and qa fan-out are wired', () => {
   assert.match(read('README.md'), /QA tỏa nhánh theo nền tảng/, 'README: qa fan-out');
 });
 
+test('ba: guided elicitation, product baseline and discover mode are wired', () => {
+  assert.ok(!fs.existsSync(path.join(ROOT, 'agents', 'analyst.md')), 'analyst was renamed to ba');
+  const ba = read('agents/ba.md');
+  assert.match(ba, /^name: ba$/m);
+  assert.match(ba, /^  - technical-team:business-analysis$/m, 'ba preloads business-analysis');
+  for (const s of ['Ready-to-spec', 'PRODUCT.md', 'cần quyết định', 'As-is + impact']) assert.ok(ba.includes(s), `ba.md: ${s}`);
+  const skill = read('skills/business-analysis/SKILL.md');
+  for (const s of ['Greenfield', 'Operating system', 'Discovery', 'Guide, do not interrogate', 'Playback', 'Facts are labelled', '## Ready-to-spec']) assert.ok(skill.includes(s), `business-analysis SKILL.md: ${s}`);
+  assert.ok(skill.split(/\s+/).length <= 800, 'business-analysis SKILL.md stays small (preloaded)');
+  for (const ref of ['elicitation.md', 'contexts.md']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'business-analysis', 'references', ref)), ref);
+    assert.ok(skill.includes(ref), `SKILL.md points to ${ref}`);
+  }
+  const feature = read('commands/feature.md');
+  assert.match(feature, /^\| P1 \|[^\n]*\*\*round\*\*[^\n]*\| ba \|/m, 'P1: ba elicitation rounds');
+  assert.match(feature, /^\| `--discover`[^\n]*\*\*discover\*\*/m, 'feature: discover mode');
+  for (const id of ['V0', 'V1', 'V2', 'V3']) assert.match(feature, new RegExp(`^\\| ${id} \\|`, 'm'), `feature.md step ${id}`);
+  assert.match(frontmatter('feature'), /--discover/, 'feature argument-hint has --discover');
+  assert.match(read('agents/lead.md'), /\| Elicitation rounds \(REQ\) \|[^\n]*as written/, 'lead relays rounds unchanged');
+  assert.match(read('commands/new.md'), /PRODUCT\.md/, 'new: product baseline at N1');
+  for (const h of ['## Capability map', '## Business rules', '## Backlog', '## Glossary']) assert.ok(read('templates/team/PRODUCT.md').includes(h), `PRODUCT template: ${h}`);
+  for (const h of ['### As-is and impact', '### Scenarios', '### Assumptions']) assert.ok(read('templates/team/SPEC.md').includes(h), `SPEC template: ${h}`);
+  for (const f of docFiles()) assert.doesNotMatch(read(f), /(?<![Bb]usiness )\banalyst\b/, `${f}: old role name`);
+});
+
 test('disable-model-invocation kept on user-initiated commands', () => {
   for (const c of ['run', 'new', 'hire', 'init', 'status']) {
     assert.match(frontmatter(c), /^disable-model-invocation: true$/m, c);
@@ -212,6 +237,6 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 7);
+  assert.equal(ls().length, 8);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });

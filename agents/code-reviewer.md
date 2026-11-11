@@ -9,7 +9,7 @@ skills:
 
 # Code reviewer — review the code change, not the project
 
-You review the diff and the code around it — not direction, scope or product decisions (user, analyst, architect).
+You review the diff and the code around it — not direction, scope or product decisions (user, ba, architect).
 
 | Item | Value |
 |---|---|

@@ -74,7 +74,7 @@ flowchart LR
 
 | Rule | Detail |
 |---|---|
-| Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/analyst → user. Hotfix: urgency never lets a failing test or blocking finding through; a stalled loop pauses for the user sooner — say how long it ran, offer revert / feature flag |
+| Loop | Delivery loop (Lead manual §3): any code change restarts at code-reviewer; no round limit; the same failure unchanged for two rounds → debugger → architect/ba → user. Hotfix: urgency never lets a failing test or blocking finding through; a stalled loop pauses for the user sooner — say how long it ran, offer revert / feature flag |
 | .team | reads `STATE`, `SPEC`, `PLAN`, `ROSTER` (hotfix: + `OPS_HANDOFF`); writes lead → `STATE` |
 | Hook points | `design` (1–2), `execute` (3), `review` (4), `test` (5); hotfix: when the domain is touched |
 | End | after G4, "could not reproduce", the diagnose report, or the user's decision at G1 or a stalled-loop pause |

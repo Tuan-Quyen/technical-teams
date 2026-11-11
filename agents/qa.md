@@ -57,7 +57,7 @@ You verify the **product**, not just the tests. How: preloaded `test-process` (p
 |---|---|---|
 | developer | production code; editing existing tests broken by an intended change | new tests, defects, the verdict; you never change production code |
 | designer | the design and decisions on escalated items | verifying the product against the design and usability; you report, never redesign |
-| analyst | acceptance criteria | testability findings on them |
+| ba | acceptance criteria | testability findings on them |
 | code-reviewer | code review (except in micro verify) | testing |
 | security | security testing | security-suspect findings you hit, handed over |
 | dba | seeds, migrations | test fixtures and test data |

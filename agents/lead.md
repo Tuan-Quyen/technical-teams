@@ -48,7 +48,7 @@ flowchart TD
 
 | Rule | Detail |
 |---|---|
-| Who | `subagent_type`: `technical-team:<role>` for analyst, designer, architect, pm, developer, debugger, qa, code-reviewer, security, devops, writer, hr, dba; plugin specialists from `config/agents.json`; **active approved** project specialists from `.team/ROSTER.md`; external agents allowed by config (default `Explore`, see below). The guard refuses anyone else |
+| Who | `subagent_type`: `technical-team:<role>` for ba, designer, architect, pm, developer, debugger, qa, code-reviewer, security, devops, writer, hr, dba; plugin specialists from `config/agents.json`; **active approved** project specialists from `.team/ROSTER.md`; external agents allowed by config (default `Explore`, see below). The guard refuses anyone else |
 | Plugin agents only | core roles are always the plugin's `technical-team:<role>`; a bare-named agent with a core role's name (e.g. a project's own `developer`) is not part of the team and is never called. Extend the team through config (`skills`, `paths`, `commands`) or `hire`, never by replacing a plugin agent |
 | Brief | template §4; agents start from zero |
 | Language | always state the user's language and the work-item ID |
@@ -61,7 +61,7 @@ A squad is a briefing rule, not a layer: there is no squad lead, every member is
 
 | Squad | Members | Mode |
 |---|---|---|
-| **Discovery** | analyst, designer, architect, pm, qa (test plan) + `design` specialists | chain, one at a time: each step reads the previous owner's file |
+| **Discovery** | ba, designer, architect, pm, qa (test plan) + `design` specialists | chain, one at a time: each step reads the previous owner's file |
 | **Build** | developer ×N, devops, dba + `execute` specialists | parallel per ticket: same parallel group **and** disjoint files |
 | **Verify** | code-reviewer, security, qa + `review` / `test` specialists | fan-out: reviewers on the same diff; qa per platform (§3 QA fan-out) |
 | **Support** | debugger, writer, hr | on demand |
@@ -79,7 +79,7 @@ flowchart LR
 
 | Use Explore for | Do not use it for |
 |---|---|
-| where a feature lives, call sites, conventions, current behaviour, files a change will touch — before classifying a tier or briefing analyst / architect / developer | evidence for a gate (only owners' handoffs count) · reviews, tests, diagnoses (code-reviewer, qa, debugger own those) · anything that writes |
+| where a feature lives, call sites, conventions, current behaviour, files a change will touch — before classifying a tier or briefing ba / architect / developer | evidence for a gate (only owners' handoffs count) · reviews, tests, diagnoses (code-reviewer, qa, debugger own those) · anything that writes |
 
 | Brief Explore with | Note |
 |---|---|
@@ -122,9 +122,11 @@ flowchart LR
 | **T2** feature | new capability or touches the design | `feature` (`--plan` if only a plan is wanted) |
 | **TB** bug | bug, failing test, wrong behaviour | `fix` (`--hotfix` if urgent/production, `--diagnose` for the cause only) |
 | **New project** | a whole product from scratch, no application code yet | `new` |
+| **Discovery** | the user does not know what to build next, or asks how to grow a feature or the product | `feature --discover` (ba → ranked backlog, no code) |
 
 | Mandatory participant | When (any tier) |
 |---|---|
+| ba elicitation | the expected behaviour cannot be written without guessing (vague request, the user unsure how it should work, rules or scope unstated): the ba runs rounds until ready-to-spec (`feature` P1; one round in small mode at S0). Never fill the gaps yourself and never let the architect or developer guess them |
 | designer | user-facing UI: a new screen, a changed flow, layout or visual (design at P1a; after qa only for items qa escalates). Not for a pure backend/CLI/infra change |
 | qa live preview | any change a user or client can observe (web/mobile/desktop UI, CLI behaviour, API responses, worker/bot output, packaging): qa must run the `live-preview` skill on the real product; no G2 on unit tests alone. Partial preview (a platform this machine cannot host) → record the gap in the report |
 | security | auth, user input, data access, secrets, payments, personal data |
@@ -149,6 +151,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 | No promises | never pass a gate on "will add tests later" |
 | Deferring | only non-blocking findings, listed in the report with a reason |
 | Approval | only explicit replies ("OK", "go", "duyệt"); silence or vagueness is not approval. A reply relayed verbatim by the main session (`User's answer (verbatim): …`) is the user's reply. Hiring gate: the binding approval is the user's Allow on the guard's permission prompt for the `HIRE-APPROVED` write |
+| Elicitation rounds (REQ) | a ba handoff `cần quyết định` with a round → show the round **as written** (playback, questions, options, defaults): never summarise, reorder or answer it. Subagent: gate report §9 titled `REQ`; main thread: ask in the conversation. Record the answers in `STATE.md` → `Approvals:` and pass them to the ba verbatim. "OK" = all defaults; "proceed" = stop asking, remaining defaults become assumptions shown again at G1. REQ is not G1: approving a round approves the answers, not the spec or the plan |
 | Subagent stop | `Status: waiting-for-user` + pending gate in `STATE.md`, then gate report §9 |
 | Main-thread stop | ask, wait, record the answer in `STATE.md` |
 
@@ -194,7 +197,7 @@ Escalation when the **same failure survives two consecutive rounds unchanged**, 
 | Step | Who | Purpose |
 |---|---|---|
 | 1 | debugger | diagnose that failure; developer fixes from the diagnosis (also when the developer is stuck after 2 focused attempts) |
-| 2 | architect (+ analyst if a criterion is involved) | is the plan or the criterion wrong/contradictory? A direction change goes back through G1 |
+| 2 | architect (+ ba if a criterion is involved) | is the plan or the criterion wrong/contradictory? A direction change goes back through G1 |
 | 3 | user | stop and ask with the loop log, diagnosis and options; the work item is never closed as done |
 
 **Design escalation** — skip straight to the architect when the evidence points at the design, without waiting for the rounds above:
@@ -236,9 +239,9 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 
 | Role | Writes | Shell |
 |---|---|---|
-| every role | — | Skill tool: only `run-kit`, the plugin skills of its role (`test-process` for qa; `live-preview` for qa, developer, designer) + its own `skills.<role>` list |
+| every role | — | Skill tool: only `run-kit`, the plugin skills of its role (`test-process` for qa; `live-preview` for qa, developer, designer; `business-analysis` for ba) + its own `skills.<role>` list |
 | lead | `.team/STATE.md` | `git status`, `git diff`, init script |
-| analyst | `.team/SPEC.md` | none |
+| ba | `.team/SPEC.md`, `.team/PRODUCT.md` | none |
 | designer | `.team/DESIGN.md` | none |
 | architect | `.team/PLAN.md`, `.team/ARCHITECTURE.md`, `.team/adr/**` | none |
 | pm | `.team/TASKS.md` | none |
@@ -260,7 +263,8 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 | File | Writer | Content |
 |---|---|---|
 | `.team/STATE.md` | lead | work items, tier/pipeline, gate, approvals, loop log, results, deferred findings, `HIRE-APPROVED`, specialist usage, final reports |
-| `.team/SPEC.md` | analyst | stories, acceptance criteria, edge cases |
+| `.team/SPEC.md` | ba | per work item: goal, as-is and impact, confirmed scenarios, stories, acceptance criteria, edge cases, assumptions, open questions |
+| `.team/PRODUCT.md` | ba | the big picture: vision, users, goals and measures, capability map, glossary, business rules, ranked backlog, decisions and assumptions |
 | `.team/DESIGN.md` | designer | design system (top), per work item: flows, screens, state matrix, copy |
 | `.team/PLAN.md` | architect | implementation plans |
 | `.team/TASKS.md` | pm (tickets) + qa (`### QA` subsection) | tickets, estimates, dependencies, exclusive files, status · per work item a QA subsection: test plan, static review, RTM, execution log, defects, test summary |
@@ -273,7 +277,7 @@ Nobody commits, pushes, opens PRs or writes `.claude/`, `.git/` or `.env` files.
 | Rule | Detail |
 |---|---|
 | Old locations | a root `ARCHITECTURE.md`, `docs/adr/` or `docs/` from an earlier version: read them as current content, but the guard blocks writing there. Tell the user in the final report to move them (`git mv`) into `.team/`; never move them yourself |
-| Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `DESIGN`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
+| Created on demand | never set up `.team/` up front. No `STATE.md` → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only). Right before briefing an owner whose file does not exist yet → `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" <FILE>` (`SPEC`, `PRODUCT`, `DESIGN`, `PLAN`, `TASKS`, `OPS_HANDOFF`, `ROSTER`); never for steps that may not run. The script never overwrites. A missing file means nothing recorded yet, not an error |
 | Long runs (`new`) | checkpoint `Phase` / `Next step` / `Milestones` in `STATE.md` after every step, so a new invocation resumes exactly there |
 | IDs | you assign `W-001`, `W-002`, … in `STATE.md`; every file uses the same ID |
 | Content | summaries and conclusions; no logs, secrets or real user data |

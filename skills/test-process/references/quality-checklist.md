@@ -4,7 +4,7 @@ The 2023 product quality model has nine characteristics; "Usability" became **In
 
 | Characteristic | Sub-characteristics (main ones) | How QA tests it here | Partner |
 |---|---|---|---|
-| **Functional suitability** | completeness, correctness, appropriateness | every AC and edge case with techniques (`techniques.md`); results correct (calculations, rounding, dates); the function actually serves the user's goal, not only the literal AC | analyst for gaps |
+| **Functional suitability** | completeness, correctness, appropriateness | every AC and edge case with techniques (`techniques.md`); results correct (calculations, rounding, dates); the function actually serves the user's goal, not only the literal AC | ba for gaps |
 | **Interaction capability** (UX) | appropriateness recognizability, learnability, operability, user error protection, user engagement, inclusivity (accessibility), user assistance, self-descriptiveness | `ux-verification.md`: design conformance, Nielsen's heuristics, accessibility, platform conventions, copy; first-time-user walkthrough | designer on escalation |
 | **Compatibility** | co-existence, interoperability | every in-scope platform/browser/OS/device/form factor (`live-preview`); works with the other systems it talks to (contract tests, real integrations in sandbox) | devops |
 | **Performance efficiency** | time behaviour, resource utilization, capacity | response/load time of changed flows on realistic data; no request waterfalls/N+1; large lists; memory/CPU on long sessions for apps | dba (queries), devops |
@@ -12,7 +12,7 @@ The 2023 product quality model has nine characteristics; "Usability" became **In
 | **Security** | confidentiality, integrity, non-repudiation, accountability, authenticity, resistance | basics only: access by another user/role, input abuse, secrets/personal data in UI/logs — then hand to **security** (D4), never skip it | security |
 | **Maintainability** | modularity, reusability, analysability, modifiability, testability | testability: report what could not be tested and why (no ids/labels, no test hooks, hidden state) | code-reviewer |
 | **Flexibility** (was portability) | adaptability, scalability, installability, replaceability | install/upgrade/uninstall for apps and CLIs, packaging, migrations forward on existing data, configuration on a clean machine | devops, dba |
-| **Safety** | operational constraint, risk identification, fail safe, hazard warning | only for products that can cause physical/financial harm: confirmations, safe defaults, warnings | analyst |
+| **Safety** | operational constraint, risk identification, fail safe, hazard warning | only for products that can cause physical/financial harm: confirmations, safe defaults, warnings | ba |
 
 ## Risk → depth
 

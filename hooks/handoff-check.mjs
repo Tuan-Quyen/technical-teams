@@ -12,6 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { teamAgentKind } from './guard.mjs';
+import { agentStopped } from './activity.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(HERE, '..');
@@ -96,12 +97,13 @@ async function main() {
   try { input = JSON.parse(raw); } catch { return; }
   const kind = teamAgentKind(input);
   if (!kind) return;                                   // not a technical-team agent
-  if (typeof input.last_assistant_message !== 'string') return; // cannot see the message: do not block blindly
+  // Every return below lets the agent end, so its live entry goes; a block keeps it.
+  const ended = () => agentStopped(input);
+  if (typeof input.last_assistant_message !== 'string') return ended(); // cannot see the message: do not block blindly
   const problem = checkHandoff(input.last_assistant_message, kind);
-  if (!problem) return;
+  if (!problem) return ended();
   const r = retries(String(input.agent_id || input.session_id || 'unknown'));
-  if (input.stop_hook_active && r.count >= MAX_RETRIES) return;
-  if (r.count >= MAX_RETRIES) return;                  // give up; the lead treats a missing handoff as "blocked"
+  if (r.count >= MAX_RETRIES) return ended();          // give up; the lead treats a missing handoff as "blocked"
   r.bump();
   const how = kind === 'lead'
     ? 'Finish with the final report (Lead manual §8), or the gate report (§9) if you are stopping for the user.'

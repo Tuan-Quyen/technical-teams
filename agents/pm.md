@@ -62,7 +62,7 @@ flowchart LR
 
 | With | They own | You own |
 |---|---|---|
-| analyst | stories and acceptance criteria | you never change them |
+| ba | stories and acceptance criteria | you never change them |
 | architect | the design | ticket slicing; you may suggest a cleaner split, the architect decides |
 | lead | assigning agents, pipeline choice, passing gates | order, grouping, estimates, status; you never assign work or talk to agents |
 

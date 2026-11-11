@@ -48,10 +48,10 @@ flowchart LR
 |---|---|---|---|---|---|---|---|---|
 | Projects | <…> | skeleton rows | n/a — single request | toast + highlighted row | n/a | banner + Retry | hide "New" | 80-char names wrap |
 
-**Completeness:** <per screen: capabilities designed / out of scope (agreed with analyst)>
+**Completeness:** <per screen: capabilities designed / out of scope (agreed with ba)>
 
 **Copy:** <labels, empty and error texts>
 
 **Tokens / components changed:** <none | what>
 
-**Open questions:** <for analyst / user>
+**Open questions:** <for ba / user>

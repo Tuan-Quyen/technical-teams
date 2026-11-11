@@ -35,7 +35,7 @@
 - **Exit criteria:** <defaults from test-process §2 + extra> — locked at G1; later changes only with lead approval
 
 #### Static review findings
-- <W-000.AC2 not testable: "fast" has no threshold — analyst>
+- <W-000.AC2 not testable: "fast" has no threshold — ba>
 
 #### Traceability (RTM)
 | Condition | Source | Ticket | Test case / technique | Test file / preview step | R1 | R2 |
