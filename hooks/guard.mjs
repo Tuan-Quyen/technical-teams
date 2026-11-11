@@ -34,7 +34,7 @@ import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = 'technical-team';
 export const CORE = [
-  'lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'debugger',
+  'lead', 'ba', 'designer', 'architect', 'pm', 'developer', 'debugger',
   'qa', 'code-reviewer', 'security', 'devops', 'writer', 'hr', 'dba',
 ];
 // Skills shipped with the plugin that a role may load on demand (besides run-kit),
@@ -43,6 +43,7 @@ export const PLUGIN_SKILLS = {
   qa: ['test-process', 'live-preview'],
   developer: ['live-preview'],
   designer: ['live-preview'],
+  ba: ['business-analysis'],
 };
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 const AGENT_TOOLS = new Set(['Agent', 'Task']);
@@ -277,14 +278,14 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'analyst', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
+    const map = { STATE: 'lead', SPEC: 'ba', PRODUCT: 'ba', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
     // TASKS.md: pm owns the tickets, qa its `### QA` subsection per work item (sections are not guard-enforced)
     const shared = { TASKS: ['qa'] };
     if (map[team[1]]) return { owner: map[team[1]], also: shared[team[1]] || [] };
   }
   if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
   if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
-  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
+  if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
   if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
   if (matchAny(rel, cfg.docs)) return { owner: 'writer' };

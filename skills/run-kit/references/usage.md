@@ -31,9 +31,10 @@ flowchart LR
 | `new` | `<idea \| path/to/PRD>` (empty = resume) | requirements → stack + architecture → MVP plan → milestones (delivery loop) → ops → docs → release; resumes from `.team/STATE.md` | stops only at REQ, STACK, G1, each milestone, RELEASE (+ hiring gate / escalation) |
 | `init` | `[--all]` | create `.team/STATE.md` + `.claude/technical-team.json`; `--all` = every file up front | – |
 | `status` | – | summary of `.team/`, no agents | – |
-| `feature` | `<description>` | plan → G1 → delivery loop (with security) → docs | G1–G4 |
-| | `<goal> --plan` | analyst → architect → pm → stop, no code | G1 |
+| `feature` | `<description>` | ba elicitation (REQ rounds when it must ask) → plan → G1 → delivery loop (with security) → docs | G1–G4 |
+| | `<goal> --plan` | ba → architect → pm → stop, no code | G1 |
 | | `<description> --small` | T1: delivery loop (security if triggered) | G2–G4 |
+| | `<need> --discover` | not sure what to build: ba finds opportunities and ranks options into the backlog in `.team/PRODUCT.md`; you pick; no code | DISCOVER |
 | `fix` | `<bug>` | debugger → delivery loop with regression test | G1 if risky, G2–G4 |
 | | `<bug> --hotfix` | urgent: minimal fix, security always, short docs | G2–G4 |
 | | `<symptom> --diagnose` | debugger only, no code | – |
@@ -50,6 +51,8 @@ flowchart LR
 Flags can also be said in words ("chỉ lên kế hoạch", "gấp", "chỉ chẩn đoán", "audit", "ghi ADR"); the lead records the mode in `STATE.md`.
 
 ## 3. Gates and delivery loop
+
+When the request does not say exactly how things should work, the ba does not guess: it reads the documents and the code, then sends a **round** through the lead (gate `REQ`) — its understanding as concrete scenarios, plus at most 7 questions, each with why it matters, options with consequences and a recommended default. Answer per question, "OK" (all defaults) or "proceed" (stop asking; the rest become assumptions listed again at G1). The big picture it builds is kept in `.team/PRODUCT.md`.
 
 | Gate | Passes when |
 |---|---|
@@ -73,7 +76,9 @@ flowchart LR
   SEC -- clean --> X[G2 + G3 passed]
   S -- no --> X
 ```
-Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shared/test/infra/data/dependency change, no new screen) gets one qa micro verify instead of code-reviewer + qa. No round limit. Progress = fewer open in-scope blocker/critical/major defects; same failure unchanged for two rounds, or three rounds without progress → debugger → architect/analyst → you. Only in-scope defects block; pre-existing ones become new work items. Suspected design flaw (developer evidence, plan-level root cause, defect cluster) → straight to the architect, who researches and revises the plan; a user-visible revision comes back to you at G1.
+Squads: Discovery (ba → designer → architect → pm → qa plan) runs as a chain; Build (developer ×N, devops, dba) in parallel on disjoint files; Verify fans out (code-reviewer ∥ security on one diff; with ≥ 2 independent platforms one core qa ∥ one qa per platform, then a merge run gives the single verdict); Support (debugger, writer, hr) on demand. The lead stays the only dispatcher.
+
+Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shared/test/infra/data/dependency change, no new screen) gets one qa micro verify instead of code-reviewer + qa. No round limit. Progress = fewer open in-scope blocker/critical/major defects; same failure unchanged for two rounds, or three rounds without progress → debugger → architect/ba → you. Only in-scope defects block; pre-existing ones become new work items. Suspected design flaw (developer evidence, plan-level root cause, defect cluster) → straight to the architect, who researches and revises the plan; a user-visible revision comes back to you at G1.
 
 ## 4. Specialists, skills, context
 
@@ -81,7 +86,8 @@ Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shar
 |---|---|---|
 | Plugin specialists | plugin `config/agents.json` (hired in the technical-team repo) | available in every project; permissions enforced by the guard |
 | Project specialists | `.team/ROSTER.md` + `HIRE-APPROVED: <name>` in `.team/STATE.md` | hired with `hire`; ignored by the guard without approval |
-| Plugin skills | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) — preloaded into qa |
+| Plugin skills | `business-analysis` (the ba's method: guided elicitation rounds, greenfield / operating system / discovery contexts, ready-to-spec check) | preloaded into ba |
+| | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) — preloaded into qa |
 | | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer may load it; no config needed |
 | Skills per role | `.claude/technical-team.json` → `"skills": { "designer": ["<design skill>"], "developer": ["react-native"] }` | lead names the fitting ones in each brief; the guard blocks others |
 | Your own context | skills you install and run yourself in the main session | passed to the lead as "User-provided context" |

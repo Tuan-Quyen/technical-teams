@@ -57,7 +57,7 @@ stateDiagram-v2
   new --> open: lead routes to owner
   new --> moved: pre-existing → new work item (ID recorded)
   new --> rejected: not a defect (works as specified) — qa records the reason
-  new --> design_question: needs designer / analyst decision
+  new --> design_question: needs designer / ba decision
   design_question --> open: decided "fix"
   design_question --> closed: decided "accept" (record who and why)
   open --> fixed: developer hands off

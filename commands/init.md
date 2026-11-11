@@ -18,4 +18,4 @@ allowed-tools: Bash(node *)
 |---|---|
 | `.team/` | commit it so the whole team shares it |
 | `.claude/technical-team.json` | theirs to edit: `commands` (allowlists for developer/qa/devops), `paths` (extra ownership globs, `paths.data`), `db` (local hosts/databases for dba), `skills` (per-role skills) |
-| On demand | the other `.team/` files (SPEC, PLAN, TASKS, OPS_HANDOFF, ROSTER) and `archive/` appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it) |
+| On demand | the other `.team/` files (SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER) and `archive/` appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it) |

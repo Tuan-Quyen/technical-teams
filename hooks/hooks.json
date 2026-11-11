@@ -1,5 +1,5 @@
 {
-  "description": "technical-team hooks: the guard (PreToolUse) enforces write ownership, per-role shell policy, lead-only delegation, the hire approval gate (a new HIRE-APPROVED line in .team/STATE.md always raises a permission prompt) and per-role skill lists; the handoff check (SubagentStop) sends a team agent back when it ends without the handoff block (or the lead without its report). Calls from your own main session are otherwise not affected.",
+  "description": "technical-team hooks: the guard (PreToolUse) enforces write ownership, per-role shell policy, lead-only delegation, the hire approval gate (a new HIRE-APPROVED line in .team/STATE.md always raises a permission prompt) and per-role skill lists; the handoff check (SubagentStop) sends a team agent back when it ends without the handoff block (or the lead without its report); the activity hook (SubagentStart, cleared at SubagentStop) records which team agents are running in .team/.live/ for the status command. Calls from your own main session are otherwise not affected.",
   "hooks": {
     "PreToolUse": [
       {
@@ -12,6 +12,20 @@
               "${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs"
             ],
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/activity.mjs"
+            ],
+            "timeout": 5
           }
         ]
       }

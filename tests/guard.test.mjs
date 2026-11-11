@@ -54,16 +54,18 @@ test('other plugins and built-in agents pass through', () => {
 
 test('each .team file has its writers (TASKS.md: pm + qa for its QA subsection)', () => {
   const d = project();
-  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'analyst', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': ['pm', 'qa'], 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
+  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'ba', 'PRODUCT.md': 'ba', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': ['pm', 'qa'], 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
   for (const [file, owner] of Object.entries(owners)) {
-    for (const role of ['lead', 'analyst', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
+    for (const role of ['lead', 'ba', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
       const r = write(d, `technical-team:${role}`, `.team/${file}`);
       if ([].concat(owner).includes(role)) assert.equal(r, null, `${role} should write ${file}`);
       else assert.ok(r, `${role} must not write ${file}`);
     }
   }
-  assert.equal(write(d, 'technical-team:analyst', '.team/archive/SPEC-2026-11.md'), null);
-  assert.ok(write(d, 'technical-team:analyst', '.team/notes.md'));
+  assert.equal(write(d, 'technical-team:ba', '.team/archive/SPEC-2026-11.md'), null);
+  assert.ok(write(d, 'technical-team:ba', '.team/notes.md'));
+  assert.equal(call(d, 'technical-team:ba', 'Skill', { skill: 'technical-team:business-analysis' }), null, 'ba loads its plugin skill');
+  assert.ok(call(d, 'technical-team:developer', 'Skill', { skill: 'technical-team:business-analysis' }), 'business-analysis is the ba\'s');
 });
 
 test('architect owns .team/ARCHITECTURE.md and .team/adr, writer owns .team/docs, README, CHANGELOG', () => {
@@ -213,7 +215,7 @@ test('debugger/security: read-only shell', () => {
 
 test('no-Bash roles are denied even if a tool slips through', () => {
   const d = project();
-  for (const r of ['analyst', 'architect', 'pm', 'writer', 'hr']) assert.ok(bash(d, `technical-team:${r}`, 'ls'));
+  for (const r of ['ba', 'architect', 'pm', 'writer', 'hr']) assert.ok(bash(d, `technical-team:${r}`, 'ls'));
 });
 
 test('developer: denylist without config, allowlist with config', () => {
@@ -471,13 +473,13 @@ test('hire gate: ordinary STATE.md edits, re-written approvals and other files d
   const st = path.join(d, '.team', 'STATE.md');
   assert.equal(call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n- Status: in-progress' }), null);
   assert.equal(call(d, 'technical-team:lead', 'Write', { file_path: st, content: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n- W-002 open\n' }), null, 'existing approval kept');
-  assert.equal(write(d, 'technical-team:analyst', '.team/SPEC.md'), null);
+  assert.equal(write(d, 'technical-team:ba', '.team/SPEC.md'), null);
 });
 
 test('hire gate: a deny from ownership wins over the ask', () => {
   const d = project({ state: '# State\n' });
-  const r = call(d, 'technical-team:analyst', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
-  assert.equal(typeof r, 'string', 'analyst may not write STATE.md at all');
+  const r = call(d, 'technical-team:ba', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
+  assert.equal(typeof r, 'string', 'ba may not write STATE.md at all');
 });
 
 test('designer: writes only .team/DESIGN.md, no shell; is a core member the lead may call', () => {
