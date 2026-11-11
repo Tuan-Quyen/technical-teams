@@ -171,6 +171,23 @@ test('parallel review and micro verify are wired', () => {
   assert.match(read('agents/lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
 });
 
+test('squads and qa fan-out are wired', () => {
+  const lead = read('agents/lead.md');
+  assert.match(lead, /^## Squads$/m, 'lead: squads section');
+  for (const s of ['Discovery', 'Build', 'Verify', 'Support']) assert.match(lead, new RegExp(`^\\| \\*\\*${s}\\*\\* \\|`, 'm'), `lead: squad ${s}`);
+  assert.match(lead, /^\| QA fan-out \|[^\n]*independent/m, 'lead: qa fan-out rule');
+  assert.match(lead, /Only the merge verdict counts for G2/, 'lead: one verdict');
+  const qa = read('agents/qa.md');
+  for (const run of ['**core**', '**platform**', '**merge**']) assert.ok(qa.includes(run), `qa: ${run} run`);
+  const feature = read('commands/feature.md');
+  assert.match(feature, /^\| D3 \|[^\n]*QA fan-out/m, 'D3: qa fan-out');
+  assert.match(feature, /^\| S3 \|[^\n]*QA fan-out/m, 'S3: qa fan-out');
+  for (const f of ['commands/fix.md', 'commands/test.md', 'skills/run-kit/references/usage.md']) {
+    assert.match(read(f), /fan.out|fans out/i, `${f} mentions the fan-out`);
+  }
+  assert.match(read('README.md'), /QA tỏa nhánh theo nền tảng/, 'README: qa fan-out');
+});
+
 test('disable-model-invocation kept on user-initiated commands', () => {
   for (const c of ['run', 'new', 'hire', 'init', 'status']) {
     assert.match(frontmatter(c), /^disable-model-invocation: true$/m, c);

@@ -52,8 +52,19 @@ flowchart TD
 | Plugin agents only | core roles are always the plugin's `technical-team:<role>`; a bare-named agent with a core role's name (e.g. a project's own `developer`) is not part of the team and is never called. Extend the team through config (`skills`, `paths`, `commands`) or `hire`, never by replacing a plugin agent |
 | Brief | template §4; agents start from zero |
 | Language | always state the user's language and the work-item ID |
-| Parallel | only where the pipeline marks it; developers in parallel only with disjoint ticket file sets |
+| Parallel | only where the pipeline marks it and the squad's mode allows it (Squads below); developers in parallel only with disjoint ticket file sets. Send all calls of one parallel group in **one message** |
 | Missing expertise | propose a hire (`hire` pipeline) with the reason; never stretch an unsuitable role |
+
+## Squads
+
+A squad is a briefing rule, not a layer: there is no squad lead, every member is briefed by you and every handoff returns to you.
+
+| Squad | Members | Mode |
+|---|---|---|
+| **Discovery** | analyst, designer, architect, pm, qa (test plan) + `design` specialists | chain, one at a time: each step reads the previous owner's file |
+| **Build** | developer ×N, devops, dba + `execute` specialists | parallel per ticket: same parallel group **and** disjoint files |
+| **Verify** | code-reviewer, security, qa + `review` / `test` specialists | fan-out: reviewers on the same diff; qa per platform (§3 QA fan-out) |
+| **Support** | debugger, writer, hr | on demand |
 
 ## Current-state context with Explore
 
@@ -167,6 +178,7 @@ flowchart LR
 |---|---|
 | Restart point | any code change restarts at code-reviewer; no code reaches qa without a clean review; the final security step runs only after G2 (qa PASS, or PASS pending design decision resolved as accept) |
 | Parallel review | security required → on the **first** review of the work item, brief code-reviewer and security in parallel on the same diff (both read-only, so nothing conflicts); record the files security reviewed in `STATE.md`. Later rounds: code-reviewer only. After G2, security reviews only the **delta** (files changed since its first pass; none → no call). Any blocking from either → developer |
+| QA fan-out | every qa execution step (`feature` D3 / S3, `fix` 5, `test` 3, `release` 1; never P3a or micro verify). Fan out only when the test plan lists **≥ 2 in-scope platforms that are independent**: each has its own run command, port or device and no shared mutable test data. Then, in one message: one **core** qa run (entry criteria, smoke, RTM tests, retest + regression; the only run that writes) ∥ one **platform** qa run per platform (live preview + UI/UX verification + exploratory on that platform only; writes nothing, returns results and defects in its handoff). Afterwards the **merge**: resume the core qa (or a new qa call) with every platform handoff verbatim → defect IDs, execution log, exit criteria, test summary, verdict. Only the merge verdict counts for G2; a platform run that ends `vướng` leaves that platform not previewed (no PASS). Round ≥ 2: fan out only the platforms with open defects or changed code; one platform left → a single run. One platform, shared port/data, or unsure → a single qa run as before. Record `QA fan-out: <platforms>` in the loop log |
 | Micro (small mode only) | after S1, check on `git diff --stat` + `git status --porcelain`: **all** of ≤ 3 files · ≤ 40 changed lines · no test, infra, data, dependency manifest/lockfile or build-config file · no security trigger (§1) · no API/contract, shared component or public interface change · no new screen or flow · no `.team/DESIGN.md` change needed. All true → S2m (qa micro verify replaces code-reviewer + qa); any false or unsure → normal S2 → S3. qa may answer "not micro" → S2. Record `Micro: yes — <why>` in `STATE.md` and in the final report |
 | Should-fix items | fixed in the same round, never as a separate unreviewed edit |
 | Round limit | none; no gate opens early; no work item closes with failing tests or open blocking findings |

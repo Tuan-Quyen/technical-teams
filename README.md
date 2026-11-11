@@ -126,6 +126,15 @@ Tên đầy đủ có tiền tố plugin: `technical-team:<tên>`. Model dùng a
 
 Lead dùng `inherit`, nên session chạy sonnet thì lead cũng là sonnet và điều phối sẽ kém hơn opus.
 
+Đội chia thành 4 nhóm (squad). Nhóm chỉ là quy tắc giao việc, không có trưởng nhóm: lead vẫn là người duy nhất phân việc và nhận mọi phiếu bàn giao.
+
+| Nhóm | Thành viên | Cách chạy |
+|---|---|---|
+| **Discovery** | analyst, designer, architect, pm, qa (test plan) | nối tiếp, từng người một: bước sau đọc file của bước trước |
+| **Build** | developer ×N, devops, dba | song song theo ticket: cùng nhóm song song **và** tập file không giao nhau |
+| **Verify** | code-reviewer, security, qa | tỏa nhánh: reviewer cùng đọc một diff; qa chia theo nền tảng |
+| **Support** | debugger, writer, hr | gọi khi cần |
+
 | Cặp | Ranh giới |
 |---|---|
 | pm ↔ analyst | analyst quyết định *cái gì / vì sao*; pm quyết định ticket, thứ tự, ước lượng |
@@ -199,6 +208,7 @@ flowchart LR
 |---|---|
 | Mọi lần sửa code đi lại từ code-reviewer | không code nào tới qa khi chưa review sạch; bước security cuối chỉ chạy sau G2 |
 | Review song song | cần security thì lượt review đầu tiên của work item chạy code-reviewer ∥ security trên cùng diff (cả hai chỉ đọc). Các vòng sau chỉ code-reviewer. Sau G2, security chỉ review **phần đổi** kể từ lượt đầu, không đổi gì thì khỏi gọi. Lỗi bảo mật lộ ra trước qa, nên không phải chạy lại qa vì bản sửa bảo mật, và số lần gọi security tối đa là 2 |
+| QA tỏa nhánh theo nền tảng | test plan có từ 2 nền tảng **độc lập** trong phạm vi (lệnh chạy, cổng hoặc thiết bị riêng, không dùng chung dữ liệu test) thì lead gọi cùng lúc: một lượt qa **core** (entry criteria, smoke, test theo RTM, retest + regression; lượt duy nhất được ghi file) ∥ mỗi nền tảng một lượt qa **platform** (live preview + UI/UX + exploratory, không ghi file, trả lỗi trong phiếu bàn giao). Sau đó lượt **merge** gộp lỗi, đánh ID, ghi test summary và ra một kết luận duy nhất cho G2. Một nền tảng, chung cổng/dữ liệu, hoặc không chắc thì chạy một lượt qa như cũ. Vòng sau chỉ tỏa nhánh những nền tảng còn lỗi mở hoặc có code đổi |
 | Micro (chỉ small mode) | ≤ 3 file, ≤ 40 dòng, không chạm test/hạ tầng/dữ liệu/dependency/build config, không thuộc diện security, không đổi API/contract/component dùng chung, không có màn hình hay flow mới. Đủ cả → một lượt qa *micro verify* thay cho code-reviewer + qa. qa thấy không đủ điều kiện thì trả "not micro" và chạy luồng thường. Báo cáo cuối ghi rõ đã đi micro |
 | Không giới hạn số vòng | không cổng nào mở sớm, không work item nào đóng khi còn lỗi |
 | Leo thang khi **cùng một lỗi còn nguyên qua 2 vòng**, hoặc **3 vòng liền không tiến triển** | debugger → architect (+ analyst nếu dính AC) → tạm dừng hỏi bạn |
