@@ -75,6 +75,26 @@ test('every agent has name = file name, a description and a model', () => {
   }
 });
 
+test('no agent has a tools allowlist, so project MCP tools and skills reach it', () => {
+  for (const a of AGENTS) {
+    const fm = frontmatter(`agents/${a}.md`);
+    assert.doesNotMatch(fm, /^tools:/m, `${a}: use disallowedTools, not a tools allowlist`);
+    const deny = fm.match(/^disallowedTools: (.+)$/m)?.[1].split(/,\s*/) ?? [];
+    assert.ok(!deny.some((t) => t.startsWith('mcp__') || t === 'Skill'), `${a}: does not block MCP tools or skills`);
+  }
+  assert.match(read('agents/team-lead.md'), /mcp__/, 'lead names MCP tools in briefs');
+});
+
+test('the lead finds project agents and briefs them with the team rules', () => {
+  const lead = read('agents/team-lead.md');
+  assert.match(lead, /Glob `\.claude\/agents\/\*\.md`/, 'lead lists project agents at start');
+  assert.match(lead, /### Project specialists/, 'lead has a Project specialists section');
+  for (const mode of ['replace', 'consult']) assert.match(lead, new RegExp(`\\*\\*${mode}\\*\\*`), `lead defines mode ${mode}`);
+  const kit = read('skills/run-kit/SKILL.md');
+  assert.match(kit, /\*\*Project specialists\*\*/, 'run-kit roster mentions project specialists');
+  assert.match(kit, /\*\*Briefing a project specialist\*\*/, 'run-kit has the specialist brief');
+});
+
 test('every agent has a color, a Persona (emoji + vibe) and a matching badge in run-kit', () => {
   const kit = read('skills/run-kit/SKILL.md');
   const square = { red: '🟥', orange: '🟧', yellow: '🟨', green: '🟩', blue: '🟦', purple: '🟪', pink: '🩷', cyan: '🩵' };

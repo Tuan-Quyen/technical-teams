@@ -115,6 +115,36 @@ Mỗi agent có sẵn một **Persona** trong file của nó: `color:` trong fro
 
 Hoặc viết vibe tự do ("nói như hướng dẫn viên du lịch"). Vibe chỉ đổi giọng: không bao giờ đổi sự thật, phạm vi, verdict hay các trường handoff; vibe kiểu "luôn PASS" bị từ chối. Màu trong `CREW.md` chỉ đổi badge của lead; màu nhãn agent trong UI lấy từ `color:` của plugin, không đổi được theo project.
 
+## MCP và skill của project
+
+Agent không khai báo allowlist `tools`, nên kế thừa mọi MCP tool (Prisma, Vercel, Jira, Figma…) và skill mà session của project có; `disallowedTools` chỉ chặn những gì vai trò không được làm.
+
+| Agent | Chặn | Nhận MCP + skill của project |
+|---|---|---|
+| `team-developer` · `team-dba` · `team-devops` · `team-qa` | không | ✅ |
+| `team-debugger` | `Edit` (chỉ chẩn đoán) | ✅ |
+| `team-code-reviewer` · `team-security` | `NotebookEdit` (vẫn ghi report của mình) | ✅ |
+| `team-ba` · `team-pm` · `team-architect` · `team-designer` · `team-writer` | `Bash` | ✅ |
+
+- Lead ghi trong brief những MCP/skill bước đó cần và việc nào bên ngoài repo người dùng đã cho phép.
+- Đọc qua MCP thì tự do; thay đổi bên ngoài repo (deploy, migrate DB dùng chung, tạo issue, gửi tin) chỉ khi người dùng yêu cầu. Mỗi lần gọi MCP được ghi vào **Evidence** của handoff.
+- `disallowedTools` chặn cả một tool, không chặn theo tham số. Muốn chặn cứng một hành động (vd `mcp__vercel__deploy_to_vercel`), thêm vào `permissions.deny` trong `.claude/settings.json` của project.
+- Plugin không nạp trong cloud session (claude.ai/code); điều trên chỉ áp dụng khi chạy trên máy.
+
+### Skill hay agent riêng của project?
+
+| Cần | Viết | Team dùng thế nào |
+|---|---|---|
+| agent team biết **cách** dùng một tool trong repo (convention, lệnh, checklist) | skill: `.claude/skills/<ten>/SKILL.md` | agent nào cần thì tự gọi qua `Skill` |
+| một vai trò riêng, hoặc cần `mcpServers` / `hooks` / `permissionMode` (agent của plugin không có) | agent: `.claude/agents/<ten>.md` | lead tự tìm và giao bước phù hợp |
+
+Lead đọc `.claude/agents/*.md` khi bắt đầu, so `description` của từng agent với bước đang làm rồi chọn:
+
+- **replace**: agent của project làm cả bước thay agent của team (vd `prisma-expert` thay `team-dba` cho migration).
+- **consult**: agent của project góp ý trước (`Write: none`), lead chuyển nguyên văn vào brief của agent team.
+
+Gate không đổi: code của agent project vẫn qua code-reviewer, qa, security. Lead báo bạn đã chọn agent nào; nói "không dùng X" là lead bỏ X cho item đó. Viết `description` rõ lĩnh vực (vd "Prisma schema và migration của repo này") để lead chọn đúng.
+
 ## Workspace `.team/`
 
 ```

@@ -25,6 +25,8 @@ description: Reference for running the technical team — the roster (who does w
 
 Paths are under `.team/`. Only the agent in the Writes column writes a file; everyone reads. Badge = default color and emoji; `.team/CREW.md` can override emoji, name, vibe and color per project (`/technical-team:crew`).
 
+**Project specialists** — agents the project defines in `.claude/agents/*.md` (e.g. `prisma-expert`, `payments-reviewer`). The lead lists them at start, matches a step to one by its `description`, and either lets it **replace** the team agent for that step or **consults** it first (`team-lead.md` § Project specialists). They may declare `mcpServers`, `hooks` and `permissionMode`, which plugin agents cannot; that is the reason to write one instead of a project skill.
+
 ## 2. Pipeline workflow commands
 
 `→` sequential, `∥` parallel. Each command file lists its steps; this is the map.
@@ -51,13 +53,21 @@ Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
-Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any>
+Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any, MCP tools / project skills to use and which outside changes the user allowed>
 User's language: <language>
 ```
 
 - Name files, not "the findings above": the agent cannot see the conversation.
 - Pass user answers verbatim.
 - Parallel agents never share a file in **Write**.
+
+**Briefing a project specialist** — it has none of the team's Rules, so the brief carries them. Use the format above, then add:
+
+```
+Rules: write only the files under Write (none = advise only). Never write .team/STATE.md, never commit or push.
+       Reading MCP is free; an outside change only if Constraints says the user allowed it.
+Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
+```
 
 ## 4. Workspace `.team/`
 
