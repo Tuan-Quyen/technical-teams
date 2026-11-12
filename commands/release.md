@@ -31,10 +31,10 @@ Gates G2, G3, G4. Never deploys or tags.
 
 0. (lead) Open W-NNN, pipeline `release`. Range = last release tag → `HEAD` (devops determines it). No tag yet → all history + uncommitted files, default version `0.1.0`.
 1. (qa ∥ security ∥ devops ∥ specialists ∥ lead) In parallel:
-   - (qa) Full regression, open-defect review, test summary in `### QA`, live-preview smoke of the main flows on the release build → **G2**.
-   - (security) Changes since the last tag + dependency audit → **G3**.
-   - (devops) Range, artifacts, migration steps, config names, deploy + rollback in `OPS_HANDOFF.md`.
+   - (qa) Full regression, open-finding review (the open items' `qa/` files and `## Follow-ups` in `TASKS.md`), test summary in `qa/<slug>.md` of the release item, live-preview smoke of the main flows on the release build → **G2**.
+   - (security) Changes since the last tag + dependency audit → `reports/<slug>/security.md` → **G3**.
+   - (devops) Range, artifacts, migration steps, config names, deploy + rollback, reported in the handoff.
    - (specialists, dba) Release-relevant checks, e.g. pending migrations.
    - (lead) Open blocking findings and deferred items in `STATE.md`.
-2. (writer) CHANGELOG / release notes from the work items and commits, verified against the code; upgrade notes for breaking changes. No version given → propose one by semver.
-3. (lead) **GO** only if G2 passed, no blocking findings, deploy + rollback ready, docs updated; otherwise **NO-GO** with reasons and the shortest path to GO. Report the exact commands the user runs (commit, tag, push, deploy, rollback).
+2. (writer) CHANGELOG / release notes from the commits and the closed items the lead names in the brief (their `archive/<slug>/` folders), verified against the code; upgrade notes for breaking changes. No version given → propose one by semver.
+3. (lead) **GO** only if G2 passed, no blocking findings, deploy + rollback ready, docs updated; otherwise **NO-GO** with reasons and the shortest path to GO. Report the exact commands the user runs (commit, tag, push, deploy, rollback). Close the item (Lead manual §6).

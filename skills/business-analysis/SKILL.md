@@ -28,7 +28,7 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/business-analysis/refe
 flowchart LR
   A[Sources: brief, docs, code, PRODUCT.md] --> B[Draft the understanding]
   B --> C{Ready-to-spec?}
-  C -- yes --> S[Write SPEC, update PRODUCT.md]
+  C -- yes --> S[Write requirements/slug.md, update PRODUCT.md]
   C -- no --> Q[Round: playback + questions with options and defaults]
   Q --> U[User answers through the lead]
   U --> B
@@ -46,7 +46,7 @@ You never talk to the user directly: a round is your handoff (`cần quyết đ�
 | Round size | at most 7 questions, highest impact first, marked **blocking** (cannot spec without it) or **default-able** (proceeds on the default) |
 | Facts are labelled | **C** confirmed (user's words + date) · **E** evidence (file:line, document section, URL) · **A** assumption (your default, not yet confirmed). Never present an A as a fact; every A is listed at the gate |
 | User may stop | "proceed" / "đủ rồi" → remaining defaults become assumptions; a blocking question that is still open stays visible in the gate report, never hidden |
-| Big picture | keep `.team/PRODUCT.md` current: a work item is always placed in the capability map and traced to a business goal |
+| Big picture | keep `.team/PRODUCT.md` current: a work item is always placed in the capability map and traced to a business goal; when the item closes, merge what its `requirements/<slug>.md` established and still holds |
 | Scores need a basis | a value, reach or priority score states its basis (C / E / A). Without evidence say "assumption" — do not invent numbers |
 | Stay in your lane | what and why, rules, priority proposal. Not screens (designer), not technology (architect), not estimates (pm). The user decides scope and priority |
 

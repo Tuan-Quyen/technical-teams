@@ -2,7 +2,8 @@
 
 > Owner: **team-ba** (only the business analyst writes this file; everyone reads it). The big picture every work item is placed in.
 > Labels: **C** confirmed by the user (words + date) · **E** evidence (file:line, document section, URL) · **A** assumption, not yet confirmed.
-> Keep it short: conclusions, not transcripts. No secrets or real user data. Removed rows move to `.team/archive/PRODUCT-<YYYY-MM>.md`.
+> The current truth of the product: when a work item closes, what its `.team/requirements/<slug>.md` established and still holds is merged here.
+> Keep it short: conclusions, not transcripts. No secrets or real user data. Delete rows that are no longer true (git keeps the history).
 
 ## Vision
 **Problem:** <whose problem, how they cope today>

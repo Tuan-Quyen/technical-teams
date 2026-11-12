@@ -8,7 +8,7 @@
 |---|---|---|
 | The brief and "User-provided context" | the request in the user's words, constraints | C |
 | Documents the brief names (PRD, notes, exports) | stated needs, contradictions, gaps | E (section) |
-| `.team/PRODUCT.md`, `SPEC.md`, `DESIGN.md`, `ARCHITECTURE.md` | decisions already made, glossary, rules | E |
+| `.team/PRODUCT.md`, `ARCHITECTURE.md`, `frontend-design/_system.md`, the open items' `requirements/` files | decisions already made, glossary, rules | E |
 | The code (Read / Glob / Grep) | the as-is: what the system really does today, rules buried in conditions, roles, validations, data model | E (file:line) |
 | The web (WebSearch / WebFetch) | domain norms, regulations, how comparable products solve it | E (URL) — never put project code, names or personal data in a query |
 | The user, through the lead | intent, priorities, business rules nobody wrote down | C |

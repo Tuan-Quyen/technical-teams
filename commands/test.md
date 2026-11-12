@@ -30,6 +30,6 @@ _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 deli
 Gate G2. No production code is written.
 
 1. (lead) Open or reuse W-NNN, pipeline `test`. Scope: given, or work items with code changes but no G2; otherwise ask.
-2. (lead) Pick the criteria source, the first that exists: `SPEC.md#W-NNN` ACs → expected-behaviour bullets in `STATE.md` → documented behaviour → current behaviour (qa lists what it assumed for the user to confirm).
-3. (qa ∥ test specialists) Test plan, RTM, missing tests, run, defects and test summary in `TASKS.md#W-NNN` → `### QA`; live preview of the observable behaviour; QA fan-out when ≥ 2 independent platforms.
-4. (lead) G2 verdict. Failures caused by production code are reported as bugs with one suggested `fix` each, not fixed here.
+2. (lead) Pick the criteria source, the first that exists: ACs in `requirements/<slug>.md` → expected-behaviour bullets in `STATE.md` → documented behaviour → current behaviour (qa lists what it assumed for the user to confirm).
+3. (qa ∥ test specialists) Test plan, RTM, missing tests, run, findings and test summary in `qa/<slug>.md`; live preview of the observable behaviour.
+4. (lead) G2 verdict. Failures caused by production code are reported as bugs with one suggested `fix` each, not fixed here. Close the item (Lead manual §6): open findings become follow-up tickets.

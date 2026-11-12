@@ -9,7 +9,8 @@
     {
       "name": "technical-team",
       "source": "./",
-      "description": "Stack-agnostic engineering team: tech lead and 12 roles, gated pipelines, run kit, guard hook and specialist hiring.",
+      "version": "0.18.0",
+      "description": "Stack-agnostic engineering team: tech lead and 13 roles, gated pipelines, run kit, per-work-item .team/ workspace and specialist hiring.",
       "category": "development"
     }
   ]
