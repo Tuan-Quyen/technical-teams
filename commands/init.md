@@ -6,16 +6,11 @@ allowed-tools: Bash(node *)
 ---
 # /technical-team:init — create the shared workspace
 
-**Arguments:** $ARGUMENTS
+Arguments: $ARGUMENTS
 
-| Step | Do |
-|---|---|
-| 1 | Run with the Bash tool from the project root: `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" --config` (add `--all` only if the user asked for every file up front) |
-| 2 | Show which files were **created** and which were **kept** (the script never overwrites, so each file keeps its single owner and content) |
-| 3 | Remind the user, in their language: |
-
-| Reminder | |
-|---|---|
-| `.team/` | commit it so the whole team shares it |
-| `.claude/technical-team.json` | theirs to edit: `commands` (allowlists for developer/qa/devops), `paths` (extra ownership globs, `paths.data`), `db` (local hosts/databases for dba), `skills` (per-role skills) |
-| On demand | the other `.team/` files (SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER) and `archive/` appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it) |
+1. From the project root run `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs" --config` (add `--all` only if the user asked for every file up front).
+2. Show which files were created and which were kept (the script never overwrites).
+3. Remind the user, in their language:
+   - Commit `.team/` so the whole team shares it.
+   - `.claude/technical-team.json` is theirs to edit: `commands` (allowlists), `paths` (extra ownership, `paths.data`), `db` (local databases for dba), `skills` (per-role skills).
+   - The other `.team/` files appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it).

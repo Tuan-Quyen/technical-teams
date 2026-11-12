@@ -7,71 +7,37 @@ disable-model-invocation: true
 
 ## Running this command
 
-**Request:** $ARGUMENTS
+Request: $ARGUMENTS
 
-| Situation | Do |
-|---|---|
-| Argument required | no — except with `--adr`: no decision given → ask for the decision or question to record in one short question, stop; never guess |
-| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
-| Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
-| User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (docs). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
-| Always | show the lead's report as written; do not do the team's work in the main session |
-
+1. With `--adr` and no decision → ask in one short question what to record, then stop. Never guess.
+2. If this session is the tech lead (`--agent technical-team:team-lead`), run the Pipeline below yourself. Otherwise call the Agent tool with `subagent_type: technical-team:team-lead` and this prompt:
 ```
 Execute the Pipeline section of ${CLAUDE_PLUGIN_ROOT}/commands/docs.md (Read the file).
 Request (verbatim): <request>
 User's language: <language>
 Work item: <W-NNN or new>
-User-provided context: <faithful summary of what the user supplied for this request in this conversation — files, notes, output of skills they ran — or "none">
+User-provided context: <faithful summary of what the user supplied in this conversation, or "none">
 Read .team/STATE.md first.
 ```
-The lead and its agents cannot see this conversation: "User-provided context" is the only way context you were given reaches the team.
+   The team cannot see this conversation; "User-provided context" is the only way context reaches it.
+3. Show the lead's report as written; do not do the team's work yourself. On `Chờ duyệt …`, stop and wait; never approve or choose for the user.
+4. When the user answers, resume the same lead (SendMessage) or start a new Agent call: `Continue W-NNN (docs). User's answer (verbatim): <answer>. Read .team/STATE.md first.`
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9). `new` reuses the Sync section._
+_Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
 
-| Flag (or the same intent in words) | Mode | Owner | Gates | Input |
-|---|---|---|---|---|
-| none | **sync** | writer | G4 | scope (optional; default: all product docs) |
-| `--adr <decision>` ("ghi ADR", "record decision") | **adr** | architect | none | decision or question (required) |
+Modes: no flag → **sync** (writer, G4). `--adr <decision>` → **adr** (architect, no gate).
 
-### Sync (steps 1–4)
+### Sync
 
-```mermaid
-flowchart LR
-  A[1 Open W-NNN] --> B{ops docs in scope and OPS_HANDOFF stale?}
-  B -- yes --> C[2 devops: record facts only]
-  B -- no --> D
-  C --> D[3 writer: inventory → compare → fix → mark unverified]
-  D --> E[review specialists: accuracy advice]
-  E --> F[4 STATE → G4]
-```
+1. (lead) Open W-NNN, pipeline `docs (sync)`.
+2. (devops) Only if operations are in scope and `OPS_HANDOFF.md` is empty or stale: record the missing facts, no infra changes.
+3. (writer + review specialists) List the docs in scope, compare them with the code, config, scripts and `OPS_HANDOFF.md`, fix what is wrong, fill what is missing, mark what is unverified.
+4. (lead) Update `STATE.md` → G4. Report docs changed, discrepancies and unverified items.
 
-| # | Step | Agent |
-|---|---|---|
-| 1 | Open W-NNN (pipeline `docs (sync)`) | lead |
-| 2 | Only if operations are in scope and `OPS_HANDOFF.md` is empty/stale: record missing facts (no infra changes) | devops |
-| 3 | Inventory docs in scope, compare with code/config/scripts/`OPS_HANDOFF.md`, fix wrong, fill missing (incl. runbooks from `OPS_HANDOFF.md`), mark unverified. **Hook `review`**: domain docs accuracy (advice only) | writer (+ specialists) |
-| 4 | Update `STATE.md` → **G4** | lead |
+### ADR
 
-### ADR (steps A1–A3)
-
-```mermaid
-flowchart LR
-  A[A1 Open W-NNN] --> B[design hook: affected domains give their view]
-  B --> C[A2 architect: ADR + supersede + index + .team/ARCHITECTURE.md]
-  C --> D[A3 STATE] --> E[Report]
-```
-
-| # | Step | Agent |
-|---|---|---|
-| A1 | Open W-NNN (pipeline `docs (adr)`) | lead |
-| A2 | **Hook `design`**: specialists whose domain is affected (e.g. dba for data decisions) give their view first. Then `.team/adr/NNNN-<kebab-title>.md` from the template; status `accepted` if the user says the decision is made, else `proposed`; superseded ADR → `superseded by NNNN`; update the index and affected sections of `.team/ARCHITECTURE.md` | specialists → architect |
-| A3 | Update `STATE.md` | lead |
-
-| | |
-|---|---|
-| .team | sync: reads `STATE`, `OPS_HANDOFF`, `SPEC`, `ROSTER`; writes lead → `STATE`, devops → `OPS_HANDOFF` (step 2) · adr: reads `STATE`, `.team/ARCHITECTURE.md`, `.team/adr/`, `ROSTER`; writes lead → `STATE` |
-| End | sync: final report — docs changed, discrepancies (which side was wrong), unverified items · adr: final report — ADR path, status, decision in one sentence; if `proposed`, what the user must confirm |
+- A1. (lead) Open W-NNN, pipeline `docs (adr)`.
+- A2. (specialists → architect) Affected specialists give their view (`design` hook). The architect writes `.team/adr/NNNN-<title>.md` from the template (`accepted` if the user says it is decided, else `proposed`), marks any superseded ADR and updates `.team/ARCHITECTURE.md`.
+- A3. (lead) Update `STATE.md`. Report the ADR path, status and the decision in one sentence.

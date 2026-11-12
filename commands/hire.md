@@ -7,100 +7,45 @@ disable-model-invocation: true
 
 ## Running this command
 
-**Request:** $ARGUMENTS
+Request: $ARGUMENTS
 
-| Situation | Do |
-|---|---|
-| Argument required | yes (`<domain or need>` or `--roster`) — empty → ask for the domain or need (and, if you can, why the team needs it) in one short question, stop; never guess |
-| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
-| Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
-| User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (hire). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
-| Hiring gate answered "approve" | relay it verbatim as above, **in the foreground** (no `run_in_background`): the guard turns the lead's `HIRE-APPROVED` write into a permission prompt, and a background agent cannot show it. The user's Allow on that prompt is the approval |
-| Always | show the lead's report as written; do not do the team's work in the main session |
-
+1. Empty request → ask in one short question for the domain or need (and why), then stop. Never guess.
+2. If this session is the tech lead (`--agent technical-team:team-lead`), run the Pipeline below yourself. Otherwise call the Agent tool with `subagent_type: technical-team:team-lead` and this prompt:
 ```
 Execute the Pipeline section of ${CLAUDE_PLUGIN_ROOT}/commands/hire.md (Read the file).
 Request (verbatim): <request>
 User's language: <language>
 Work item: <W-NNN or new>
-User-provided context: <faithful summary of what the user supplied for this request in this conversation — files, notes, output of skills they ran — or "none">
+User-provided context: <faithful summary of what the user supplied in this conversation, or "none">
 Read .team/STATE.md first.
 ```
-The lead and its agents cannot see this conversation: "User-provided context" is the only way context you were given reaches the team.
+   The team cannot see this conversation; "User-provided context" is the only way context reaches it.
+3. Show the lead's report as written; do not do the team's work yourself. On `Chờ duyệt …`, stop and wait; never approve or choose for the user.
+4. When the user answers, resume the same lead (SendMessage) or start a new Agent call: `Continue W-NNN (hire). User's answer (verbatim): <answer>. Read .team/STATE.md first.`
+5. When the user approves the hire, relay it in the **foreground** (not `run_in_background`): the guard turns the lead's `HIRE-APPROVED` write into a permission prompt, and the user's Allow is the approval.
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9)._
+_Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
 
-| Flag | Mode | Gate | Input |
-|---|---|---|---|
-| none | **recruit** (steps 0–7) | hiring approval (changes the team's permissions) | domain or need (required) + reason |
-| `--roster` ("xem danh bạ", "rà soát specialist") | **roster** (steps R1–R4) | retirement approval (only if hr proposes one) | none |
+Modes: no flag → **recruit** (hiring gate). `--roster` → **roster** review (retirement gate only if proposed).
 
-### Recruit (steps 0–7)
+Where a hire goes: in the technical-team plugin repo → `agents/<name>.md` + `config/agents.json` (plugin specialist, active after `/reload-plugins`). In any other project → `.claude/agents/<name>.md` + a `.team/ROSTER.md` row, valid only with `HIRE-APPROVED: <name>` in `STATE.md`.
 
-| Where the hire goes | Files | Effect |
-|---|---|---|
-| Working in the technical-team plugin repo (root `.claude-plugin/plugin.json` named `technical-team`) | `agents/<name>.md` + entry in `config/agents.json` (write, bash, hookPoints, trigger); writer updates README | plugin specialist, in every project, after `/reload-plugins` |
-| Any other project | `.claude/agents/<name>.md` (or `~/.claude/agents/` if the user asks) + `.team/ROSTER.md` row | project specialist; honoured only with `HIRE-APPROVED: <name>` in that project's `STATE.md` |
+### Recruit
 
-Before hiring: a core role or a plugin specialist (`config/agents.json`) that covers the need means no hire. The guard lets hr write the agent file only after `HIRE-APPROVED: <name>` is in `STATE.md`.
+0. (lead) Open W-NNN, pipeline `hire (recruit)`. Check core roles, `config/agents.json` and the roster; decide plugin or project.
+1. (hr) Is the need real? Covered already → stop with "no hire". Otherwise a domain profile with sources, a specialist profile draft and placement questions.
+2. (architect ∥ pm ∥ closest role) Answer the placement questions only; write nothing.
+3. (hr) Consolidate the answers into one proposal with any disagreements.
+4. (lead) Least-privilege check: no `Agent` tool, write scope does not overlap others, Write/Edit/Bash justified, `run-kit` preloaded, name not confusable with a core role.
+5. (lead) **Hiring gate**: need, profiles, placement, disagreements, where it goes, settings the user must add.
+6. (lead → hr → writer) Approved → the lead writes `HIRE-APPROVED: <name> (<date>, scope)` in `STATE.md`; the guard asks the user to confirm. Denied → not approved, stop. Allowed → hr creates the agent file and the entry/row; in the plugin repo the writer updates README.
+7. (lead) Read the file and entry; they must match the approval. Report and tell the user how to activate it.
 
-```mermaid
-flowchart TD
-  A[0 Open W-NNN, check team + specialists] --> B[1 hr: need real? domain + specialist profile + questions]
-  B -- covered already --> N[report: no hire]
-  B --> C[2 architect ∥ pm ∥ closest role: answer only]
-  C --> D[3 hr: one proposal + disagreements]
-  D --> E[4 lead: least-privilege check]
-  E -- violation --> D
-  E --> G{{5 Hiring gate}}
-  G -- changes / answers --> D
-  G -- rejected --> R[done]
-  G -- approved --> H[6 HIRE-APPROVED in STATE → hr creates]
-  H --> V[7 lead verifies file + entry/row]
-```
+### Roster
 
-| # | Step | Agent | Parallel |
-|---|---|---|---|
-| 0 | Open W-NNN (pipeline `hire (recruit)`): need, who raised it; check core roles, `config/agents.json` and the roster; decide plugin vs project specialist | lead | — |
-| 1 | a) covered by a core role or an existing specialist? (yes → stop with "no hire", continue only if the user insists) · b) domain profile at the needed depth, sourced, with confidence + user questions · c) specialist profile draft · d) placement questions | hr | — |
-| 2 | Placement consultation: hook point, trigger, boundary with their role — **answer only, write no files** | architect ∥ pm ∥ closest role | yes |
-| 3 | Relay answers verbatim → one proposal + disagreements | hr | — |
-| 4 | Check: no `Agent` tool; write scope does not overlap `.team/`, docs, infra, tests, dba's data paths or another specialist; Write/Edit/Bash justified; `technical-team:run-kit` preloaded; name not a core name nor confusable | lead | — |
-| 5 | **Hiring gate**: need + why the team lacks it, domain profile, specialist profile, placement, disagreements, user questions, where it goes, settings the user must add (e.g. `.claude/technical-team.json`) | lead | — |
-| 6 | Approved (explicit reply in the main thread, or relayed verbatim by the main session) → lead writes `- HIRE-APPROVED: <name> (<date>, scope: plugin|project|user)` in `STATE.md`; the guard asks the user to confirm that write — **the user's Allow is the approval**. Denied, failed or auto-denied (background) → not approved: gate report, stop. Allowed → hr creates the agent file + `config/agents.json` entry (plugin repo) or `ROSTER.md` row (project: `active`, Hired = today) → plugin repo: writer updates README | lead → hr (→ writer) | — |
-| 7 | Read the file and the entry/row; they must match the approval (tools, scope, Bash level, hook points) | lead | — |
-
-| | |
-|---|---|
-| .team | reads `STATE`, `ROSTER`, `config/agents.json`; writes lead → `STATE` (incl. `HIRE-APPROVED`), hr → agent file + `config/agents.json` or `ROSTER` |
-| Activation | plugin specialist: `/reload-plugins` or a new session · project: `.claude/agents/` is watched, usually live in seconds; restart if the folder did not exist at session start or the lead cannot spawn the name |
-| End | final report: hired / not hired and why, file path, entry/row, settings the user must add, activation |
-
-### Roster (steps R1–R4)
-
-```mermaid
-flowchart LR
-  A[R1 Read ROSTER + plugin specialists + usage] --> B{active specialists?}
-  B -- no --> R[report, no agent call]
-  B -- yes --> C[R3 hr: review proposal]
-  C --> D{retire / change proposed?}
-  D -- no --> R2[report]
-  D -- yes --> G{{R4 gate}}
-  G -- approved --> H[hr moves row to Retired; user deletes file]
-```
-
-| # | Step | Agent |
-|---|---|---|
-| R1 | Open W-NNN (pipeline `hire (roster)`). Read `.team/ROSTER.md`, `config/agents.json`, "Specialist usage" in `STATE.md`; show plugin and active project specialists (name, domain, hook points, trigger, write scope, Bash, last used) | lead |
-| R2 | No active project specialists → report, stop | lead |
-| R3 | Review: unused (default: 60 days, or never used 30 days after hire), overlapping domains/triggers, scopes grown too wide, outdated profiles; update "Last used" from `STATE.md` | hr |
-| R4 | Proposals → gate. Retirement approved → hr moves the row under "Retired" (`retired`); the user deletes the agent file (give the path). Profile changes go through recruit mode | lead → hr |
-
-| | |
-|---|---|
-| .team | reads `ROSTER`, `STATE`; writes hr → `ROSTER`, lead → `STATE` |
-| Note | plugin specialists (`config/agents.json`) are reviewed by changing the plugin itself |
-| End | final report: roster table, proposals, decisions, files the user should delete |
+- R1. (lead) Open W-NNN, pipeline `hire (roster)`. Show plugin and active project specialists from `ROSTER.md`, `config/agents.json` and "Specialist usage" in `STATE.md`.
+- R2. (lead) No active project specialists → report and stop.
+- R3. (hr) Review: unused (60 days, or never used 30 days after hire), overlapping, too wide, outdated.
+- R4. (lead → hr) Proposals → gate. Approved retirement → hr moves the row to "Retired"; the user deletes the file. Profile changes go through recruit.

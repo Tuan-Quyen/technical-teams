@@ -9,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+// A pipeline step is a list line: `- **P1** (ba) …`, `- A1. (lead) …` or `3. (developer) …`.
+// The parenthesis names the owner; `owner` must appear in it.
+const stepRe = (id, owner) => new RegExp(`^(?:- )?\\*{0,2}${id}\\*{0,2}\\.? \\(${owner ? `[^)]*\\b${owner}\\b` : ''}`, 'm');
 const commands = fs.readdirSync(path.join(ROOT, 'commands')).filter((f) => f.endsWith('.md')).map((f) => f.slice(0, -3)).sort();
 
 const REMOVED = ['plan', 'change', 'hotfix', 'investigate', 'audit', 'adr', 'roster'];
@@ -77,7 +80,7 @@ test('every commands/<name>.md reference points to an existing file', () => {
 });
 
 test('steps reused by ID in new.md exist in their source pipelines', () => {
-  const has = (file, id) => new RegExp(`^\\| ${id} \\|`, 'm').test(read(`commands/${file}.md`));
+  const has = (file, id) => stepRe(id).test(read(`commands/${file}.md`));
   const reused = {
     feature: ['P1', 'P1a', 'P2', 'P2a', 'P3a', 'P3', 'P4', 'P5', 'D1', 'D2', 'D3', 'D4', 'D5'],
     docs: ['2', '3', '4', 'A2'],
@@ -97,7 +100,7 @@ test('steps reused by ID in new.md exist in their source pipelines', () => {
 
 test('new: the five user gates and the resume checkpoint are defined', () => {
   const nw = read('commands/new.md');
-  for (const g of ['**REQ**', '**STACK**', '**G1**', '**Mk**', '**RELEASE**']) assert.ok(nw.includes(`| — | ${g} |`), `gate row ${g}`);
+  for (const g of ['**REQ**', '**STACK**', '**G1**', '**Mk**', '**RELEASE**']) assert.ok(nw.includes(`- ${g} (gate)`), `gate step ${g}`);
   assert.match(nw, /### R — Resume check/);
   const state = read('templates/team/STATE.md');
   for (const l of ['**Phase:**', '**Next step:**', '**Milestones:**', '**Input:**']) assert.ok(state.includes(l), `STATE template: ${l}`);
@@ -131,13 +134,13 @@ test('every core agent is named team-<role>, file name and frontmatter agree', (
 
 test('designer and live preview are wired into the delivery pipelines', () => {
   const feature = read('commands/feature.md');
-  for (const id of ['P1a', 'D3a', 'S3a']) assert.match(feature, new RegExp(`^\\| ${id} \\|[^\\n]*\\| designer \\|`, 'm'), `feature.md ${id} is the designer's step`);
+  for (const id of ['P1a', 'D3a', 'S3a']) assert.match(feature, stepRe(id, 'designer'), `feature.md ${id} is the designer's step`);
   for (const f of ['commands/feature.md', 'commands/fix.md', 'commands/test.md', 'commands/release.md', 'commands/new.md']) {
     assert.match(read(f), /live.preview/i, `${f} asks for a live preview`);
   }
   assert.match(read('agents/team-qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
   assert.match(read('agents/team-qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
-  assert.match(feature, /^\| P3a \|[^\n]*\| qa \|/m, 'feature.md P3a is the qa test plan');
+  assert.match(feature, stepRe('P3a', 'qa'), 'feature.md P3a is the qa test plan');
   assert.ok(!fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'no separate QA.md: qa works in TASKS.md');
   assert.match(read('templates/team/TASKS.md'), /^### QA — W-000/m, 'TASKS template has the QA subsection');
   for (const ref of ['techniques.md', 'quality-checklist.md', 'ux-verification.md', 'defects-and-reports.md']) {
@@ -160,7 +163,7 @@ test('qa gate calibration and upstream alignment stay wired', () => {
   assert.match(read('agents/team-lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
   assert.match(read('agents/team-developer.md'), /RTM conditions/, 'developer builds to qa conditions');
   assert.match(read('agents/team-pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
-  assert.match(read('agents/team-code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
+  assert.match(read('agents/team-code-reviewer.md'), /^7\. UI/m, 'code-reviewer UI check');
   assert.match(read('agents/team-developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
   assert.match(read('agents/team-architect.md'), /## Design escalation/, 'architect: design escalation workflow');
   assert.match(read('agents/team-lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
@@ -178,23 +181,23 @@ test('preloaded skills stay small; detail lives in references', () => {
 
 test('parallel review and micro verify are wired', () => {
   const feature = read('commands/feature.md');
-  assert.match(feature, /^\| D2 \|[^\n]*security reviews the same diff in parallel/m, 'D2: security in parallel on first pass');
-  assert.match(feature, /^\| D4 \|[^\n]*\*\*delta\*\*/m, 'D4: delta only');
-  assert.match(feature, /^\| S2m \|[^\n]*\| qa \|/m, 'S2m micro verify by qa');
-  assert.match(read('agents/team-lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
+  assert.match(feature, /^- \*\*D2\*\*[^\n]*security reviews the same diff in parallel/m, 'D2: security in parallel on first pass');
+  assert.match(feature, /^- \*\*D4\*\*[^\n]*\*\*delta\*\*/m, 'D4: delta only');
+  assert.match(feature, stepRe('S2m', 'qa'), 'S2m micro verify by qa');
+  assert.match(read('agents/team-lead.md'), /^- \*\*Micro \(small mode only\)\*\*/m, 'lead: micro criteria');
 });
 
 test('squads and qa fan-out are wired', () => {
   const lead = read('agents/team-lead.md');
   assert.match(lead, /^## Squads$/m, 'lead: squads section');
-  for (const s of ['Discovery', 'Build', 'Verify', 'Support']) assert.match(lead, new RegExp(`^\\| \\*\\*${s}\\*\\* \\|`, 'm'), `lead: squad ${s}`);
-  assert.match(lead, /^\| QA fan-out \|[^\n]*independent/m, 'lead: qa fan-out rule');
+  for (const s of ['Discovery', 'Build', 'Verify', 'Support']) assert.match(lead, new RegExp(`^- \\*\\*${s}\\*\\*:`, 'm'), `lead: squad ${s}`);
+  assert.match(lead, /^- \*\*QA fan-out\*\*:[^\n]*independent/m, 'lead: qa fan-out rule');
   assert.match(lead, /Only the merge verdict counts for G2/, 'lead: one verdict');
   const qa = read('agents/team-qa.md');
   for (const run of ['**core**', '**platform**', '**merge**']) assert.ok(qa.includes(run), `qa: ${run} run`);
   const feature = read('commands/feature.md');
-  assert.match(feature, /^\| D3 \|[^\n]*QA fan-out/m, 'D3: qa fan-out');
-  assert.match(feature, /^\| S3 \|[^\n]*QA fan-out/m, 'S3: qa fan-out');
+  assert.match(feature, /^- \*\*D3\*\*[^\n]*QA fan-out/m, 'D3: qa fan-out');
+  assert.match(feature, /^- \*\*S3\*\*[^\n]*QA fan-out/m, 'S3: qa fan-out');
   for (const f of ['commands/fix.md', 'commands/test.md', 'skills/run-kit/references/usage.md']) {
     assert.match(read(f), /fan.out|fans out/i, `${f} mentions the fan-out`);
   }
@@ -215,11 +218,11 @@ test('ba: guided elicitation, product baseline and discover mode are wired', () 
     assert.ok(skill.includes(ref), `SKILL.md points to ${ref}`);
   }
   const feature = read('commands/feature.md');
-  assert.match(feature, /^\| P1 \|[^\n]*\*\*round\*\*[^\n]*\| ba \|/m, 'P1: ba elicitation rounds');
-  assert.match(feature, /^\| `--discover`[^\n]*\*\*discover\*\*/m, 'feature: discover mode');
-  for (const id of ['V0', 'V1', 'V2', 'V3']) assert.match(feature, new RegExp(`^\\| ${id} \\|`, 'm'), `feature.md step ${id}`);
+  assert.match(feature, /^- \*\*P1\*\* \(ba\)[^\n]*\*\*round\*\*/m, 'P1: ba elicitation rounds');
+  assert.match(feature, /^- `--discover`[^\n]*\*\*discover\*\*/m, 'feature: discover mode');
+  for (const id of ['V0', 'V1', 'V2', 'V3']) assert.match(feature, stepRe(id), `feature.md step ${id}`);
   assert.match(frontmatter('feature'), /--discover/, 'feature argument-hint has --discover');
-  assert.match(read('agents/team-lead.md'), /\| Elicitation rounds \(REQ\) \|[^\n]*as written/, 'lead relays rounds unchanged');
+  assert.match(read('agents/team-lead.md'), /\*\*Elicitation rounds \(REQ\)\*\*:[^\n]*as written/, 'lead relays rounds unchanged');
   assert.match(read('commands/new.md'), /PRODUCT\.md/, 'new: product baseline at N1');
   for (const h of ['## Capability map', '## Business rules', '## Backlog', '## Glossary']) assert.ok(read('templates/team/PRODUCT.md').includes(h), `PRODUCT template: ${h}`);
   for (const h of ['### As-is and impact', '### Scenarios', '### Assumptions']) assert.ok(read('templates/team/SPEC.md').includes(h), `SPEC template: ${h}`);

@@ -7,108 +7,56 @@ disable-model-invocation: true
 
 ## Running this command
 
-**Request:** $ARGUMENTS
+Request: $ARGUMENTS
 
-| Situation | Do |
-|---|---|
-| Argument required | no — empty means **resume**: delegate anyway; the lead resumes the unfinished `new` work item from `.team/STATE.md`, or asks for an idea / PRD path if there is none |
-| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
-| Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
-| User answers | prefer a **new** Agent call (the run is long; `.team/STATE.md` holds everything): `Continue W-NNN (new). User's answer (verbatim): <answer>. Read .team/STATE.md first.` Resuming the same lead (SendMessage) also works |
-| Always | show the lead's report as written; do not do the team's work in the main session |
-
+1. Empty request means **resume**: delegate anyway; the lead resumes the unfinished `new` run from `.team/STATE.md`, or asks for an idea or PRD path.
+2. If this session is the tech lead (`--agent technical-team:team-lead`), run the Pipeline below yourself. Otherwise call the Agent tool with `subagent_type: technical-team:team-lead` and this prompt:
 ```
 Execute the Pipeline section of ${CLAUDE_PLUGIN_ROOT}/commands/new.md (Read the file).
-Request (verbatim): <request, or "(empty — resume)">
+Request (verbatim): <request>
 User's language: <language>
 Work item: <W-NNN or new>
-User-provided context: <faithful summary of what the user supplied for this request in this conversation — files, notes, output of skills they ran — or "none">
+User-provided context: <faithful summary of what the user supplied in this conversation, or "none">
 Read .team/STATE.md first.
 ```
-The lead and its agents cannot see this conversation: "User-provided context" is the only way context you were given reaches the team.
+   The team cannot see this conversation; "User-provided context" is the only way context reaches it.
+3. Show the lead's report as written; do not do the team's work yourself. On `Chờ duyệt …`, stop and wait; never approve or choose for the user.
+4. When the user answers, prefer a new Agent call (the run is long and `STATE.md` holds everything): `Continue W-NNN (new). User's answer (verbatim): <answer>. Read .team/STATE.md first.`
 
 ## Pipeline
 
-_Executed by the tech lead. Shared rules: Lead manual (tiers §1, gates §2, delivery loop §3, brief §4, specialists §7, reports §8–§9). This pipeline **orchestrates other pipelines and never restates their steps**: it names the file + step IDs to run and only adds what is specific to a new project. If a referenced step changes there, it changes here._
+_Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
+This pipeline runs steps from other pipelines by ID and only adds what is specific to a new project.
 
-| | |
-|---|---|
-| Input | an idea (a few sentences) **or** a path to a PRD / existing document (`.md`, `.txt`, `.pdf`; other formats → ask for an export) |
-| User gates (the only planned stops) | **REQ** requirements · **STACK** stack + architecture · **G1** MVP plan (once for the whole MVP) · **Mk** end of each milestone · **RELEASE** GO/NO-GO |
-| Internal gates | G2, G3, G4 as usual, without stopping for the user |
-| Stops that always stay | hiring gate (`hire.md`), delivery-loop escalation step 3 (Lead manual §3), a direction change after G1 (back through G1 for the changed part), a guard denial or missing tool only the user can fix |
-| Never | deploy, tag, commit, push. The release report gives the user the exact commands |
-| Work item | one `W-NNN` for the whole project (pipeline `new`); SPEC/PLAN/TASKS sections use it; milestones are `M1…Mn` inside it |
+- Input: an idea, or a path to a PRD (`.md`, `.txt`, `.pdf`).
+- User gates (the only planned stops): REQ, STACK, G1 (once for the whole MVP), Mk (end of each milestone), RELEASE. G2–G4 run without stopping.
+- Other stops that stay: hiring gate, delivery-loop escalation to the user, a direction change after G1, a guard denial only the user can fix.
+- Never deploy, tag, commit or push; give the user the commands.
+- One W-NNN for the whole project; milestones `M1…Mn` inside it.
+- After every step update `Phase`, `Next step` and `Milestones` in `STATE.md` (block "pipeline `new`" of the template).
 
-```mermaid
-flowchart TD
-  R0[R Resume check: STATE.md] -->|unfinished new item| RES[continue at Next step]
-  R0 -->|none| N0[N0 Setup: init script, open W-NNN, repo checks]
-  N0 --> N1[N1 Requirements: ba → SPEC MVP scope + questions]
-  N1 --> REQ{{REQ — user: answers + MVP scope}}
-  REQ --> N2[N2 Stack + architecture: architect → options, .team/ARCHITECTURE.md, ADRs proposed; designer → design direction + UI library + design system; design hook; devops/security consulted]
-  N2 -. expertise missing .-> HIRE{{hire.md hiring gate}}
-  HIRE -.-> N2
-  N2 --> STACK{{STACK — user: stack + architecture}}
-  STACK --> N3[N3 MVP plan: feature.md P1a–P4 with milestones; M1 = scaffold / walking skeleton]
-  N3 --> G1{{G1 — user: whole MVP plan}}
-  G1 --> N4[N4 Milestone Mk: feature.md D1–D4 on Mk tickets → G2 + G3; D5 limited]
-  N4 --> MK{{Mk — user: milestone report}}
-  MK -- next milestone --> N4
-  MK -- adjust in plan --> N4
-  MK -- direction change --> G1
-  MK -- last milestone done --> N5[N5 Ops: infra.md 3–4b for plan items not yet built]
-  N5 --> N6[N6 Docs: docs.md Sync 2–4 → G4]
-  N6 --> N7[N7 Release: release.md 0–3, same W-NNN]
-  N7 --> REL{{RELEASE — user: GO / NO-GO}}
-  REL -- NO-GO: fix items --> FX[fix.md 1–7 per blocking item] --> N7
-  REL -- accepted --> END[Final report §8 + commands to commit/tag/deploy/rollback]
-```
+### R — Resume check
 
-### R — Resume check (every invocation, before anything else)
-
-| `STATE.md` has an unfinished work item with pipeline `new`? | Request | Do |
-|---|---|---|
-| no | idea or path | start at N0 |
-| no | empty | gate report `Chờ duyệt — Đầu vào`: ask for an idea or a PRD path; stop |
-| yes, `waiting-for-user` | the user's answer (prompt or arguments) | apply it to the pending gate (tables below), record it, continue |
-| yes, `waiting-for-user` | empty | repeat the pending gate report from `STATE.md`; stop |
-| yes, `running` (interrupted) | any | continue at **Next step**. First compare `TASKS.md` statuses and `git status --porcelain` with the last checkpoint; a step that has no recorded result is re-run by its owner, not assumed done |
-| yes | a different new idea | do not start a second `new` in the same repository: ask whether to resume or cancel the existing one |
-
-**Checkpoint rule:** after every completed step (not only at gates) update the work item's `Phase`, `Next step` and `Milestones` lines in `STATE.md` (template: `templates/team/STATE.md`, block "pipeline `new`"). `status` reads these lines.
+Do this first on every invocation:
+- No unfinished `new` item + idea/path → start at N0. + empty request → ask for an idea or PRD path, stop.
+- Item `waiting-for-user` + an answer → apply it to the pending gate and continue. + empty → repeat the pending gate report.
+- Item `running` (interrupted) → continue at `Next step`; re-run any step without a recorded result.
+- A different new idea while one is open → ask whether to resume or cancel; never two `new` runs in one repo.
 
 ### Phases
 
-| Phase | Step | Agent | Reuses | Specific to `new` |
-|---|---|---|---|---|
-| N0 | Setup | lead | init script (`init`) | run `node "${CLAUDE_PLUGIN_ROOT}/scripts/team-init.mjs"` (creates `STATE.md` only; other `.team/` files are created right before their owner's first step); open `W-NNN` (pipeline `new`, gate `REQ pending`), record **Input** (idea verbatim, or document path). `git status` fails → not a repository: ask the user to run `git init` at REQ (do not block N1). Application code already present (anything beyond `.team/`, `.claude/`, `docs/`, README, LICENSE, the PRD, dotfiles) → gate report now: propose `feature` / `run`, or `new` in a subfolder the user names |
-| N1 | Requirements | ba | `feature.md` P1 | Greenfield context (`business-analysis` → `contexts.md` §1): product baseline in `.team/PRODUCT.md` (vision, users, goals + measures, context, capability map with the MVP slice marked, glossary, business rules), then the **MVP** spec in `SPEC.md#W-NNN`: problem, users, MVP scope **in / out**, stories, testable ACs, edge cases, non-functional constraints (scale, platforms, compliance, deadline). Idea → ba asks clarifying questions in **Open questions**, each with a proposed default answer. Document → ba reads it (the brief gives the path), cites its sections, asks only about gaps and contradictions. No blocking question may stay hidden in assumptions |
-| — | **REQ** | lead | gate report §9 | the ba's round as written: big picture (vision, users, goals, capability map), playback scenarios, MVP scope in/out, key stories, numbered questions with options and defaults ("OK" = accept all defaults), assumptions, user actions needed (e.g. `git init`) |
-| N2 | Stack + architecture | architect + designer (+ dba / specialists via hook `design`; devops, security **answer only**) | `feature.md` P2, P2a; `docs.md` ADR A2 | product with UI → designer first writes the **Design system** part of `DESIGN.md`: design direction (who uses it, on what devices, the feel), UI library / theme recommendation that fits the stack options, tokens, layout shell; the architect folds the UI library into the stack options and ADR. The plugin is stack-agnostic, so the stack is a proposal: 2–3 options scored against the SPEC constraints, one recommended; `.team/ARCHITECTURE.md` (components, data flow, mermaid); ADRs `proposed` for stack and major choices. devops answers: local runtime (e.g. compose), CI fit; security answers: auth/data approach. A domain nobody covers → `hire.md` recruit (its gate stops as usual) |
-| — | **STACK** | lead | gate report §9 | recommended stack + alternatives and why not, UI library + design direction (with UI), architecture summary, ADR list, risks, what the user's machine needs (runtimes, Docker). Optional for the user: fill `commands.*` allowlists and `skills.*` in `.claude/technical-team.json` for this stack. Approved → architect sets the ADRs `accepted` |
-| N3 | MVP plan | designer → architect → pm → qa → lead | `feature.md` P1a–P4 | designer: MVP flows, screens, state matrix in `DESIGN.md#W-NNN` (with UI). `PLAN.md#W-NNN` **Milestones** table: M1 = walking skeleton (structure, build, lint, test runner, one end-to-end slice, local run), each next milestone a runnable increment with its ACs (`Satisfies`) and exit criteria; infra items placed in milestones (local env in M1, CI where it fits). qa: MVP test plan in `.team/TASKS.md#W-NNN` → `### QA` (risks, platforms, drivers to set up in M1, exit criteria per milestone). pm: `TASKS.md#W-NNN` grouped `### Mk — <name>`; scaffold tickets split by owner (developer: source + manifests · qa: test setup + smoke test (the platform's live-preview driver — Playwright for web/Electron, Maestro/Detox/`integration_test` for mobile, a CLI/HTTP transcript harness — and a live-preview smoke of the first slice; the developer adds any dev dependency, devops any emulator/Xvfb/compose setup) · devops: Dockerfile/compose/CI · writer: README run section · dba: initial migrations) because the guard enforces ownership; aim ≤ 8 tickets per milestone so one lead run stays focused. Lead P4: every MVP AC lands in exactly one milestone |
-| — | **G1** | lead | `feature.md` P5 | G1 report content + milestones table, ticket count per milestone, rough agent-call estimate. Approval covers the whole MVP: no per-feature G1 later |
-| N4 | Milestone Mk | per ticket owner | `feature.md` D1–D4 on the Mk tickets | review scope = the milestone's files (`git diff` + `git status --porcelain`, since a new project has untracked files). G2 + G3 on the milestone's final code. D5 limited to: pm marks Mk tickets `done`; writer only for docs tickets of Mk; full docs wait for N6 |
-| — | **Mk** | lead | gate report §9 | done (tickets, ACs met) · test evidence (command → summary) · live-preview screenshots of the milestone's screens (paths) · review/security counts · defects by severity (open/deferred) from the QA subsection of `TASKS.md` · deviations from the plan and why · deferred findings · how to try it locally (exact command) · suggested commit command for the user (`git add -A && git commit -m "feat: Mk <name>"`, gives the next milestone a clean diff) · next milestone preview |
-| N5 | Ops | devops → code-reviewer → security | `infra.md` 3–4b | only plan infra items not built in a milestone (typically CI); proposal = the approved plan, so `infra.md` step 2 is covered by G1 (`infra.md` → "Inside `new`"). Nothing left → skip with a note |
-| N6 | Docs | (devops) → writer | `docs.md` Sync 2–4 | scope: all — README (setup, run, test), docs, runbooks from `OPS_HANDOFF.md`, ADR index check → **G4** for the project |
-| N7 | Release | qa ∥ security ∥ devops ∥ specialists → writer → lead | `release.md` 0–3 (same W-NNN, first release: no tag, default `0.1.0`) | GO additionally needs **local run proof**: a qa smoke/e2e test that boots the app, or devops start + health check, with real output; the live preview of every MVP flow on the release build of each product, clean (platforms this machine cannot host listed as not previewed) |
-| — | **RELEASE** | lead | gate report §9 | GO/NO-GO + reasons, version, test/security evidence, exact commands for the user in order: commit (incl. `git init` if needed), tag, push, deploy (only if `OPS_HANDOFF.md` has a target; otherwise "local only"), rollback |
+- **N0** (lead) Run the init script, open W-NNN (pipeline `new`, gate `REQ pending`), record the input. Not a git repo → ask the user for `git init` at REQ. Application code already present → propose `feature` / `run` or a subfolder.
+- **N1** (ba) Requirements via `feature.md` P1, greenfield context: product baseline in `PRODUCT.md`, then the MVP spec (scope in/out, stories, testable ACs, edge cases, constraints) in `SPEC.md#W-NNN`. From a PRD, cite its sections and ask only about gaps.
+- **REQ** (gate) Show the ba's round as written: big picture, scenarios, MVP scope, questions with defaults, assumptions, user actions. Answers → ba folds them in → N2.
+- **N2** (architect + designer; dba/specialists via `design`; devops, security answer only) Via `feature.md` P2, P2a and `docs.md` A2: designer proposes design direction and UI library (with UI); architect gives 2–3 stack options with one recommended, `ARCHITECTURE.md`, ADRs `proposed`. A missing domain → `hire.md`.
+- **STACK** (gate) Recommended stack and alternatives, UI direction, architecture summary, ADRs, risks, what the user's machine needs. Approved → ADRs `accepted`.
+- **N3** (designer → architect → pm → qa → lead) MVP plan via `feature.md` P1a–P4: milestones in `PLAN.md` (M1 = walking skeleton: structure, build, lint, test runner, one end-to-end slice), MVP test plan, tickets grouped `### Mk`, scaffold split by owner, about 8 tickets per milestone. Every MVP AC lands in exactly one milestone.
+- **G1** (gate) As `feature.md` P5, plus the milestones and ticket counts. Approval covers the whole MVP.
+- **N4** (ticket owners) Each milestone via `feature.md` D1–D4 on its tickets → G2 + G3; pm marks tickets done; full docs wait for N6.
+- **Mk** (gate) What was done, test evidence, live-preview screenshots, findings and defects, deviations, how to try it locally, a suggested commit command, the next milestone. Next → N4; change inside the plan → pm adjusts; direction change → G1; last milestone → N5.
+- **N5** (devops → code-reviewer → security) Ops via `infra.md` 3–4b for plan infra items not yet built (G1 already covers the proposal). Nothing left → skip.
+- **N6** (devops → writer) Docs via `docs.md` Sync 2–4, all scope → **G4**.
+- **N7** (qa ∥ security ∥ devops ∥ specialists → writer → lead) Release via `release.md` 0–3, version `0.1.0`. GO also needs local run proof and a clean live preview of every MVP flow.
+- **RELEASE** (gate) GO/NO-GO with reasons, evidence and the exact commands (commit, tag, push, deploy, rollback). NO-GO items to fix → `fix.md` steps 1–7 each, then N7 again. The user may also close as NO-GO.
 
-### User answers at the gates
-
-| Gate | Approve | Change | Other |
-|---|---|---|---|
-| REQ | record answers in `STATE.md` (`Approvals:`); ba folds them into `SPEC` (no new stop unless an answer opens a **blocking** question) → N2 | ba revises → REQ again | "stop" → status `waiting-for-user`, resume later |
-| STACK | architect marks ADRs `accepted` → N3 | architect revises (+ hook) → STACK again | pick another option → architect updates → N3 |
-| G1 | `G1 approved by user on <date>: "<words>"` → N4 with M1 | brief the owner of the first changed file, redo after it, G1 again (`feature.md` P5 rules) | rejected → work item `done`, outcome "cancelled" |
-| Mk | next milestone (or N5 after the last) | inside the plan → pm adds/edits tickets in Mk or Mk+1 and the loop runs; direction change → architect revises `PLAN` → G1 for the changed part | "stop" → paused at Mk, resume with `new` |
-| RELEASE | accepted → final report §8, status `done` | NO-GO items the user wants fixed → `fix.md` steps 1–7 per blocking item (same W-NNN, loop log in `STATE.md`) → N7 again | the user may close with NO-GO: status `done`, outcome "MVP delivered, not release-ready" + open items |
-
-| | |
-|---|---|
-| .team | reads all; writes lead → `STATE`; ba → `SPEC`, `PRODUCT`; designer → `DESIGN`; qa → `### QA` subsections of `TASKS`; architect → `PLAN`, `.team/ARCHITECTURE.md`, ADR; pm → `TASKS`; devops → `OPS_HANDOFF`; hr → `ROSTER` (only through `hire.md`) |
-| Hook points | `design` (N2, N3), `execute` / `review` / `test` (N4 through `feature.md` D1–D3), `test` / `review` (N7 through `release.md` 1) |
-| End | RELEASE accepted (GO, or closed as NO-GO by the user), G1 rejected, or the user cancels. Final report §8 also lists: milestones with dates, ADRs, how to run locally, deferred findings, commands for the user |
+Ends when RELEASE is accepted, G1 is rejected or the user cancels. The final report also lists milestones, ADRs, how to run locally and deferred findings.
