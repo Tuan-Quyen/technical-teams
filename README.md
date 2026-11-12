@@ -627,7 +627,7 @@ technical-team/
 │   ├── team-init.mjs       tạo file .team/ khi cần: file đơn, hoặc <type> <slug>
 │   └── team-migrate.mjs    chuyển .team/ từ layout cũ sang layout theo work item (mặc định dry-run)
 ├── templates/
-│   ├── team/               STATE, TASKS, PRODUCT, ARCHITECTURE, ROSTER, frontend-design-system
+│   ├── team/               STATE, TASKS, PRODUCT, ARCHITECTURE, ROSTER, DESIGN (design system → frontend-design/_system.md)
 │   ├── team/item/          requirements, system-design, frontend-design, qa, review, security, debug
 │   ├── adr.md, specialist-agent.md, technical-team.json
 └── tests/                  commands.test.mjs, migrate.test.mjs

@@ -62,7 +62,7 @@ if (first && (first in ITEM_TYPES || first === 'adr')) {
     const n = slug.slice(0, 4);
     jobs.push({ tpl: path.join(ROOT, 'templates', 'adr.md'), dest: `adr/${slug}.md`, fill: (t) => t.replace('# NNNN.', `# ${n}.`) });
   } else if (first === 'frontend-design' && slug === '_system') {
-    jobs.push({ tpl: path.join(tplDir, 'frontend-design-system.md'), dest: 'frontend-design/_system.md' });
+    jobs.push({ tpl: path.join(tplDir, 'DESIGN.md'), dest: 'frontend-design/_system.md' });
   } else {
     if (!SLUG_RE.test(slug)) fail(`bad slug "${slug}": expected W-NNN-<kebab-title>, e.g. W-012-offline-sync`);
     const id = slug.match(/^W-\d+/)[0];

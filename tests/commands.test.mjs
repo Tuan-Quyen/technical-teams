@@ -147,7 +147,7 @@ test('designer and live preview are wired into the delivery pipelines', () => {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'test-process', 'references', ref)), ref);
     assert.ok(read('skills/test-process/SKILL.md').includes(ref), `test-process SKILL.md points to ${ref}`);
   }
-  for (const t of ['item/frontend-design.md', 'frontend-design-system.md']) assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', t)), `${t} template`);
+  for (const t of ['item/frontend-design.md', 'DESIGN.md']) assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', t)), `${t} template`);
   for (const ref of ['common-bugs.md', 'web.md', 'mobile.md', 'desktop.md', 'cli.md', 'service.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
     assert.ok(read('skills/live-preview/SKILL.md').includes(ref), `SKILL.md points to ${ref}`);
@@ -215,7 +215,8 @@ function shippedFiles() {
 test('no hook, no enforcement claim and no old .team path is left', () => {
   assert.ok(!fs.existsSync(path.join(ROOT, 'hooks')), 'hooks/ is gone');
   assert.ok(!fs.existsSync(path.join(ROOT, 'config', 'ownership.json')), 'the ownership config is gone');
-  const OLD = /SPEC\.md|PLAN\.md|DESIGN\.md|OPS_HANDOFF|### QA|fan-out|guard|hooks\/|\.live\b|ownership\.json/;
+  // `templates/team/DESIGN.md` is the design-system template (it creates frontend-design/_system.md), not the old .team/DESIGN.md.
+  const OLD = /SPEC\.md|PLAN\.md|(?<!templates\/team\/|tplDir, ')DESIGN\.md|OPS_HANDOFF|### QA|fan-out|guard|hooks\/|\.live\b|ownership\.json/;
   for (const f of shippedFiles()) {
     let text = read(f);
     if (f === 'README.md') {

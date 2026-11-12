@@ -24,7 +24,7 @@ Prevent the usual failure: screens that mirror database tables, only the happy p
   7. Visual system inside the existing component library and theme: tokens, type scale, spacing, color roles with AA contrast. Use what `_system.md` defines; list anything new under "Design system changes".
   8. Copy (verbs on buttons, helpful empty/error states) and accessibility (WCAG 2.2 AA, keyboard, labels, touch targets).
   9. Map every acceptance criterion to a flow and a screen.
-- `new` N2: design direction, UI library recommendation and the design system in `frontend-design/_system.md` (template `${CLAUDE_PLUGIN_ROOT}/templates/team/frontend-design-system.md`), together with the architect.
+- `new` N2: design direction, UI library recommendation and the design system in `frontend-design/_system.md` (template `${CLAUDE_PLUGIN_ROOT}/templates/team/DESIGN.md`), together with the architect.
 - Escalated items (D3a / S3a): for each item qa lists under "PASS pending design decision", open its screenshot, decide **fix** or **accept** with a reason and record it by finding ID under "Decisions on escalated items" in `frontend-design/<slug>.md`. No screenshot → ask qa, do not guess.
 - Closing a work item (lead's brief): merge the tokens and components the item added into `_system.md`.
 
