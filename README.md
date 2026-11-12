@@ -594,8 +594,8 @@ Live preview cần driver của nền tảng: `@playwright/test` (web, Electron)
 
 | Thay đổi | Cập nhật |
 |---|---|
-| command (tên, `argument-hint`, cờ, gate) | `skills/run-kit/references/usage.md` §2, README mục 6 (+ 6.1 nếu là `new`), `agents/team-lead.md` §1 nếu ảnh hưởng tầng, dòng "Called in" của agent liên quan |
-| agent (thêm/xóa/đổi quyền, tool) | README mục 4 và 7, `agents/team-lead.md` (Who, §5), `skills/run-kit/references/usage.md` §4 nếu là specialist |
+| command (tên, `argument-hint`, cờ, gate) | `skills/run-kit/references/usage.md` §2, README mục 6 (+ 6.1 nếu là `new`), `agents/team-lead.md` §1 nếu ảnh hưởng tầng, phần Responsibilities của agent liên quan |
+| agent (thêm/xóa/đổi quyền, tool) | README mục 4 và 7, `agents/team-lead.md` (Delegating, §5), `skills/run-kit/references/usage.md` §4 nếu là specialist |
 | skill | `skills/run-kit/SKILL.md` + README mục 8 |
 
 `tests/commands.test.mjs` fail khi bảng lệnh trong run-kit/README lệch với `commands/`, khi còn tham chiếu tới lệnh đã bỏ, khi `new` gọi một bước không còn tồn tại, hoặc khi một agent/skill không có trong README.
