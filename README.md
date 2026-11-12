@@ -536,7 +536,7 @@ Bản cũ ghi mỗi vai trò một file, chia section theo `W-NNN`: `SPEC.md`, `
 
 - Slug sinh từ tiêu đề (bỏ dấu tiếng Việt, tối đa 6 từ); item đã có file theo layout mới thì dùng lại slug đó.
 - Script **không xóa và không sửa** `SPEC.md`, `PLAN.md`, `DESIGN.md`, `TASKS.md`, `STATE.md`, và không ghi đè file đích nên chạy lại được. Sau khi kiểm tra file mới, bạn tự xóa ba file cũ, nhờ pm gỡ các mục `### QA` khỏi `TASKS.md`, và để lead thêm slug vào `STATE.md` (script in sẵn bảng `W-NNN → slug`).
-- ID lỗi cũ (`W-NNN-D1`) và execution log nhiều vòng được giữ nguyên trong file qa đã migrate; finding mới đánh `Q-01`…
+- ID lỗi cũ (`W-NNN-D1`) và execution log nhiều vòng được giữ nguyên trong file qa đã migrate; finding mới đánh `Q-01`… Trạng thái lỗi cũ được đổi sang từ vựng mới (`closed` → `verified`, `rejected` → `dropped`, `new`/`reopened` → `open`, `retest` → `fixed`) để lỗi đã đóng không thành ticket follow-up; `moved`, `deferred`, `design_question` giữ nguyên, bạn tự quyết.
 - Nội dung `OPS_HANDOFF.md` không có file thay thế: thông tin vận hành nay nằm trong file hạ tầng thật, mục "Operations" của `ARCHITECTURE.md` và runbook ở `docs/`. Nếu file cũ còn dữ kiện chưa có ở đâu khác, chạy `/technical-team:docs` và đưa nó làm ngữ cảnh.
 - Trong `.claude/technical-team.json`, các khóa `commands`, `paths`, `db`, `devopsAllowRemote` không còn ai đọc; xóa đi cho gọn.
 - Gặp layout cũ khi chưa migrate, lead vẫn đọc nó như nội dung hiện hành và nhắc bạn chạy script.

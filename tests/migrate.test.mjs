@@ -38,7 +38,7 @@ const OLD = {
     '### QA — W-001 · status: failed', '',
     '#### Test plan', '- **Scope in / out:** export', '',
     '#### Execution log', '- **R1** 2026-10-01 · suite: 12 passed', '- **R2** 2026-10-02 · suite: 11 passed, 1 failed', '',
-    '#### Defects', '| ID | Title | Status |', '|---|---|---|', '| W-001-D1 | wrong total | open |', '',
+    '#### Defects', '| ID | Title | Status |', '|---|---|---|', '| W-001-D1 | wrong total | open |', '| W-001-D2 | typo | closed |', '| W-001-D3 | not a bug | rejected |', '| W-001-D4 | flaky | reopened |', '| W-001-D5 | old one | moved |', '',
     '## W-003 — Login rate limit', '',
     '| Ticket | Summary | Status |', '|---|---|---|', '| W-003-T1 | limiter | todo |', '',
   ].join('\n'),
@@ -124,6 +124,11 @@ test('--apply splits every work-item section into its per-slug file', () => {
   assert.match(qa, /^Verdict: FAIL · Round 2\n/, 'verdict from the old status, round from the execution log');
   assert.match(qa, /^## Test plan$/m, 'headings lifted two levels');
   assert.match(qa, /\| W-001-D1 \| wrong total \| open \|/);
+  assert.match(qa, /\| W-001-D2 \| typo \| verified \|/, 'closed → verified, so it does not become a follow-up ticket');
+  assert.match(qa, /\| W-001-D3 \| not a bug \| dropped \|/, 'rejected → dropped');
+  assert.match(qa, /\| W-001-D4 \| flaky \| open \|/, 'reopened → open');
+  assert.match(qa, /\| W-001-D5 \| old one \| moved \|/, 'statuses without an equivalent are left alone');
+  assert.match(readT(dir, 'TASKS.md'), /\| W-001-T1 \| endpoint \| done \|/, 'ticket statuses are not touched');
   assert.ok(!qa.includes('W-001-T1'), 'tickets stay in TASKS.md');
   assert.ok(!qa.includes('W-003'), 'the next item is not swallowed');
   assert.ok(!fs.existsSync(path.join(dir, '.team', 'qa', 'W-003-login-rate-limit.md')), 'no qa file for an item without a QA subsection');

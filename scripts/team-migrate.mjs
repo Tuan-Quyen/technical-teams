@@ -81,6 +81,33 @@ const trimBlank = (lines) => {
   return a;
 };
 
+// Old defect statuses -> the vocabulary the closing procedure reads (`open` → `fixed` → `verified`, or `dropped`).
+// Without this a defect the old layout had `closed` would look unresolved and become a follow-up ticket.
+// `moved`, `deferred` and `design_question` have no equivalent and are left for a person to settle.
+export const DEFECT_STATUS = { closed: 'verified', rejected: 'dropped', new: 'open', reopened: 'open', retest: 'fixed' };
+
+/** Rewrites the Status cell of every table that has both an `ID` and a `Status` column. */
+function translateDefectStatuses(lines) {
+  let col = -1;
+  let fenced = false;
+  return lines.map((line) => {
+    if (/^\s*(```|~~~)/.test(line)) { fenced = !fenced; return line; }
+    if (fenced || !line.trimStart().startsWith('|')) { col = -1; return line; }
+    const cells = line.split('|');
+    if (col < 0) {
+      const names = cells.map((c) => c.trim().toLowerCase());
+      col = names.includes('id') ? names.indexOf('status') : -1;
+      if (col < 0) col = -2; // a table without those columns: skip its rows
+      return line;
+    }
+    if (col === -2 || col >= cells.length) return line;
+    const to = DEFECT_STATUS[cells[col].trim().toLowerCase()];
+    if (!to) return line;
+    cells[col] = cells[col].replace(cells[col].trim(), to);
+    return cells.join('|');
+  });
+}
+
 export function kebab(title) {
   const s = (title || '')
     .replace(/[<>`*_]/g, ' ')
@@ -181,9 +208,9 @@ export function plan(teamDir) {
         write(`qa/${slugOf(id)}.md`, [
           `Verdict: ${verdict} · Round ${round}`, '',
           `# ${id} — ${m[2] || titles.get(id) || '<title>'} · QA`, '',
-          `> Owner: **team-qa**. Migrated from the QA subsection of ${id} in the old \`.team/TASKS.md\` (status there: ${status || 'none'}); the content is unchanged, headings were lifted two levels.`,
-          '> The old defect IDs and the per-round execution log are kept as they were. New findings continue as `Q-01`, `Q-02`… in a "Findings" table, and "Round detail" holds the latest round only.', '',
-          ...trimBlank(promote(q.body, 2)), '',
+          `> Owner: **team-qa**. Migrated from the QA subsection of ${id} in the old \`.team/TASKS.md\` (status there: ${status || 'none'}); headings were lifted two levels and defect statuses were translated (closed → verified, rejected → dropped, new/reopened → open, retest → fixed).`,
+          '> The old defect IDs and the per-round execution log are kept as they were; a defect still `moved`, `deferred` or `design_question` needs a person to set it to `verified`, `dropped` or `open`. New findings continue as `Q-01`, `Q-02`… in a "Findings" table, and "Round detail" holds the latest round only.', '',
+          ...translateDefectStatuses(trimBlank(promote(q.body, 2))), '',
         ].join('\n'), `TASKS.md § ${id} › QA`);
       }
     }
