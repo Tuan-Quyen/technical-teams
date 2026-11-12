@@ -1,0 +1,14 @@
+{
+  "name": "technical-team-marketplace",
+  "private": true,
+  "description": "Tests and validation for the technical-team Claude Code plugin in plugins/team/.",
+  "license": "MIT",
+  "repository": "https://github.com/Tuan-Quyen/technical-teams",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "validate": "claude plugin validate plugins/team --strict && claude plugin validate .claude-plugin/marketplace.json --strict"
+  },
+  "engines": {
+    "node": ">=21"
+  }
+}

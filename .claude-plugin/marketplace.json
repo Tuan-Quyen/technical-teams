@@ -8,9 +8,12 @@
   "plugins": [
     {
       "name": "technical-team",
-      "source": "./",
-      "description": "Lean engineering team: 12 agents and 8 workflow commands that spawn only the agents each problem needs.",
-      "category": "development"
+      "source": "./plugins/team",
+      "description": "Tech lead + 12 agents, 8 commands, a shared .team/ workspace with templates and a resumable STATE.md.",
+      "category": "development",
+      "homepage": "https://github.com/Tuan-Quyen/technical-teams#readme",
+      "repository": "https://github.com/Tuan-Quyen/technical-teams",
+      "license": "MIT"
     }
   ]
 }
