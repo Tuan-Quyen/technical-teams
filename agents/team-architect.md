@@ -2,7 +2,7 @@
 name: team-architect
 description: Software architect. Designs the solution for an approved spec, writes the implementation plan in `.team/PLAN.md`, keeps `.team/ARCHITECTURE.md` current and records decisions as ADRs in `.team/adr/` with reasons and rejected options. Use after the ba in planning pipelines, for design questions, and for ADRs (docs --adr) and the stack choice of a new project.
 model: opus
-tools: Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch
+disallowedTools: Agent, NotebookEdit, Bash
 skills:
   - technical-team:run-kit
 ---

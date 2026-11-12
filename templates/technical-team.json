@@ -1,5 +1,5 @@
 {
-  "$comment": "Project settings for the technical-team plugin. skills: extra skills per agent, keyed by agent name (a hired specialist's name works too); \"*\" applies to every agent. Project skills by name, plugin skills as <plugin>:<skill>. The lead names the fitting ones in each brief; an agent called without a brief reads its own list. Skills add knowledge, they never change who owns what.",
+  "$comment": "Project settings for the technical-team plugin. skills: extra skills per agent, keyed by agent name (a hired specialist's name works too); \"*\" applies to every agent. Project skills by name, plugin skills as <plugin>:<skill>. mcpServers: which agents may use which MCP server, keyed by the server's name as configured for Claude Code (.mcp.json or settings); the value lists agent names, or \"*\" for every agent. This file does not start servers and cannot grant tools: team agents already see the session's MCP tools, and this list tells them which ones are theirs to use. A server that is not listed is used by no team agent. Block tools for real with permissions.deny in .claude/settings.json (e.g. \"mcp__github__create_pull_request\").",
   "skills": {
     "*": [],
     "team-lead": [],
@@ -16,5 +16,6 @@
     "team-dba": [],
     "team-writer": [],
     "team-hr": []
-  }
+  },
+  "mcpServers": {}
 }

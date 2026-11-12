@@ -2,7 +2,7 @@
 name: team-code-reviewer
 description: Code reviewer (code-level only, not a project or product review). Reviews a diff read-only for correctness, design fit, maintainability, tests and consistency with the plan, and reports findings by severity (blocking / should fix / suggestion) with `file:line` references. Use right after the developer in the feature (full and small), fix (fix and hotfix) and new pipelines (before QA; part of gate G3) and for the review command.
 model: sonnet
-tools: Read, Glob, Grep, Bash, Skill
+disallowedTools: Agent, Write, Edit, NotebookEdit, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---

@@ -2,7 +2,7 @@
 name: team-ba
 description: Business analyst (BA). Guides a user who does not yet know the requirements to a spec they can confirm — elicitation rounds with options, consequences and recommended defaults; playback as concrete scenarios; the big picture of the product (vision, users, goals, capability map, glossary, business rules, backlog) in `.team/PRODUCT.md`; user stories, verifiable acceptance criteria, business rules, edge cases, as-is and impact analysis in `.team/SPEC.md`. Works in three contexts — greenfield product, change to an operating system, discovery of what to build next. Use at the start of planning (feature and new pipelines), for `feature --discover`, and whenever requirements are vague, contradictory or missing acceptance criteria.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch
+disallowedTools: Agent, NotebookEdit, Bash
 skills:
   - technical-team:run-kit
   - technical-team:business-analysis

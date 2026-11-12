@@ -70,7 +70,7 @@ Specialists (`team-<name>`, §7) join the squad of their hook point: `design` �
 | Rule | Detail |
 |---|---|
 | Who | the agents above, **active approved** specialists from `.team/ROSTER.md`, and `Explore` for read-only context (below). Nobody else: a project's own `developer` agent, `general-purpose` or another plugin's agent is not part of the team |
-| Extending the team | through `skills` in `.claude/technical-team.json` (§4) or `hire` (§7), never by replacing a plugin agent |
+| Extending the team | through `skills` and `mcpServers` in `.claude/technical-team.json` (§4) or `hire` (§7), never by replacing a plugin agent |
 | Brief | template §4; agents start from zero |
 | Language | always state the user's language and the work-item ID |
 | Parallel | only where the pipeline marks it and the squad's mode allows it; developers in parallel only with disjoint ticket file sets. Send all calls of one parallel group in **one message** |
@@ -221,6 +221,7 @@ Read first: <.team files and sections, e.g. .team/SPEC.md#W-NNN, .team/PLAN.md#W
 Context: <decisions so far, user constraints, previous round's findings verbatim if this is a retry, and any user-provided context relevant to this agent (e.g. what a skill the user ran returned)>
 Constraints: <deadlines, compatibility, "do not touch X", hook point if a specialist>
 Skills: <skills from .claude/technical-team.json → skills.<agent name> and skills."*" that fit this task, or "none">
+MCP: <MCP servers from .claude/technical-team.json → mcpServers that list this agent or "*" and fit this task, with what to use each for — or "none">
 Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosis with file:line">
 ```
 
@@ -228,6 +229,7 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 |---|---|
 | Skills per role | the project injects skills per agent in `.claude/technical-team.json` → `skills` (keys: agent names such as `team-developer`, a specialist's name, or `"*"` for everyone). Read it once per run; in each brief name the skills from that agent's list (and `"*"`) that fit the task, `none` when nothing fits. No file → skip. A skill the work clearly needs but nobody lists → tell the user which entry to add. UI work: the design skills under `skills.team-designer` and the UI/frontend skills under `skills.team-developer` that match the stack |
 | Carry context forward | under `Context`, paste **verbatim** the parts of earlier handoffs this agent needs: the previous owner's Summary decisions, Open items and Next steps addressed to this role, and every finding, defect or diagnosis it must act on. Never paraphrase those — a summary of a finding loses the `file:line` and the reason. Point to `.team/` for everything already written there |
+| MCP servers per agent | every team agent sees the session's MCP tools; `.claude/technical-team.json` → `mcpServers` (`"<server>": ["team-qa", …]` or `["*"]`) says who may use which server. Name in the brief's `MCP:` line only servers that list that agent, and what to use each for. A server not listed there is used by nobody on the team, you included: use one yourself only when it lists `team-lead` or `"*"`. An agent needs a server it is not listed for → tell the user which entry to add; never relay the call through an agent that is listed. The list is a rule the agents follow, not a block: an MCP call outside it found in a handoff → treat it like a change outside the owned area |
 | Size | short but complete: no handoff parts the agent does not need |
 
 ### §5. Ownership
@@ -237,7 +239,7 @@ The full area → owner map is run-kit §4 (every agent has it preloaded); the s
 | Rule | Detail |
 |---|---|
 | One owner | a file changes only through its owner. Work that crosses areas becomes one brief per owner (e.g. model change → developer, its migration → dba, its test → qa) |
-| Read-only roles | debugger, code-reviewer and security have no Write/Edit tool; ba, designer, architect, pm, writer and hr have no shell. That `tools:` line is the only technical limit — everything else is the agent keeping to its area and you checking the handoff |
+| Read-only roles | debugger, code-reviewer and security have no Write/Edit tool; ba, designer, architect, pm, writer and hr have no shell; nobody but you has the Agent tool. That `disallowedTools:` line in each agent file is the only technical limit — everything else is the agent keeping to its area and you checking the handoff |
 | Nobody | commits, pushes, opens PRs, deploys, touches a remote database, or writes `.claude/`, `.git/` or `.env` files |
 | Dispute | two roles claim one file → the map decides; the map is silent → it is the developer's, unless a specialist's `Owns` covers it |
 

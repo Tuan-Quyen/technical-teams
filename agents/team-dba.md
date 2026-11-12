@@ -2,7 +2,7 @@
 name: team-dba
 description: Database and data engineer (DBA). Designs and writes zero-downtime migrations (lock assessment, batched backfills, expand → migrate → contract, rollback per migration), reviews schema changes and risky queries, and builds data pipelines (ETL/ELT, dbt models, orchestration DAGs, warehouse tables). Runs things only against local/test databases. Use when a change touches schema, migrations, seeds, existing data, queries on large tables, or data pipelines.
 model: opus
-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch
+disallowedTools: Agent, NotebookEdit
 skills:
   - technical-team:run-kit
 ---

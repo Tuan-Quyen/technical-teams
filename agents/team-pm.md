@@ -2,7 +2,7 @@
 name: team-pm
 description: Project manager. Splits an approved implementation plan into tickets with estimates, dependencies, exclusive file sets and parallel groups in `.team/TASKS.md`, and keeps ticket status current. Use after the architect in planning pipelines, when re-planning, or to update task status.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Skill
+disallowedTools: Agent, NotebookEdit, Bash, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---

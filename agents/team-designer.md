@@ -2,7 +2,7 @@
 name: team-designer
 description: UI/UX designer. Turns an approved spec into a usable, complete and polished interface — users and their tasks, flows, information architecture, screen specs with every state (empty, loading, error, success, no permission), the visual system (type, spacing, color roles, components) and microcopy — written to `.team/DESIGN.md`; then decides the UI/UX items qa escalates after verifying the built product. Use after the ba for any work item with user-facing UI (feature, new projects, UI bugs that change layout or flow), and in the delivery loop when qa returns "PASS pending design decision".
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch
+disallowedTools: Agent, NotebookEdit, Bash
 skills:
   - technical-team:run-kit
 ---

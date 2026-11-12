@@ -2,7 +2,7 @@
 name: team-writer
 description: Technical writer. Writes and updates product documentation — README, API docs, CHANGELOG, operational runbooks and guides — verified against the real code, config, scripts and `.team/OPS_HANDOFF.md`. Use when a change affects how the product is used, its API or how it is operated, for the docs command and for release notes.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Skill
+disallowedTools: Agent, NotebookEdit, Bash, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
 ---

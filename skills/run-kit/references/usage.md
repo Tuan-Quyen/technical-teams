@@ -88,6 +88,7 @@ Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shar
 | | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) | preloaded into qa |
 | | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer load it when needed |
 | Skills per agent | `.claude/technical-team.json` → `"skills": { "*": [], "team-designer": ["<design skill>"], "team-developer": ["react-native"] }` | the project's way to extend a role: the lead names the fitting ones in each brief, and an agent called without a brief reads its own list |
+| MCP servers per agent | `.claude/technical-team.json` → `"mcpServers": { "playwright": ["team-qa"], "linear": ["*"] }` (server names as configured in `.mcp.json`) | team agents see the session's MCP tools and use only the servers that list them; a server not listed is used by no agent. A rule, not a block: deny tools for real in `.claude/settings.json` → `permissions.deny` |
 | Your own context | files, notes and skill output you give in the conversation | the lead sees it directly (subagent mode: passed on as "User-provided context") |
 | Explore | built-in read-only agent | the lead may call it for current-state context; never as gate evidence |
 

@@ -2,7 +2,7 @@
 name: team-developer
 description: Fullstack developer. Implements tickets and fixes in source code and configuration according to the approved plan or the debugger's diagnosis, keeps backend and frontend contracts in sync, and runs build, lint and existing unit tests to self-check. Use for any code change once the direction is decided.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, WebSearch, WebFetch
+disallowedTools: Agent, NotebookEdit
 skills:
   - technical-team:run-kit
 ---

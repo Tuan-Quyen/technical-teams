@@ -2,7 +2,7 @@
 name: team-hr
 description: HR for the agent team. Checks whether a missing domain skill is really missing, researches the domain to the depth the work needs, drafts a specialist agent profile with least-privilege permissions and a place in the pipelines, and — only after the user approves — creates the agent as a project specialist (`team-<name>`); also reviews the roster for retirement. Use for the hire command (recruit and --roster modes) or when the lead proposes a hire.
 model: opus
-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Skill
+disallowedTools: Agent, NotebookEdit, Bash
 skills:
   - technical-team:run-kit
 ---
@@ -45,7 +45,7 @@ flowchart TD
 | Default | read-only advisor |
 | Write/Edit/Bash | only when the work truly needs it, with the reason |
 | `Agent` tool | never |
-| Tools | the `tools:` line of the agent file is the only hard limit a specialist has: an advisor gets no Write, Edit or Bash |
+| Tools | the `tools:` line of the agent file is the only hard limit a specialist has: an advisor gets no Write, Edit or Bash. A specialist is a project agent, so an MCP server it needs is listed there by name (`mcp__<server>__*`) and added to `mcpServers` in `.claude/technical-team.json` |
 | Owned area | carved out of the developer's area; never overlaps `.team/`, docs, infra, tests, dba's data area or another specialist |
 | Preload | `technical-team:run-kit` |
 

@@ -2,7 +2,7 @@
 name: team-<kebab-case-domain>
 description: <Domain> specialist. <What it does in one sentence>. Use when <trigger condition that the lead can match against a request>.
 model: <sonnet | opus>
-tools: <Read, Glob, Grep, Skill  — add Write, Edit and/or Bash only when the approved profile says so; this line is the only hard limit the agent has>
+tools: <Read, Glob, Grep, Skill  — add Write, Edit and/or Bash only when the approved profile says so, and an MCP server as mcp__<server>__* ; this line is the only hard limit the agent has>
 skills:
   - technical-team:run-kit
 ---

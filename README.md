@@ -5,8 +5,8 @@ Plugin Claude Code dựng một team kỹ thuật cho nhiều dự án sản ph�
 - **14 agent `team-*`**: 14 vai trò chia thành 4 squad, do một tech lead điều phối; mỗi vùng của project có đúng một chủ.
 - **12 lệnh workflow**: mỗi lệnh chứa luôn pipeline của nó, có `argument-hint`; biến thể chọn bằng cờ; `new` chạy trọn một project mới.
 - **4 skill**: `run-kit` (tài liệu sử dụng, quy tắc chung, phiếu bàn giao), `business-analysis` (cách BA khơi gợi yêu cầu khi người dùng chưa rõ mình cần gì, theo BABOK), `test-process` (toàn bộ quy trình kiểm thử của QA theo ISTQB/STLC) và `live-preview` (chạy sản phẩm thật để kiểm thử: web, mobile, desktop, CLI, API/service, worker/bot; kèm danh mục lỗi hay lọt theo nền tảng).
-- **Không có hook**: ranh giới giữa các vai trò nằm ở trường `tools` của từng agent, ở vùng sở hữu ghi trong prompt, và ở bước lead kiểm tra phiếu bàn giao.
-- **Skill theo vai trò**: mỗi project tự gắn thêm skill cho từng agent trong `.claude/technical-team.json`.
+- **Không có hook**: ranh giới giữa các vai trò nằm ở trường `disallowedTools` của từng agent, ở vùng sở hữu ghi trong prompt, và ở bước lead kiểm tra phiếu bàn giao.
+- **Skill và MCP theo vai trò**: mỗi project tự gắn skill cho từng agent và khai agent nào được dùng MCP server nào trong `.claude/technical-team.json`.
 - **Không gian làm việc chung `.team/`** trong repo của từng project.
 
 Plugin không gắn với ngôn ngữ hay framework nào: agent tự đọc stack, convention và lệnh build/test của repo.
@@ -308,7 +308,7 @@ Plugin không còn hook. Trước đây một guard (`PreToolUse`) chặn từng
 
 | Lớp | Cơ chế | Mức độ |
 |---|---|---|
-| **A** frontmatter `tools` | agent chỉ có tool được liệt kê: `team-debugger`, `team-code-reviewer`, `team-security` không có Write/Edit; `team-ba`, `team-designer`, `team-architect`, `team-pm`, `team-writer`, `team-hr` không có Bash; chỉ lead có `Agent` | **cứng** (Claude Code thực thi) |
+| **A** frontmatter `disallowedTools` | mỗi agent bị cấm những tool tích hợp không thuộc vai trò: `team-debugger`, `team-code-reviewer`, `team-security` không có Write/Edit; `team-ba`, `team-designer`, `team-architect`, `team-pm`, `team-writer`, `team-hr` không có Bash; chỉ lead có `Agent`. Dùng danh sách cấm (không phải danh sách cho phép) để agent thừa hưởng được tool MCP của session | **cứng** (Claude Code thực thi) |
 | **B** vùng sở hữu | dòng `Owns` trong từng agent + bảng một-chủ-mỗi-vùng trong `run-kit` §4 (preload vào mọi agent) | quy ước trong prompt |
 | **C** lead kiểm tra phiếu | mỗi phiếu bàn giao được đối chiếu với `git diff --stat` / `git status --porcelain`; file đổi ngoài vùng của agent → trả lại để hoàn tác, giao cho đúng chủ, ghi vào `STATE.md` | kiểm tra sau, do lead làm |
 | **D** quyền của Claude Code | permission prompt, `permissions.deny` trong `.claude/settings.json`, sandbox | **cứng**, do bạn cấu hình |
@@ -444,7 +444,7 @@ flowchart TD
 
 | Quy tắc | |
 |---|---|
-| Tool tối thiểu | mặc định chỉ đọc và tư vấn; Write/Edit/Bash chỉ khi thật sự cần, kèm lý do; không bao giờ có `Agent`. Dòng `tools` của file agent là giới hạn cứng duy nhất của specialist, nên đọc kỹ ở cổng tuyển dụng |
+| Tool tối thiểu | mặc định chỉ đọc và tư vấn; Write/Edit/Bash chỉ khi thật sự cần, kèm lý do; không bao giờ có `Agent`; MCP server cần dùng ghi rõ dạng `mcp__<server>__*`. Dòng `tools` của file agent là giới hạn cứng duy nhất của specialist, nên đọc kỹ ở cổng tuyển dụng |
 | Vùng sở hữu | cắt ra từ vùng của developer; không chồng `.team/`, docs, hạ tầng, test, vùng dữ liệu của dba hay specialist khác |
 | Cách duyệt | trả lời "duyệt" ở session chính như mọi cổng khác; lead ghi lời bạn vào `STATE.md` rồi mới giao hr tạo file |
 | Kích hoạt | `.claude/agents/` thường nhận trong vài giây; khởi động lại session nếu thư mục chưa có lúc mở |
@@ -485,9 +485,9 @@ flowchart TD
 
 ---
 
-## 11. Cấu hình theo project: gắn skill cho từng vai trò
+## 11. Cấu hình theo project: skill và MCP cho từng vai trò
 
-`.claude/technical-team.json` chỉ còn một việc: cho project **gắn thêm skill vào từng agent**. File do `init` tạo ra; không có file thì team chạy với skill mặc định của plugin.
+`.claude/technical-team.json` là nơi project **mở rộng từng agent**: gắn thêm skill, và khai agent nào được dùng MCP server nào. File do `init` tạo ra; không có file thì team chạy với skill mặc định của plugin và không agent nào dùng MCP.
 
 ```json
 {
@@ -496,11 +496,17 @@ flowchart TD
     "team-designer": ["<skill-ui-ux-cài-từ-github>"],
     "team-developer": ["react-native", "mobile-kit:ios-release"],
     "team-qa": ["detox-e2e"],
-    "team-dba": ["postgres-zero-downtime"],
     "team-iot": ["esp-idf"]
+  },
+  "mcpServers": {
+    "playwright": ["team-qa"],
+    "figma": ["team-designer", "team-developer"],
+    "linear": ["*"]
   }
 }
 ```
+
+### Skill
 
 | Quy tắc | |
 |---|---|
@@ -512,7 +518,29 @@ flowchart TD
 
 Skill UI/UX khai cho `team-designer`; skill frontend tương ứng khai cho `team-developer`, vì developer mới là người dựng UI. Lệnh build/test/run của project không khai ở đây: ghi vào `CLAUDE.md`, agent nào cũng đọc.
 
-Live preview cần driver của nền tảng: `@playwright/test` (web, Electron), Maestro/Detox/`integration_test` + emulator (mobile), `xvfb-run` (desktop Linux headless), Hurl/curl (API). qa không tự cài: với project chưa có thì qa dừng ở `needs decision` để developer/devops thêm. Với `new`, việc này nằm sẵn trong scaffold M1.
+### MCP server
+
+| Quy tắc | |
+|---|---|
+| Server khai ở đâu | vẫn ở chỗ của Claude Code (`.mcp.json` của project, hoặc settings). `technical-team.json` **không** khởi động server và không cấp được tool; nó chỉ nói ai được dùng |
+| Khóa | tên server đúng như đã cấu hình cho Claude Code |
+| Giá trị | danh sách tên agent, hoặc `["*"]` cho mọi agent (kể cả lead) |
+| Mặc định | server không có trong danh sách thì không agent nào của team dùng |
+| Cơ chế | agent của plugin không khai `tools:` nên thừa hưởng tool MCP của session; lead ghi vào dòng `MCP:` của brief những server agent đó được dùng và dùng để làm gì; run-kit quy tắc 10 dặn agent chỉ gọi server có tên mình |
+| Mức độ | đây là **quy ước**, không phải hàng rào: agent vẫn nhìn thấy mọi tool MCP. Muốn chặn thật thì dùng quyền của Claude Code (dưới đây) |
+
+```json
+{
+  "permissions": {
+    "allow": ["mcp__playwright__*", "mcp__figma__*"],
+    "deny": ["mcp__github__create_pull_request", "mcp__slack__*"]
+  }
+}
+```
+
+Vì sao không khai cứng MCP trong frontmatter của plugin: tên server là của từng project, và Claude Code **bỏ qua** trường `mcpServers` trong agent của plugin. Specialist do `hire` tạo là agent của project nên khai được thẳng `mcp__<server>__*` trong dòng `tools` của nó.
+
+Live preview cần driver của nền tảng: `@playwright/test` (web, Electron), Maestro/Detox/`integration_test` + emulator (mobile), `xvfb-run` (desktop Linux headless), Hurl/curl (API). qa không tự cài: với project chưa có thì qa dừng ở `needs decision` để developer/devops thêm. Với `new`, việc này nằm sẵn trong scaffold M1. Nếu project có Playwright MCP, khai `"playwright": ["team-qa"]` để qa dùng luôn.
 
 ---
 
@@ -521,17 +549,19 @@ Live preview cần driver của nền tảng: `@playwright/test` (web, Electron)
 | Giới hạn | Chi tiết |
 |---|---|
 | Chưa chạy end-to-end với model thật | đã kiểm chứng: unit test tính nhất quán của bộ lệnh/agent/skill/cấu hình, chạy thử `init`. Sau khi cài nên chạy `claude plugin validate . --strict` và `claude plugin details technical-team` |
+| MCP theo vai trò là quy ước | agent thấy mọi tool MCP của session; `mcpServers` trong `technical-team.json` chỉ là quy tắc agent tự tuân theo. Tool MCP nào nguy hiểm (ghi ra ngoài, trỏ vào production) thì chặn bằng `permissions.deny` |
+| Danh sách cấm thay vì danh sách cho phép | tool tích hợp mới mà Claude Code thêm về sau sẽ tự có ở mọi agent cho tới khi plugin bổ sung vào `disallowedTools` |
 | Vùng sở hữu là quy ước | không còn guard chặn trước; lead kiểm tra sau qua phiếu bàn giao và `git diff`. Cần chặn cứng → `permissions.deny` hoặc sandbox (mục 7.3) |
 | Live preview | cần driver của nền tảng có sẵn (Playwright, Maestro/Detox, emulator Android, Xvfb…); qa không tự cài mà dừng ở `needs decision`. Máy không chạy được nền tảng đó (iOS simulator cần macOS, app chỉ chạy trên Windows) thì qa preview phần chạy được và ghi rõ phần chưa preview. Subagent không dùng được preview pane của app Claude; bằng chứng là output của runner, screenshot/transcript trong `test-results/`, qa và designer xem ảnh bằng Read |
 | Chất lượng UI | designer chỉ đặc tả và quyết định; code UI vẫn do developer viết. Kết quả đẹp hay không phụ thuộc vào skill frontend bạn khai cho `team-developer` và thư viện UI của project |
-| Chưa kiểm chứng được | preload skill bằng tên có tiền tố (`technical-team:run-kit`) trên mọi phiên bản Claude Code |
+| Chưa kiểm chứng được | preload skill bằng tên có tiền tố (`technical-team:run-kit`); `disallowedTools` và việc thừa hưởng tool MCP ở agent của plugin (theo tài liệu là được, chưa chạy thử); tên agent trần trong `settings.json` của plugin |
 | Thử nhanh sau khi cài | `/technical-team:status`, rồi `/technical-team:run` với một việc nhỏ và xem lead gọi đúng `technical-team:team-<vai trò>` |
 | Chi phí | `feature` gọi khoảng 10–12 lượt agent (đã gồm designer P1a, qa P3a); mỗi vòng D3 làm nhiều việc hơn (live preview, UI/UX, exploratory), từ vòng 2 qa chỉ retest + regression + phần mới đổi (nhiều hơn nếu có vòng lặp, specialist); dùng `run` để lead chọn tầng nhẹ nhất |
 | Commit/push | agent được dặn không làm, kể cả khi bạn yêu cầu qua lead; lead đưa lệnh để bạn tự chạy |
 | Lead gọi agent ngoài | chỉ `Explore` để lấy ngữ cảnh hiện trạng; kết quả của Explore không phải bằng chứng cho cổng |
 | `status` | suy ra ai đang làm từ `STATE.md` / `TASKS.md`, không theo dõi agent đang chạy theo thời gian thực |
 
-**Đổi từ bản 0.16:** agent đổi tên thành `team-*` (`technical-team:lead` → `technical-team:team-lead`; dòng `"agent": "technical-team:lead"` cũ trong settings của bạn nên xóa đi). Plugin nay tự đặt lead làm session chính qua `settings.json` của nó. Bỏ toàn bộ hook, `config/ownership.json`, `config/agents.json`. Trong `.claude/technical-team.json` chỉ còn `skills`, và khóa đổi từ tên vai trò sang tên agent (`"developer"` → `"team-developer"`); các mục `commands`, `paths`, `db`, `devopsAllowRemote`, `externalAgents` không còn được đọc. Cột `Write scope` / `Bash` trong `ROSTER.md` gộp thành `Owns`; specialist cũ nên đổi tên file thành `team-<tên>`.
+**Đổi từ bản 0.16:** agent đổi tên thành `team-*` (`technical-team:lead` → `technical-team:team-lead`; dòng `"agent": "technical-team:lead"` cũ trong settings của bạn nên xóa đi). Plugin nay tự đặt lead làm session chính qua `settings.json` của nó. Bỏ toàn bộ hook, `config/ownership.json`, `config/agents.json`. Trong `.claude/technical-team.json` chỉ còn `skills` và `mcpServers`, và khóa của `skills` đổi từ tên vai trò sang tên agent (`"developer"` → `"team-developer"`); các mục `commands`, `paths`, `db`, `devopsAllowRemote`, `externalAgents` không còn được đọc. Cột `Write scope` / `Bash` trong `ROSTER.md` gộp thành `Owns`; specialist cũ nên đổi tên file thành `team-<tên>`.
 
 ---
 

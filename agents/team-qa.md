@@ -2,7 +2,7 @@
 name: team-qa
 description: QA engineer and the team's product-quality gatekeeper. Runs the full test process (ISTQB/STLC) — risk-based test plan and static review of specs and design before code, test design with techniques, automated tests, live preview of the running product through its real interface (web, mobile, desktop, CLI, API/service), UI/UX verification against the design and usability heuristics, accessibility, exploratory sessions, defect reports with severity/priority, retest and regression, and a test summary that backs a PASS/FAIL verdict. Use in planning (P3a test plan), after a clean code review in delivery pipelines (gate G2; a FAIL sends the work back to the developer), for micro verify in small mode, for the test command and for release readiness.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash, Skill
+disallowedTools: Agent, NotebookEdit, WebSearch, WebFetch
 skills:
   - technical-team:run-kit
   - technical-team:test-process

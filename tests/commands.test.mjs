@@ -235,7 +235,7 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.equal(run('BOGUS').status, 2);
   assert.equal(run('--config').status, 0);
   const cfg = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'technical-team.json'), 'utf8'));
-  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills'], 'project config holds skills only');
+  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills', 'mcpServers'], 'project config holds skills and mcpServers');
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
   assert.equal(ls().length, 8);
@@ -284,16 +284,20 @@ test('every agent states its owned area; no Boundaries sections', () => {
   for (const n of agentNames.filter((x) => x !== 'team-lead')) assert.match(lead, new RegExp('^\\|[^\\n]*\\| `' + n + '`', 'm'), `lead squad table lists ${n}`);
 });
 
-test('read-only roles have no write tools; only the lead can delegate', () => {
-  const tools = (n) => (read(`agents/${n}.md`).match(/^tools: (.+)$/m) || [, ''])[1].split(',').map((t) => t.trim());
-  for (const n of ['team-debugger', 'team-code-reviewer', 'team-security']) {
-    for (const t of ['Write', 'Edit']) assert.ok(!tools(n).includes(t), `${n} must not have ${t}`);
-  }
-  for (const n of ['team-ba', 'team-designer', 'team-architect', 'team-pm', 'team-writer', 'team-hr']) assert.ok(!tools(n).includes('Bash'), `${n} must not have Bash`);
+test('tool limits are a denylist, so MCP tools are inherited; only the lead can delegate', () => {
+  const fm = (n) => read(`agents/${n}.md`).match(/^---\r?\n([\s\S]*?)\r?\n---/)[1];
+  const denied = (n) => (fm(n).match(/^disallowedTools: (.+)$/m) || [, ''])[1].split(',').map((t) => t.trim());
+  for (const n of agentNames) assert.doesNotMatch(fm(n), /^tools:/m, `${n}: no tools allowlist (it would drop MCP tools)`);
+  assert.doesNotMatch(fm('team-lead'), /^disallowedTools:/m, 'lead inherits everything');
   for (const n of agentNames.filter((x) => x !== 'team-lead')) {
-    assert.ok(!tools(n).includes('Agent') && !tools(n).includes('Task'), `${n} must not delegate`);
-    assert.ok(tools(n).includes('Skill'), `${n} can load project skills`);
+    for (const t of ['Agent', 'NotebookEdit']) assert.ok(denied(n).includes(t), `${n} must deny ${t}`);
+    assert.ok(!denied(n).includes('Skill') && !denied(n).includes('Read'), `${n} keeps Read and Skill`);
+    assert.ok(!denied(n).some((t) => t.startsWith('mcp__')), `${n}: MCP access is decided by the project config, not the plugin`);
   }
+  for (const n of ['team-debugger', 'team-code-reviewer', 'team-security']) {
+    for (const t of ['Write', 'Edit']) assert.ok(denied(n).includes(t), `${n} must deny ${t}`);
+  }
+  for (const n of ['team-ba', 'team-designer', 'team-architect', 'team-pm', 'team-writer', 'team-hr']) assert.ok(denied(n).includes('Bash'), `${n} must deny Bash`);
 });
 
 test('no hooks, no guard, no enforcement config', () => {
@@ -313,12 +317,16 @@ test('no hooks, no guard, no enforcement config', () => {
   }
 });
 
-test('project config injects skills per agent', () => {
+test('project config injects skills and MCP servers per agent', () => {
   const cfg = JSON.parse(read('templates/technical-team.json'));
-  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills']);
+  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills', 'mcpServers']);
+  assert.deepEqual(cfg.mcpServers, {}, 'no server is open by default');
+  assert.match(read('skills/run-kit/SKILL.md'), /only when its server lists you/, 'run-kit: MCP only for listed agents');
+  assert.match(read('agents/team-lead.md'), /^MCP: <MCP servers from \.claude\/technical-team\.json/m, 'lead brief names MCP servers');
+  assert.match(read('README.md'), /"mcpServers": \{/, 'README shows the mcpServers config');
   assert.deepEqual(Object.keys(cfg.skills).sort(), ['*', ...agentNames].sort(), 'one skills entry per agent, plus "*"');
   for (const v of Object.values(cfg.skills)) assert.deepEqual(v, [], 'template lists start empty');
-  assert.match(read('skills/run-kit/SKILL.md'), /\| 10 \| Project skills \|[^\n]*technical-team\.json/, 'run-kit: agents load their project skills');
+  assert.match(read('skills/run-kit/SKILL.md'), /\| 10 \| Project skills and MCP \|[^\n]*technical-team\.json/, 'run-kit: agents load their project skills');
   assert.match(read('agents/team-lead.md'), /^Skills: <skills from \.claude\/technical-team\.json/m, 'lead brief names skills');
   assert.match(read('README.md'), /"team-developer": \[/, 'README shows the skills config');
 });

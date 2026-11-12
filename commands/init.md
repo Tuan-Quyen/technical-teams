@@ -17,5 +17,5 @@ allowed-tools: Bash(node *)
 | Reminder | |
 |---|---|
 | `.team/` | commit it so the whole team shares it |
-| `.claude/technical-team.json` | theirs to edit: `skills` — extra skills per agent (`"team-developer": ["<skill>"]`, `"*"` for everyone). Project skills by name, plugin skills as `<plugin>:<skill>`. Empty lists are fine |
+| `.claude/technical-team.json` | theirs to edit: `skills` — extra skills per agent (`"team-developer": ["<skill>"]`, `"*"` for everyone). Project skills by name, plugin skills as `<plugin>:<skill>`. Empty lists are fine. `mcpServers` — which agents may use which MCP server: `"playwright": ["team-qa"]`, `["*"]` for everyone; the server itself is configured in `.mcp.json` as usual |
 | On demand | the other `.team/` files (SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER) and `archive/` appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it) |
