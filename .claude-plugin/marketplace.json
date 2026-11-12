@@ -9,7 +9,7 @@
     {
       "name": "technical-team",
       "source": "./",
-      "description": "Stack-agnostic engineering team: tech lead and 12 roles, gated pipelines, run kit, guard hook and specialist hiring.",
+      "description": "Lean engineering team: 12 agents and 8 workflow commands that spawn only the agents each problem needs.",
       "category": "development"
     }
   ]

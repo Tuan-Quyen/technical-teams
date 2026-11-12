@@ -1,19 +1,19 @@
 # Defects, retest, regression and the test summary
 
-## Defect report (in `.team/TASKS.md#W-NNN` → `### QA` → Defects, and in the handoff)
+## Defect report (in `.team/<slug>/qa.md` → Defects, and in the handoff)
 
 ```
-#### W-012-D3 — Create button stays enabled while saving; double click creates two projects
+#### D3 — Create button stays enabled while saving; double click creates two projects
 - Severity: major · Priority: P1 · Type: functional | ui-ux | a11y | compatibility | performance | reliability | data | security-suspect
-- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks W-012.AC1 / DESIGN state) | pre-existing
+- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks AC1 / designed state) | pre-existing
 - Found in: round 2 · build/commit <short sha or "working tree"> · Android emulator Pixel 6 API 34 (release build)
-- Source: W-012.AC1 · DESIGN.md#W-012 state "pending" · heuristic H1 (if UX)
+- Source: AC1 · ui.md state "pending" · heuristic H1 (if UX)
 - User impact: a user who taps twice gets duplicate projects and has to delete one by hand
 - Steps:
   1. Open Projects → New project
   2. Type "Alpha"
   3. Double-tap "Create" quickly
-- Expected: button shows "Creating…" and is disabled; one project created (DESIGN.md state matrix, W-012.AC1)
+- Expected: button shows "Creating…" and is disabled; one project created (ui.md state matrix, AC1)
 - Actual: two "Alpha" rows; no pending state
 - Evidence: test-results/w-012-create-double.png · e2e/preview/w-012.yaml step 6 · backend log 2× POST /api/projects 201
 - Frequency: 5/5
@@ -24,9 +24,9 @@
 |---|---|
 | One defect per report | split unrelated symptoms |
 | Reproducible | minimal steps from a known state, with test data named (seeded user, not real data) |
-| Expected from a source | AC, DESIGN.md, docs, platform convention, heuristic — cite it |
+| Expected from a source | AC, ui.md, docs, platform convention, heuristic — cite it |
 | Impact for major+ | one sentence of concrete user impact; without source + impact the severity is at most minor (test-process §2a) |
-| Scope | in-scope or pre-existing (test-process §2a); pre-existing never blocks G2 |
+| Scope | in-scope or pre-existing (test-process §2a); pre-existing never blocks a PASS |
 | Evidence | screenshot / capture / transcript / log lines, never secrets |
 | No fix prescriptions | suspected location is fine; the fix is the developer's |
 
@@ -44,7 +44,7 @@
 |---|---|
 | P0 | fix before anything else in this round |
 | P1 | fix in this work item (required for PASS) |
-| P2 | fix if cheap now, otherwise defer with a reason (lead decides) |
+| P2 | fix if cheap now, otherwise defer with a reason (main session decides) |
 | P3 | backlog |
 
 Default: blocker/critical → P0, major → P1, minor → P2, trivial → P3. Raise priority for high exposure (first screen, most-used flow, release-critical); say why when you deviate.
@@ -54,7 +54,7 @@ Default: blocker/critical → P0, major → P1, minor → P2, trivial → P3. Ra
 ```mermaid
 stateDiagram-v2
   [*] --> new: qa logs
-  new --> open: lead routes to owner
+  new --> open: routed to owner
   new --> moved: pre-existing → new work item (ID recorded)
   new --> rejected: not a defect (works as specified) — qa records the reason
   new --> design_question: needs designer / ba decision
@@ -65,10 +65,10 @@ stateDiagram-v2
   retest --> closed: original steps pass + regression around it green
   retest --> reopened: still fails or fix broke something
   reopened --> fixed
-  open --> deferred: lead + user defer (minor/trivial only, reason + work item)
+  open --> deferred: user defers (minor/trivial only, reason + work item)
 ```
 
-Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope** blocker/critical/major can never be `deferred` while the work item passes G2; a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
+Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope** blocker/critical/major can never be `deferred` while the work item gets a PASS; a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
 
 ## Retest and regression per round
 
@@ -77,7 +77,7 @@ Only qa moves a defect to `closed` or `reopened`, and only after retesting. An *
 | Retest | every defect in `fixed`: run its original steps and its automated test |
 | Regression | the area around each fix (same screen/module, callers, shared components), plus the relevant suite; full suite before PASS and at `release` |
 | New defects | log with the round number; a defect introduced by a fix is linked to the defect it came from |
-| Trend | per round: **open in-scope blocker/critical/major** (the number the lead tracks for progress), newly found, closed, reopened, pre-existing found — a rising reopen count is reported to the lead (escalation signal) |
+| Trend | per round: **open in-scope blocker/critical/major** (the number the main session tracks for progress), newly found, closed, reopened, pre-existing found — a rising reopen count is reported to the main session (escalation signal) |
 
 ## Test summary report (completion, attached to PASS / at `release`)
 

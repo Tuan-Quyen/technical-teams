@@ -8,10 +8,10 @@
 |---|---|---|
 | The brief and "User-provided context" | the request in the user's words, constraints | C |
 | Documents the brief names (PRD, notes, exports) | stated needs, contradictions, gaps | E (section) |
-| `.team/PRODUCT.md`, `SPEC.md`, `DESIGN.md`, `ARCHITECTURE.md` | decisions already made, glossary, rules | E |
+| `.team/` notes (spec.md, ui.md, plan.md, adr/) | decisions already made, glossary, rules | E |
 | The code (Read / Glob / Grep) | the as-is: what the system really does today, rules buried in conditions, roles, validations, data model | E (file:line) |
 | The web (WebSearch / WebFetch) | domain norms, regulations, how comparable products solve it | E (URL) — never put project code, names or personal data in a query |
-| The user, through the lead | intent, priorities, business rules nobody wrote down | C |
+| The user, through the main session | intent, priorities, business rules nobody wrote down | C |
 
 Ask the user only for what no other source gives.
 
@@ -66,7 +66,7 @@ Recommended: A — matches the policy text in docs/policy.md §2 (E); B can be a
 ## 5. Playback format (top of every round and of the final spec)
 
 ```
-Understanding so far — W-NNN
+Understanding so far
 - Goal: <one sentence> (C)
 - Who: <actors>
 - How it will work:

@@ -2,10 +2,10 @@
 
 QA verifies **two** things on every screen/command the change touches, using the live-preview evidence (screenshots, captures, transcripts) and the running product:
 
-1. **Conformance** — the implementation matches `.team/DESIGN.md` (design system + the work item's section).
+1. **Conformance** — the implementation matches `.team/<slug>/ui.md` (design system + the work item's section).
 2. **Usability** — independent of the design: a real user can complete the task efficiently and without errors. A deviation from usability that the design itself caused is still a defect; route it to the designer (escalation), not to the developer.
 
-## 1. Design conformance (against DESIGN.md)
+## 1. Design conformance (against ui.md)
 
 | Area | Check | Defect when |
 |---|---|---|
@@ -17,12 +17,12 @@ QA verifies **two** things on every screen/command the change touches, using the
 | Tokens | colors by role, type scale, spacing scale, radius, elevation from the design system/theme; dark mode values if in scope | hard-coded or off-scale values that visibly differ (compare screenshots side by side; measure spacing/sizes in the capture when in doubt) |
 | Layout per form factor | each width/device/window size as designed: stacking, collapsing, navigation pattern | overflow, clipping, overlaps, horizontal scroll, layout of another form factor |
 | Copy | labels, button verbs, empty/error texts, confirmations as written; glossary terms consistent; language/locale | wrong, placeholder, untranslated, inconsistent wording |
-| Completeness | capabilities listed for the screen pattern (search, sort, filter, pagination, bulk actions, cancel, undo…) that DESIGN.md marked as designed | designed capability not implemented |
+| Completeness | capabilities listed for the screen pattern (search, sort, filter, pagination, bulk actions, cancel, undo…) that ui.md marked as designed | designed capability not implemented |
 | Motion/feedback | pressed/pending feedback, transitions as specified | no feedback on actions |
 
-DESIGN.md has no answer for what you see (an undesigned state, an ambiguous layout) → **design question**, not a defect: list it under "PASS pending design decision" (test-process §3).
+ui.md has no answer for what you see (an undesigned state, an ambiguous layout) → **design question**, not a defect: list it under "PASS pending design decision" (test-process §3).
 
-No DESIGN.md for this work item (small mode, legacy screen) → conform to the existing design system and neighbouring screens; check usability below.
+No ui.md for this work item (small mode, legacy screen) → conform to the existing design system and neighbouring screens; check usability below.
 
 ## 2. Usability — Nielsen's 10 heuristics (inspect every changed flow)
 
@@ -66,4 +66,4 @@ No DESIGN.md for this work item (small mode, legacy screen) → conform to the e
 | Minor | inconsistency with tokens/components, unclear copy, small misalignment, missing shortcut |
 | Trivial | polish that does not affect use |
 
-Blocker/critical/major → FAIL (or design escalation if the design caused it). Minor/trivial → listed for the lead.
+Blocker/critical/major → FAIL (or design escalation if the design caused it). Minor/trivial → listed for the main session.

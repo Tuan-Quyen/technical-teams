@@ -10,7 +10,7 @@ Covers React Native (bare and Expo), Flutter, native Android (Kotlin/Java), nati
 | iOS simulator | **macOS** with Xcode | `xcrun simctl list devices booted` |
 | Physical device | connected + authorized | `adb devices` / `xcrun devicectl list devices` — use only if the user provided one |
 
-Cannot run a target → preview the others, report the gap under **Not previewed** (live-preview §3). A cross-platform app previewed only on Android is a partial PASS the lead must record; its web build alone is never enough.
+Cannot run a target → preview the others, report the gap under **Not previewed** (live-preview §3). A cross-platform app previewed only on Android is a partial PASS the main session must record; its web build alone is never enough.
 
 ## 2. Build, install, start
 

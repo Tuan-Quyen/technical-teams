@@ -22,4 +22,4 @@ The 2023 product quality model has nine characteristics; "Usability" became **In
 | High likelihood | new code, complex logic, many conditions, concurrency, code changed often, areas with past defects, new technology/library |
 | High exposure | screens/commands/endpoints most users hit, first-run experience |
 
-High × high → several techniques + exploratory session + every platform. Low × low → smoke + regression. Write the ranking in the test plan so the lead and user can see what was tested less.
+High × high → several techniques + exploratory session + every platform. Low × low → smoke + regression. Write the ranking in the test plan so the main session and user can see what was tested less.

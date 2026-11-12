@@ -1,6 +1,6 @@
 ---
 name: business-analysis
-description: The business analyst's working method, adapted from the BABOK Guide (strategy analysis, elicitation and collaboration, requirements analysis, requirements life cycle) — guided elicitation for users who do not yet know their own requirements (question rounds with options, consequences and a recommended default; playback of the understanding as concrete scenarios the user confirms), the three contexts (greenfield product, change to an operating system with as-is and impact analysis, discovery of what to build next), the big-picture product baseline in `.team/PRODUCT.md`, the ready-to-spec check, and the rule that business facts are confirmed, evidenced or marked as assumptions — never invented. Preloaded into ba.
+description: The business analyst's working method, adapted from the BABOK Guide (strategy analysis, elicitation and collaboration, requirements analysis, requirements life cycle) — guided elicitation for users who do not yet know their own requirements (question rounds with options, consequences and a recommended default; playback of the understanding as concrete scenarios the user confirms), the three contexts (greenfield product, change to an operating system with as-is and impact analysis, discovery of what to build next), the big-picture product baseline in `.team/<slug>/spec.md`, the ready-to-spec check, and the rule that business facts are confirmed, evidenced or marked as assumptions — never invented. ba loads it for a hard elicitation.
 ---
 
 # business-analysis — guide the user to requirements they can confirm
@@ -26,15 +26,15 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/business-analysis/refe
 
 ```mermaid
 flowchart LR
-  A[Sources: brief, docs, code, PRODUCT.md] --> B[Draft the understanding]
+  A[Sources: brief, docs, code, spec.md] --> B[Draft the understanding]
   B --> C{Ready-to-spec?}
-  C -- yes --> S[Write SPEC, update PRODUCT.md]
+  C -- yes --> S[Write spec.md]
   C -- no --> Q[Round: playback + questions with options and defaults]
-  Q --> U[User answers through the lead]
+  Q --> U[User answers through the main session]
   U --> B
 ```
 
-You never talk to the user directly: a round is your handoff (`cần quyết định`) carrying the playback and the questions; the lead shows it and returns the answers verbatim.
+You never talk to the user directly: a round is your handoff (status `needs-input`) carrying the playback and the questions; the main session shows it and returns the answers verbatim.
 
 ## Binding rules
 
@@ -46,7 +46,7 @@ You never talk to the user directly: a round is your handoff (`cần quyết đ�
 | Round size | at most 7 questions, highest impact first, marked **blocking** (cannot spec without it) or **default-able** (proceeds on the default) |
 | Facts are labelled | **C** confirmed (user's words + date) · **E** evidence (file:line, document section, URL) · **A** assumption (your default, not yet confirmed). Never present an A as a fact; every A is listed at the gate |
 | User may stop | "proceed" / "đủ rồi" → remaining defaults become assumptions; a blocking question that is still open stays visible in the gate report, never hidden |
-| Big picture | keep `.team/PRODUCT.md` current: a work item is always placed in the capability map and traced to a business goal |
+| Big picture | keep `.team/<slug>/spec.md` current: a work item is always placed in the capability map and traced to a business goal |
 | Scores need a basis | a value, reach or priority score states its basis (C / E / A). Without evidence say "assumption" — do not invent numbers |
 | Stay in your lane | what and why, rules, priority proposal. Not screens (designer), not technology (architect), not estimates (pm). The user decides scope and priority |
 

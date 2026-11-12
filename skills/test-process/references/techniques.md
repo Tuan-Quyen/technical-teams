@@ -38,7 +38,7 @@ Exploratory variation heuristics: **CRUD** every object; **follow the data** (cr
 | Unit / component | functions, components in isolation | existing tests + what the developer ran; qa adds what the ACs need |
 | Integration | modules together, API ↔ DB, client ↔ API contract | qa |
 | System / end-to-end | the whole running product through its real interface (`live-preview`) | qa |
-| Acceptance | does it meet the user's need — ACs + UX validation; UAT is the user's at G1 / Mk / RELEASE | qa prepares the evidence; the user accepts |
+| Acceptance | does it meet the user's need — ACs + UX validation; UAT is the user's at plan approval, each milestone and the release check | qa prepares the evidence; the user accepts |
 
 ## Test types (choose per risk)
 
