@@ -322,3 +322,11 @@ test('project config injects skills per agent', () => {
   assert.match(read('agents/team-lead.md'), /^Skills: <skills from \.claude\/technical-team\.json/m, 'lead brief names skills');
   assert.match(read('README.md'), /"team-developer": \[/, 'README shows the skills config');
 });
+
+test('the plugin makes team-lead the default main-session agent', () => {
+  const settings = JSON.parse(read('settings.json'));
+  assert.deepEqual(settings, { agent: 'team-lead' }, 'plugin settings.json sets only the agent');
+  assert.ok(agentNames.includes(settings.agent), 'the default agent exists');
+  assert.match(read('agents/team-lead.md'), /^\| Main thread \(default\) \|/m, 'lead: main thread is the default mode');
+  assert.match(read('skills/run-kit/references/usage.md'), /^\| Lead is the session \(default\) \|/m, 'usage: default mode');
+});

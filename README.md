@@ -47,7 +47,7 @@ flowchart LR
 | Claude Code | **≥ 2.1.246**, khuyến nghị bản mới nhất; đã validate với **2.1.318** | subagent gọi subagent (sâu 3 tầng mặc định), tool `Agent`, tên skill plugin có tiền tố |
 | Node.js | **≥ 18**, có trên `PATH` | chỉ script `init` (tạo file `.team/`) cần Node; team vẫn chạy được khi thiếu, agent tự tạo file từ template |
 
-Đừng đặt `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`: khi chạy qua lệnh, chuỗi gọi là *session chính → lead → agent của team* (2 tầng).
+Mặc định lead là session chính nên chuỗi gọi chỉ một tầng (*lead → agent của team*). Chỉ khi bạn tự đặt `agent` khác và chạy lead như subagent thì mới cần 2 tầng; khi đó đừng đặt `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`.
 
 ---
 
@@ -90,15 +90,16 @@ Gỡ plugin **không** xóa `.team/`, `README.md`, `CHANGELOG.md` hay specialist
 
 | Cách | Khởi động | Tại cổng cần duyệt |
 |---|---|---|
-| **Qua lệnh** (mặc định) | gõ `/technical-team:<lệnh>`; session chính giao cho `technical-team:team-lead` chạy như subagent | lead ghi trạng thái vào `.team/STATE.md`, trả về `Waiting for approval …` rồi dừng; bạn trả lời ở session chính, session chính gọi lại lead |
-| **Lead là session chính** | `claude --agent technical-team:team-lead`, hoặc `"agent": "technical-team:team-lead"` trong `.claude/settings.json` của project | lead hỏi thẳng bạn (có `AskUserQuestion`) |
+| **Lead là session chính** (mặc định) | không cần làm gì: `settings.json` của plugin đặt `"agent": "team-lead"`, nên mọi session có bật plugin đều là tech lead. Gõ yêu cầu bằng lời thường (lead tự xếp tầng) hoặc `/technical-team:<lệnh>` | lead hỏi thẳng bạn và chờ |
+| **Lead là subagent** | chỉ khi settings của bạn đặt `agent` khác (giá trị của bạn ghi đè mặc định của plugin): gõ `/technical-team:<lệnh>`, session chính giao cho `technical-team:team-lead` | lead ghi trạng thái vào `.team/STATE.md`, trả về `Waiting for approval …` rồi dừng; bạn trả lời ở session chính, session chính gọi lại lead |
 
 | Ghi chú | |
 |---|---|
 | Lệnh dùng được ở cả hai cách | khi session *là* lead, lead chạy thẳng phần `## Pipeline` của lệnh |
-| Plugin không đặt `agent` mặc định | nếu đặt, mọi session ở mọi project bật plugin sẽ thành lead |
-| Lead làm session chính | session đó đóng vai lead (chỉ điều phối, không tự sửa code); muốn tự sửa file thì mở một session thường |
-| Ngữ cảnh của bạn | cài skill ngoài và tự gọi ở session chính; khi giao việc, session chính tóm tắt trung thực những gì bạn đưa vào mục **User-provided context** của prompt gửi lead |
+| Plugin đặt `agent` mặc định | mọi session ở project có bật plugin đều thành lead, và lead **không tự sửa code** mà giao cho team. Cài `--scope user` thì điều này áp dụng cho mọi project của bạn; nên cài `--scope project` cho những repo thật sự dùng team |
+| Tắt mặc định | đặt `agent` của riêng bạn trong `~/.claude/settings.json` (ghi đè plugin), hoặc mở session bằng `claude --agent <agent khác>` |
+| Muốn tự sửa file | session mặc định đóng vai lead (chỉ điều phối); việc nhỏ muốn làm trực tiếp thì dùng một session đã tắt mặc định như trên |
+| Ngữ cảnh của bạn | file, ghi chú, kết quả skill bạn đưa vào hội thoại: lead thấy trực tiếp (ở chế độ subagent, session chính tóm tắt vào mục **User-provided context**) |
 
 ---
 
@@ -530,7 +531,7 @@ Live preview cần driver của nền tảng: `@playwright/test` (web, Electron)
 | Lead gọi agent ngoài | chỉ `Explore` để lấy ngữ cảnh hiện trạng; kết quả của Explore không phải bằng chứng cho cổng |
 | `status` | suy ra ai đang làm từ `STATE.md` / `TASKS.md`, không theo dõi agent đang chạy theo thời gian thực |
 
-**Đổi từ bản 0.16:** agent đổi tên thành `team-*` (`technical-team:lead` → `technical-team:team-lead`; sửa lại `"agent"` trong `.claude/settings.json` nếu bạn đã đặt). Bỏ toàn bộ hook, `config/ownership.json`, `config/agents.json`. Trong `.claude/technical-team.json` chỉ còn `skills`, và khóa đổi từ tên vai trò sang tên agent (`"developer"` → `"team-developer"`); các mục `commands`, `paths`, `db`, `devopsAllowRemote`, `externalAgents` không còn được đọc. Cột `Write scope` / `Bash` trong `ROSTER.md` gộp thành `Owns`; specialist cũ nên đổi tên file thành `team-<tên>`.
+**Đổi từ bản 0.16:** agent đổi tên thành `team-*` (`technical-team:lead` → `technical-team:team-lead`; dòng `"agent": "technical-team:lead"` cũ trong settings của bạn nên xóa đi). Plugin nay tự đặt lead làm session chính qua `settings.json` của nó. Bỏ toàn bộ hook, `config/ownership.json`, `config/agents.json`. Trong `.claude/technical-team.json` chỉ còn `skills`, và khóa đổi từ tên vai trò sang tên agent (`"developer"` → `"team-developer"`); các mục `commands`, `paths`, `db`, `devopsAllowRemote`, `externalAgents` không còn được đọc. Cột `Write scope` / `Bash` trong `ROSTER.md` gộp thành `Owns`; specialist cũ nên đổi tên file thành `team-<tên>`.
 
 ---
 
@@ -564,6 +565,7 @@ technical-team/
 ├── skills/test-process/    quy trình kiểm thử của QA + references/ (kỹ thuật, đặc tính chất lượng, xác minh UI/UX, lỗi và báo cáo)
 ├── skills/business-analysis/  cách làm của BA + references/ (khơi gợi yêu cầu, ba bối cảnh)
 ├── skills/live-preview/    kiểm thử trên sản phẩm đang chạy + references/ (lỗi hay gặp, web, mobile, desktop, cli, service)
+├── settings.json           "agent": "team-lead" → lead là session chính mặc định
 ├── scripts/team-init.mjs
 ├── templates/              .team/*.md, ARCHITECTURE.md, adr.md, specialist-agent.md, technical-team.json
 └── tests/                  commands.test.mjs

@@ -7,20 +7,19 @@
 | Step | Do |
 |---|---|
 | 1 | Optional: `/technical-team:init` — creates `.team/STATE.md` + `.claude/technical-team.json` (per-agent skills; never overwrites). Other `.team/` files are created on demand |
-| 2 | Pick a mode (below) and run a command |
+| 2 | Type a request, or run a command for a specific pipeline |
 
 | Mode | Start | Gates |
 |---|---|---|
-| Commands (default) | type `/technical-team:<command>` | lead runs as a subagent, stops with `Waiting for approval …`; you answer in the main session; the lead resumes |
-| Lead as main session | `claude --agent technical-team:team-lead` or `"agent": "technical-team:team-lead"` in `.claude/settings.json` | lead asks you directly |
+| Lead is the session (default) | nothing to do: the plugin's `settings.json` sets `"agent": "team-lead"`, so every session with the plugin enabled is the tech lead. Type a request in plain words (the lead picks the tier) or `/technical-team:<command>` | lead asks you directly and waits |
+| Lead as a subagent | only when your own settings set another `agent` (yours overrides the plugin's): type `/technical-team:<command>` and the main session hands it to `technical-team:team-lead` | lead stops with `Waiting for approval …`; you answer in the main session; the lead resumes |
 
 ```mermaid
 flowchart LR
-  U[You] -->|/technical-team:cmd + context| M[Main session]
-  M -->|brief + User-provided context| L[lead]
+  U[You] -->|request or /technical-team:cmd| L[team-lead = the session]
   L -->|briefs| T[team agents]
   T -->|Handoff| L
-  L -->|Report / Waiting for approval| M --> U
+  L -->|questions at gates · Report| U
 ```
 
 ## 2. Commands
@@ -89,7 +88,7 @@ Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shar
 | | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) | preloaded into qa |
 | | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer load it when needed |
 | Skills per agent | `.claude/technical-team.json` → `"skills": { "*": [], "team-designer": ["<design skill>"], "team-developer": ["react-native"] }` | the project's way to extend a role: the lead names the fitting ones in each brief, and an agent called without a brief reads its own list |
-| Your own context | skills you install and run yourself in the main session | passed to the lead as "User-provided context" |
+| Your own context | files, notes and skill output you give in the conversation | the lead sees it directly (subagent mode: passed on as "User-provided context") |
 | Explore | built-in read-only agent | the lead may call it for current-state context; never as gate evidence |
 
 Full documentation: `${CLAUDE_PLUGIN_ROOT}/README.md`.
