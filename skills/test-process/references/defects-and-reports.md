@@ -1,19 +1,21 @@
-# Defects, retest, regression and the test summary
+# Findings (defects), retest, regression and the test summary
 
-## Defect report (in `.team/TASKS.md#W-NNN` → `### QA` → Defects, and in the handoff)
+Every finding gets one row in the cumulative **Findings** table of `.team/qa/<slug>.md` (ID, title, severity, priority, type, scope, owner, round found, status). Its full report below goes into **Round detail** of the round that found or reopened it, and into the handoff; the next round replaces the detail, the row stays.
+
+## Finding report
 
 ```
-#### W-012-D3 — Create button stays enabled while saving; double click creates two projects
+### Q-03 — Create button stays enabled while saving; double click creates two projects
 - Severity: major · Priority: P1 · Type: functional | ui-ux | a11y | compatibility | performance | reliability | data | security-suspect
-- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks W-012.AC1 / DESIGN state) | pre-existing
+- Status: open · Scope: in-scope (introduced by W-012) | in-scope (breaks W-012.AC1 / designed state) | pre-existing
 - Found in: round 2 · build/commit <short sha or "working tree"> · Android emulator Pixel 6 API 34 (release build)
-- Source: W-012.AC1 · DESIGN.md#W-012 state "pending" · heuristic H1 (if UX)
+- Source: W-012.AC1 · frontend-design/W-012-offline-sync.md state "pending" · heuristic H1 (if UX)
 - User impact: a user who taps twice gets duplicate projects and has to delete one by hand
 - Steps:
   1. Open Projects → New project
   2. Type "Alpha"
   3. Double-tap "Create" quickly
-- Expected: button shows "Creating…" and is disabled; one project created (DESIGN.md state matrix, W-012.AC1)
+- Expected: button shows "Creating…" and is disabled; one project created (frontend design state matrix, W-012.AC1)
 - Actual: two "Alpha" rows; no pending state
 - Evidence: test-results/w-012-create-double.png · e2e/preview/w-012.yaml step 6 · backend log 2× POST /api/projects 201
 - Frequency: 5/5
@@ -22,9 +24,9 @@
 
 | Rule | |
 |---|---|
-| One defect per report | split unrelated symptoms |
+| One defect per finding | split unrelated symptoms; the ID (`Q-01`, `Q-02`…) is never reused or renumbered |
 | Reproducible | minimal steps from a known state, with test data named (seeded user, not real data) |
-| Expected from a source | AC, DESIGN.md, docs, platform convention, heuristic — cite it |
+| Expected from a source | AC, frontend design, docs, platform convention, heuristic — cite it |
 | Impact for major+ | one sentence of concrete user impact; without source + impact the severity is at most minor (test-process §2a) |
 | Scope | in-scope or pre-existing (test-process §2a); pre-existing never blocks G2 |
 | Evidence | screenshot / capture / transcript / log lines, never secrets |
@@ -49,34 +51,33 @@
 
 Default: blocker/critical → P0, major → P1, minor → P2, trivial → P3. Raise priority for high exposure (first screen, most-used flow, release-critical); say why when you deviate.
 
-## Defect lifecycle
+## Finding lifecycle
 
 ```mermaid
 stateDiagram-v2
-  [*] --> new: qa logs
-  new --> open: lead routes to owner
-  new --> moved: pre-existing → new work item (ID recorded)
-  new --> rejected: not a defect (works as specified) — qa records the reason
-  new --> design_question: needs designer / ba decision
-  design_question --> open: decided "fix"
-  design_question --> closed: decided "accept" (record who and why)
-  open --> fixed: developer hands off
-  fixed --> retest: next qa round
-  retest --> closed: original steps pass + regression around it green
-  retest --> reopened: still fails or fix broke something
-  reopened --> fixed
-  open --> deferred: lead + user defer (minor/trivial only, reason + work item)
+  [*] --> open: qa logs it (round N)
+  open --> fixed: next round — the brief says the developer fixed it
+  fixed --> verified: original steps pass + regression around it green
+  fixed --> open: still fails or the fix broke something (note "reopened R<n>")
+  open --> dropped: not a defect / duplicate — qa records the reason
 ```
 
-Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope** blocker/critical/major can never be `deferred` while the work item passes G2; a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
+| Status | Meaning | Who sets it |
+|---|---|---|
+| `open` | logged, not yet shown fixed | qa |
+| `fixed` | the developer's handoff claims the fix; not yet re-checked | qa, at the start of the next round |
+| `verified` | qa retested it with the original steps | qa |
+| `dropped` | not a defect (works as specified) or a duplicate, with the reason | qa |
+
+Only qa edits the table. An **in-scope** blocker/critical/major can never stay `open` while the work item passes G2. Everything still `open` when the item closes — pre-existing defects, deferred minor/trivial ones — becomes a follow-up ticket in `TASKS.md` (the lead briefs pm); a design question the designer accepted is closed by that decision in `frontend-design/<slug>.md` and needs no ticket.
 
 ## Retest and regression per round
 
 | Step | Do |
 |---|---|
-| Retest | every defect in `fixed`: run its original steps and its automated test |
+| Retest | every finding in `fixed`: run its original steps and its automated test |
 | Regression | the area around each fix (same screen/module, callers, shared components), plus the relevant suite; full suite before PASS and at `release` |
-| New defects | log with the round number; a defect introduced by a fix is linked to the defect it came from |
+| New findings | next free ID, with the round number; a defect introduced by a fix names the finding it came from |
 | Trend | per round: **open in-scope blocker/critical/major** (the number the lead tracks for progress), newly found, closed, reopened, pre-existing found — a rising reopen count is reported to the lead (escalation signal) |
 
 ## Test summary report (completion, attached to PASS / at `release`)
@@ -86,7 +87,7 @@ Only qa moves a defect to `closed` or `reopened`, and only after retesting. An *
 | Scope | work item, build/commit, platforms × form factors, what was out of scope and why |
 | Coverage | RTM totals: conditions / test cases — passed · failed · blocked · not run; ACs covered n/n; designed states verified n/n; quality characteristics in scope and their result |
 | Execution | commands + summary lines; live-preview evidence table; exploratory sessions (charter, duration, findings) |
-| Defects | in-scope: found / closed / open by severity; open and deferred list with reasons · pre-existing: list with suggested new work items |
+| Defects | in-scope: found / closed / open by severity; still `open` with reasons (they become follow-up tickets at closing) · pre-existing: listed separately |
 | UX | conformance result, heuristics issues, accessibility result, design questions and their decisions |
 | Risks | residual risks, areas tested less (risk-based) and why, platforms not previewed |
 | Exit criteria | each criterion → met / not met |

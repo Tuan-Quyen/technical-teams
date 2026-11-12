@@ -25,7 +25,7 @@ function frontmatter(name) {
 
 function docFiles() {
   const out = ['README.md', 'skills/run-kit/SKILL.md', 'skills/run-kit/references/usage.md'];
-  for (const dir of ['agents', 'commands', 'templates', 'templates/team']) {
+  for (const dir of ['agents', 'commands', 'templates', 'templates/team', 'templates/team/item']) {
     for (const f of fs.readdirSync(path.join(ROOT, dir))) if (f.endsWith('.md')) out.push(`${dir}/${f}`);
   }
   return out;
@@ -141,13 +141,13 @@ test('designer and live preview are wired into the delivery pipelines', () => {
   assert.match(read('agents/team-qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
   assert.match(read('agents/team-qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
   assert.match(feature, stepRe('P3a', 'qa'), 'feature.md P3a is the qa test plan');
-  assert.ok(!fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'no separate QA.md: qa works in TASKS.md');
-  assert.match(read('templates/team/TASKS.md'), /^### QA — W-000/m, 'TASKS template has the QA subsection');
+  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'item', 'qa.md')), 'qa works in its own per-item file');
+  assert.match(read('templates/team/item/qa.md'), /^Verdict: /, 'qa template starts with the verdict line');
   for (const ref of ['techniques.md', 'quality-checklist.md', 'ux-verification.md', 'defects-and-reports.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'test-process', 'references', ref)), ref);
     assert.ok(read('skills/test-process/SKILL.md').includes(ref), `test-process SKILL.md points to ${ref}`);
   }
-  assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', 'DESIGN.md')), 'DESIGN.md template');
+  for (const t of ['item/frontend-design.md', 'DESIGN.md']) assert.ok(fs.existsSync(path.join(ROOT, 'templates', 'team', t)), `${t} template`);
   for (const ref of ['common-bugs.md', 'web.md', 'mobile.md', 'desktop.md', 'cli.md', 'service.md']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'skills', 'live-preview', 'references', ref)), ref);
     assert.ok(read('skills/live-preview/SKILL.md').includes(ref), `SKILL.md points to ${ref}`);
@@ -187,21 +187,86 @@ test('parallel review and micro verify are wired', () => {
   assert.match(read('agents/team-lead.md'), /^- \*\*Micro \(small mode only\)\*\*/m, 'lead: micro criteria');
 });
 
-test('squads and qa fan-out are wired', () => {
+test('squads are wired and qa is one run per work item', () => {
   const lead = read('agents/team-lead.md');
   assert.match(lead, /^## Squads$/m, 'lead: squads section');
   for (const s of ['Discovery', 'Build', 'Verify', 'Support']) assert.match(lead, new RegExp(`^- \\*\\*${s}\\*\\*:`, 'm'), `lead: squad ${s}`);
-  assert.match(lead, /^- \*\*QA fan-out\*\*:[^\n]*independent/m, 'lead: qa fan-out rule');
-  assert.match(lead, /Only the merge verdict counts for G2/, 'lead: one verdict');
-  const qa = read('agents/team-qa.md');
-  for (const run of ['**core**', '**platform**', '**merge**']) assert.ok(qa.includes(run), `qa: ${run} run`);
-  const feature = read('commands/feature.md');
-  assert.match(feature, /^- \*\*D3\*\*[^\n]*QA fan-out/m, 'D3: qa fan-out');
-  assert.match(feature, /^- \*\*S3\*\*[^\n]*QA fan-out/m, 'S3: qa fan-out');
-  for (const f of ['commands/fix.md', 'commands/test.md', 'skills/run-kit/references/usage.md']) {
-    assert.match(read(f), /fan.out|fans out/i, `${f} mentions the fan-out`);
+  assert.match(lead, /^- \*\*One qa run\*\* per work item and round/m, 'lead: one qa run');
+  assert.match(read('agents/team-qa.md'), /One qa run per work item and round/, 'qa: one run');
+  for (const f of ['agents/team-qa.md', 'agents/team-lead.md', 'commands/feature.md', 'commands/fix.md', 'commands/test.md']) {
+    assert.doesNotMatch(read(f), /\*\*(core|platform|merge)\*\* run|merge run/, `${f}: no core/platform/merge qa runs`);
   }
-  assert.match(read('README.md'), /QA tỏa nhánh theo nền tảng/, 'README: qa fan-out');
+});
+
+// Every text file the plugin ships, except the two places that must name the old layout:
+// the migration script and the migration note in the README.
+function shippedFiles() {
+  const out = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+      const rel = dir === '.' ? e.name : `${dir}/${e.name}`;
+      if (e.isDirectory()) { if (!['.git', 'node_modules', 'tests', '.history'].includes(e.name)) walk(rel); } else if (/\.(md|mjs|json)$/.test(e.name)) out.push(rel);
+    }
+  };
+  walk('.');
+  return out.filter((f) => f !== 'scripts/team-migrate.mjs');
+}
+
+test('no hook, no enforcement claim and no old .team path is left', () => {
+  assert.ok(!fs.existsSync(path.join(ROOT, 'hooks')), 'hooks/ is gone');
+  assert.ok(!fs.existsSync(path.join(ROOT, 'config', 'ownership.json')), 'the ownership config is gone');
+  // `templates/team/DESIGN.md` is the design-system template (it creates frontend-design/_system.md), not the old .team/DESIGN.md.
+  const OLD = /SPEC\.md|PLAN\.md|(?<!templates\/team\/|tplDir, ')DESIGN\.md|OPS_HANDOFF|### QA|fan-out|guard|hooks\/|\.live\b|ownership\.json/;
+  for (const f of shippedFiles()) {
+    let text = read(f);
+    if (f === 'README.md') {
+      const a = text.indexOf('<!-- migrate-note:start -->');
+      const b = text.indexOf('<!-- migrate-note:end -->');
+      assert.ok(a >= 0 && b > a, 'README has the migration note');
+      text = text.slice(0, a) + text.slice(b);
+    }
+    if (f === 'skills/live-preview/references/common-bugs.md') text = text.replace(/\bguard\b/g, ''); // "auth guard", "dirty-state guard": product bugs, not the removed hook
+    const m = text.match(OLD);
+    assert.ok(!m, `${f}: still mentions "${m && m[0]}"`);
+  }
+});
+
+test('the new layout is wired: per-item paths, verdict line, tier files, closing', () => {
+  const lead = read('agents/team-lead.md');
+  for (const p of ['requirements/<slug>.md', 'system-design/<slug>.md', 'frontend-design/_system.md', 'frontend-design/<slug>.md', 'adr/NNNN-<decision>.md', 'qa/<slug>.md', 'reports/<slug>/review.md', 'reports/<slug>/security.md', 'reports/<slug>/debug.md', 'archive/<slug>/']) {
+    assert.ok(lead.includes(p), `lead §6 lists ${p}`);
+  }
+  assert.match(lead, /^\*\*Files per tier\*\*/m, 'lead: files per tier');
+  for (const t of ['T0', 'T1', 'TB', 'T2 / `new`']) assert.match(lead, new RegExp(`^\\| ${t.replace(/[/`]/g, '\\$&')} \\|`, 'm'), `lead: tier row ${t}`);
+  assert.match(lead, /^\*\*Closing an item\*\*/m, 'lead: closing procedure');
+  for (const step of ['Findings → tickets', 'Merge what stays true', 'Archive', 'Remove from the open files']) assert.ok(lead.includes(`**${step}.**`), `lead: closing step ${step}`);
+  assert.match(lead, /ADR numbers\*\*: you assign them/, 'lead assigns ADR numbers');
+  assert.match(lead, /team-migrate\.mjs/, 'lead points old layouts to the migration script');
+  assert.match(lead, /^### §5\. Who writes what\n\nNot enforced by any hook/m, 'lead §5 says nothing enforces it');
+  const owns = {
+    'team-ba': 'requirements/<slug>.md', 'team-architect': 'system-design/<slug>.md', 'team-designer': 'frontend-design/<slug>.md',
+    'team-qa': 'qa/<slug>.md', 'team-code-reviewer': 'reports/<slug>/review.md', 'team-security': 'reports/<slug>/security.md', 'team-debugger': 'reports/<slug>/debug.md',
+  };
+  for (const [agent, file] of Object.entries(owns)) assert.match(read(`agents/${agent}.md`), new RegExp('^- Write only [^\\n]*`\\.team/' + file.replace(/[/.<>]/g, '\\$&') + '`', 'm'), `${agent} writes ${file}`);
+  for (const a of ['team-code-reviewer', 'team-security', 'team-debugger']) {
+    assert.match(read(`agents/${a}.md`), /^tools: Read, Write, Edit, /m, `${a} can write its report`);
+    assert.match(read(`agents/${a}.md`), /Verdict: PASS \| FAIL · Round N/, `${a}: verdict line`);
+  }
+  for (const [tpl, id] of [['qa', 'Q-01'], ['review', 'R-01'], ['security', 'S-01'], ['debug', 'D-01']]) {
+    const t = read(`templates/team/item/${tpl}.md`);
+    assert.match(t, /^Verdict: (PASS|FAIL|PENDING) · Round \d+\n/, `${tpl} template: line 1 is the verdict`);
+    assert.ok(t.includes(id), `${tpl} template: finding ID ${id}`);
+    assert.match(t, /latest round only/, `${tpl} template: detail keeps the latest round`);
+  }
+  for (const f of fs.readdirSync(path.join(ROOT, 'agents'))) {
+    if (f === 'team-lead.md') continue;
+    const tools = read(`agents/${f}`).match(/^tools: (.+)$/m);
+    assert.ok(tools, `agents/${f}: declares tools (the only technical limit left)`);
+    assert.doesNotMatch(tools[1], /\b(Agent|Task)\b/, `agents/${f}: only the lead delegates`);
+  }
+  for (const a of ['team-ba', 'team-architect', 'team-designer', 'team-pm', 'team-writer', 'team-hr']) {
+    assert.doesNotMatch(read(`agents/${a}.md`).match(/^tools: (.+)$/m)[1], /\bBash\b/, `${a}: no shell`);
+  }
 });
 
 test('ba: guided elicitation, product baseline and discover mode are wired', () => {
@@ -225,7 +290,7 @@ test('ba: guided elicitation, product baseline and discover mode are wired', () 
   assert.match(read('agents/team-lead.md'), /\*\*Elicitation rounds \(REQ\)\*\*:[^\n]*as written/, 'lead relays rounds unchanged');
   assert.match(read('commands/new.md'), /PRODUCT\.md/, 'new: product baseline at N1');
   for (const h of ['## Capability map', '## Business rules', '## Backlog', '## Glossary']) assert.ok(read('templates/team/PRODUCT.md').includes(h), `PRODUCT template: ${h}`);
-  for (const h of ['### As-is and impact', '### Scenarios', '### Assumptions']) assert.ok(read('templates/team/SPEC.md').includes(h), `SPEC template: ${h}`);
+  for (const h of ['## As-is and impact', '## Scenarios', '## Assumptions']) assert.ok(read('templates/team/item/requirements.md').includes(h), `requirements template: ${h}`);
   for (const f of docFiles()) assert.doesNotMatch(read(f), /(?<![Bb]usiness )\banalyst\b/, `${f}: old role name`);
 });
 
@@ -240,19 +305,49 @@ test('team-init creates .team files on demand, never up front', async () => {
   const os = await import('node:os');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-init-'));
   const run = (...a) => spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'team-init.mjs'), ...a], { env: { ...process.env, CLAUDE_PROJECT_DIR: dir }, encoding: 'utf8' });
-  const ls = () => fs.readdirSync(path.join(dir, '.team')).sort();
+  const team = (...p) => path.join(dir, '.team', ...p);
+  const ls = (...p) => fs.readdirSync(team(...p)).sort();
   assert.equal(run().status, 0);
   assert.deepEqual(ls(), ['STATE.md'], 'default: STATE.md only');
   assert.ok(!fs.existsSync(path.join(dir, '.claude')), 'no .claude/ unless asked');
-  fs.writeFileSync(path.join(dir, '.team', 'STATE.md'), 'mine');
-  assert.equal(run('SPEC', '.team/plan.md').status, 0);
-  assert.deepEqual(ls(), ['PLAN.md', 'SPEC.md', 'STATE.md']);
-  assert.equal(fs.readFileSync(path.join(dir, '.team', 'STATE.md'), 'utf8'), 'mine', 'never overwrites');
-  assert.equal(run('BOGUS').status, 2);
+  fs.writeFileSync(team('STATE.md'), 'mine');
+  assert.equal(run('TASKS', '.team/product.md').status, 0, 'singletons by name');
+  assert.deepEqual(ls(), ['PRODUCT.md', 'STATE.md', 'TASKS.md']);
+  assert.equal(fs.readFileSync(team('STATE.md'), 'utf8'), 'mine', 'never overwrites');
+  assert.equal(run('BOGUS').status, 2, 'unknown singleton');
+  assert.equal(run('SPEC').status, 2, 'old single files are no longer created');
+
+  const slug = 'W-012-offline-sync';
+  const dest = {
+    'requirements': `requirements/${slug}.md`, 'system-design': `system-design/${slug}.md`, 'frontend-design': `frontend-design/${slug}.md`,
+    'qa': `qa/${slug}.md`, 'review': `reports/${slug}/review.md`, 'security': `reports/${slug}/security.md`, 'debug': `reports/${slug}/debug.md`,
+  };
+  for (const [type, rel] of Object.entries(dest)) {
+    assert.ok(!fs.existsSync(team(rel)), `${rel} is not created ahead of need`);
+    const r = run(type, slug);
+    assert.equal(r.status, 0, `${type}: ${r.stderr}`);
+    const text = fs.readFileSync(team(rel), 'utf8');
+    assert.ok(text.includes('W-012') && !text.includes('W-000'), `${rel}: the template is filled with the item ID`);
+    assert.ok(!text.includes('<kebab-title>'), `${rel}: the slug is filled in`);
+  }
+  assert.match(fs.readFileSync(team(dest.qa), 'utf8'), /^Verdict: PENDING · Round 0\n/);
+  fs.writeFileSync(team(dest.qa), 'Verdict: PASS · Round 2\n');
+  assert.equal(run('qa', slug).status, 0);
+  assert.equal(fs.readFileSync(team(dest.qa), 'utf8'), 'Verdict: PASS · Round 2\n', 'a per-item file is never overwritten');
+  assert.equal(run('frontend-design', '_system').status, 0);
+  assert.match(fs.readFileSync(team('frontend-design', '_system.md'), 'utf8'), /^# Design system/);
+  assert.equal(run('adr', '0007-use-websocket').status, 0);
+  assert.match(fs.readFileSync(team('adr', '0007-use-websocket.md'), 'utf8'), /^# 0007\. /);
+  for (const bad of [['qa'], ['qa', 'offline-sync'], ['qa', 'W-12-x'], ['qa', 'W-012-Offline'], ['qa', '../W-012-x'], ['qa', slug, 'extra'], ['adr', 'use-websocket']]) {
+    assert.equal(run(...bad).status, 2, `rejected: ${bad.join(' ')}`);
+  }
+  assert.ok(!fs.existsSync(team('archive')), 'archive/ appears only when an item is closed');
+
   assert.equal(run('--config').status, 0);
-  assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
+  const cfg = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'technical-team.json'), 'utf8'));
+  assert.deepEqual(Object.keys(cfg).filter((k) => k !== '$comment').sort(), ['externalAgents', 'skills'], 'config holds only what the lead reads');
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
-  assert.equal(ls().length, 8);
+  assert.deepEqual(ls().filter((f) => f.endsWith('.md')), ['ARCHITECTURE.md', 'PRODUCT.md', 'ROSTER.md', 'STATE.md', 'TASKS.md'], '--all: every singleton, no per-item file');
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
 });

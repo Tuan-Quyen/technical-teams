@@ -22,8 +22,9 @@ Follow the Pipeline in `${CLAUDE_PLUGIN_ROOT}/commands/hire.md`.
 
 ## Rules
 
+- Create an agent file only when `HIRE-APPROVED: <name>` is in `STATE.md`; that line is the whole approval gate, so check it yourself every time.
 - Least privilege: read-only by default; Write/Edit/Bash only with a reason; never the `Agent` tool; write scope never overlaps `.team/`, docs, infra, tests, data paths or another specialist; preload `technical-team:run-kit`.
-- Never a core agent file, never the installed plugin directory, never delete files.
+- Write only the approved agent file, `.team/ROSTER.md` and (in the plugin repo) `config/agents.json`. Never a core agent file, never the installed plugin directory, never delete files.
 - The decision is the user's; you never assign work or call agents.
 
 Finish with the handoff format from the preloaded `run-kit` skill.

@@ -32,12 +32,12 @@ Modes: no flag → **sync** (writer, G4). `--adr <decision>` (or "ghi ADR", "rec
 ### Sync
 
 1. (lead) Open W-NNN, pipeline `docs (sync)`.
-2. (devops) Only if operations are in scope and `OPS_HANDOFF.md` is empty or stale: record the missing facts, no infra changes.
-3. (writer + review specialists) List the docs in scope, compare them with the code, config, scripts and `OPS_HANDOFF.md`, fix what is wrong, fill what is missing, mark what is unverified.
-4. (lead) Update `STATE.md` → G4. Report docs changed, discrepancies and unverified items.
+2. (devops) Only if operations are in scope and the infra files do not answer how to build, deploy and roll back: report the missing facts in the handoff, no infra changes. The lead copies them into the writer's brief.
+3. (writer + review specialists) List the docs in scope, compare them with the code, config, scripts, infra files and the ops facts in the brief, fix what is wrong, fill what is missing, mark what is unverified.
+4. (lead) Update `STATE.md` → G4. Report docs changed, discrepancies and unverified items. Close the item (Lead manual §6).
 
 ### ADR
 
 - A1. (lead) Open W-NNN, pipeline `docs (adr)`.
-- A2. (specialists → architect) Affected specialists give their view (`design` hook). The architect writes `.team/adr/NNNN-<title>.md` from the template (`accepted` if the user says it is decided, else `proposed`), marks any superseded ADR and updates `.team/ARCHITECTURE.md`.
-- A3. (lead) Update `STATE.md`. Report the ADR path, status and the decision in one sentence.
+- A2. (specialists → architect) Affected specialists give their view (`design` hook). The lead gives the ADR number in the brief (Lead manual §6). The architect writes `.team/adr/NNNN-<decision>.md` from the template (`accepted` if the user says it is decided, else `proposed`), marks any superseded ADR and updates `.team/ARCHITECTURE.md`.
+- A3. (lead) Update `STATE.md`. Report the ADR path, status and the decision in one sentence. Close the item (Lead manual §6).

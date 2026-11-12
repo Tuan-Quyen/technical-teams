@@ -22,7 +22,7 @@ Read .team/STATE.md first.
    The team cannot see this conversation; "User-provided context" is the only way context reaches it.
 3. Show the lead's report as written; do not do the team's work yourself. On `Chờ duyệt …`, stop and wait; never approve or choose for the user.
 4. When the user answers, resume the same lead (SendMessage) or start a new Agent call: `Continue W-NNN (hire). User's answer (verbatim): <answer>. Read .team/STATE.md first.`
-5. When the user approves the hire, relay it in the **foreground** (not `run_in_background`): the guard turns the lead's `HIRE-APPROVED` write into a permission prompt, and the user's Allow is the approval.
+5. The hiring gate is the user's own answer: relay it verbatim. Never answer it for them, and never turn "looks fine" about something else into a hire approval.
 
 ## Pipeline
 
@@ -39,8 +39,8 @@ Where a hire goes: in the technical-team plugin repo → `agents/<name>.md` + `c
 2. (architect ∥ pm ∥ closest role) Answer the placement questions only; write nothing.
 3. (hr) Consolidate the answers into one proposal with any disagreements.
 4. (lead) Least-privilege check: no `Agent` tool, write scope does not overlap others, Write/Edit/Bash justified, `run-kit` preloaded, name not confusable with a core role.
-5. (lead) **Hiring gate**: need, profiles, placement, disagreements, where it goes, settings the user must add.
-6. (lead → hr → writer) Approved → the lead writes `HIRE-APPROVED: <name> (<date>, scope)` in `STATE.md`; the guard asks the user to confirm. Denied → not approved, stop. Allowed → hr creates the agent file and the entry/row; in the plugin repo the writer updates README.
+5. (lead) **Hiring gate**: ask the user directly — need, profiles, placement, disagreements, where it goes, the exact tools and write scope the specialist gets, settings the user must add. The question names the specialist and the scope, so the answer cannot be mistaken for another approval.
+6. (lead → hr → writer) Only on an explicit yes from the user → the lead writes `HIRE-APPROVED: <name> (<date>, scope, user said: "<words>")` in `STATE.md`. Anything else (silence, a changed request, an agent's opinion) → not approved, stop. Then hr checks the line exists and creates the agent file and the entry/row; in the plugin repo the writer updates README.
 7. (lead) Read the file and entry; they must match the approval. Report and tell the user how to activate it.
 
 ### Roster

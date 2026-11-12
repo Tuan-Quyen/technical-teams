@@ -30,7 +30,7 @@ This pipeline runs steps from other pipelines by ID and only adds what is specif
 
 - Input: an idea, or a path to a PRD (`.md`, `.txt`, `.pdf`).
 - User gates (the only planned stops): REQ, STACK, G1 (once for the whole MVP), Mk (end of each milestone), RELEASE. G2–G4 run without stopping.
-- Other stops that stay: hiring gate, delivery-loop escalation to the user, a direction change after G1, a guard denial only the user can fix.
+- Other stops that stay: hiring gate, delivery-loop escalation to the user, a direction change after G1, a missing tool or permission only the user can provide.
 - Never deploy, tag, commit or push; give the user the commands.
 - One W-NNN for the whole project; milestones `M1…Mn` inside it.
 - After every step update `Phase`, `Next step` and `Milestones` in `STATE.md` (block "pipeline `new`" of the template).
@@ -46,17 +46,17 @@ Do this first on every invocation:
 ### Phases
 
 - **N0** (lead) Run the init script, open W-NNN (pipeline `new`, gate `REQ pending`), record the input. Not a git repo → ask the user for `git init` at REQ. Application code already present → propose `feature` / `run` or a subfolder.
-- **N1** (ba) Requirements via `feature.md` P1, greenfield context: product baseline in `PRODUCT.md`, then the MVP spec (scope in/out, stories, testable ACs, edge cases, constraints) in `SPEC.md#W-NNN`. From a PRD, cite its sections and ask only about gaps.
+- **N1** (ba) Requirements via `feature.md` P1, greenfield context: product baseline in `PRODUCT.md`, then the MVP requirements (scope in/out, stories, testable ACs, edge cases, constraints) in `requirements/<slug>.md`. From a PRD, cite its sections and ask only about gaps.
 - **REQ** (gate) Show the ba's round as written: big picture, scenarios, MVP scope, questions with defaults, assumptions, user actions. Answers → ba folds them in → N2.
-- **N2** (architect + designer; dba/specialists via `design`; devops, security answer only) Via `feature.md` P2, P2a and `docs.md` A2: designer proposes design direction and UI library (with UI); architect gives 2–3 stack options with one recommended, `ARCHITECTURE.md`, ADRs `proposed`. A missing domain → `hire.md`.
+- **N2** (architect + designer; dba/specialists via `design`; devops, security answer only) Via `feature.md` P2, P2a and `docs.md` A2: designer proposes design direction and UI library (with UI); designer starts `frontend-design/_system.md`; architect gives 2–3 stack options with one recommended, `ARCHITECTURE.md`, ADRs `proposed` (numbers from the lead). A missing domain → `hire.md`.
 - **STACK** (gate) Recommended stack and alternatives, UI direction, architecture summary, ADRs, risks, what the user's machine needs. Approved → ADRs `accepted`.
-- **N3** (designer → architect → pm → qa → lead) MVP plan via `feature.md` P1a–P4: milestones in `PLAN.md` (M1 = walking skeleton: structure, build, lint, test runner, one end-to-end slice), MVP test plan, tickets grouped `### Mk`, scaffold split by owner, about 8 tickets per milestone. Every MVP AC lands in exactly one milestone.
+- **N3** (designer → architect → pm → qa → lead) MVP plan via `feature.md` P1a–P4: milestones in `system-design/<slug>.md` (M1 = walking skeleton: structure, build, lint, test runner, one end-to-end slice), MVP test plan in `qa/<slug>.md`, tickets grouped `### Mk`, scaffold split by owner, about 8 tickets per milestone. Every MVP AC lands in exactly one milestone.
 - **G1** (gate) As `feature.md` P5, plus the milestones and ticket counts. Approval covers the whole MVP.
-- **N4** (ticket owners) Each milestone via `feature.md` D1–D4 on its tickets → G2 + G3; pm marks tickets done; full docs wait for N6.
+- **N4** (ticket owners) Each milestone via `feature.md` D1–D4 on its tickets → G2 + G3; the lead marks tickets done; full docs wait for N6.
 - **Mk** (gate) What was done, test evidence, live-preview screenshots, findings and defects, deviations, how to try it locally, a suggested commit command, the next milestone. Next → N4; change inside the plan → pm adjusts; direction change → G1; last milestone → N5.
 - **N5** (devops → code-reviewer → security) Ops via `infra.md` 3–4b for plan infra items not yet built (G1 already covers the proposal). Nothing left → skip.
 - **N6** (devops → writer) Docs via `docs.md` Sync 2–4, all scope → **G4**.
 - **N7** (qa ∥ security ∥ devops ∥ specialists → writer → lead) Release via `release.md` 0–3, version `0.1.0`. GO also needs local run proof and a clean live preview of every MVP flow.
 - **RELEASE** (gate) GO/NO-GO with reasons, evidence and the exact commands (commit, tag, push, deploy, rollback). NO-GO items to fix → `fix.md` steps 1–7 each, then N7 again. The user may also close as NO-GO.
 
-Ends when RELEASE is accepted, G1 is rejected or the user cancels. The final report also lists milestones, ADRs, how to run locally and deferred findings.
+Ends when RELEASE is accepted, G1 is rejected or the user cancels; then the lead closes the item (Lead manual §6). One slug for the whole project: reports and the qa file keep counting rounds across milestones. The final report also lists milestones, ADRs, how to run locally and deferred findings.

@@ -32,10 +32,10 @@ Gates G1, G3, G4 (no G2). Security always.
 0. (lead) Open W-NNN, pipeline `infra`.
 1. (devops + specialists) Proposal only, no file changes: files, tools, environments, verification plan, remote steps for the user, rollback (`design` hook).
 2. (lead) **G1** with the proposal, risks and remote commands.
-3. (devops + specialists) Implement, verify locally (no remote changes unless enabled), update `OPS_HANDOFF.md` (`execute` hook).
-- 4a. (code-reviewer + specialists) Review the diff. Blocking → 3.
-- 4b. (security) Review the final diff. Blocking → 3. Clean = **G3**.
-5. (writer) Runbooks in `.team/docs/` from `OPS_HANDOFF.md` and the real files → **G4**. Report the exact remote commands for the user, in order, with rollback.
+3. (devops + specialists) Implement, verify locally (no remote changes), report the operational facts in the handoff (`execute` hook).
+- 4a. (code-reviewer + specialists) Review the diff → `reports/<slug>/review.md`. Blocking → 3.
+- 4b. (security) Review the final diff → `reports/<slug>/security.md`. Blocking → 3. Clean = **G3**.
+5. (writer; architect if the system changed) Runbooks in `.team/docs/` from the real infra files and the ops facts the lead copies from the devops handoff into the brief; the architect updates "Operations" in `ARCHITECTURE.md` → **G4**, close the item (Lead manual §6). Report the exact remote commands for the user, in order, with rollback.
 
 Rules:
 - Loop: devops → code-reviewer → security; any change restarts at the code-reviewer.

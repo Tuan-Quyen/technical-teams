@@ -1,5 +1,5 @@
 ---
-description: "Read-only review: code-reviewer ∥ security on a diff merged into one G3 verdict; --audit for a full security audit of the repository or a scope"
+description: "Review without code changes: code-reviewer ∥ security on a diff, one G3 verdict; --audit for a full security audit of the repository or a scope"
 argument-hint: "[diff scope] | --audit [scope]"
 disable-model-invocation: true
 ---
@@ -27,11 +27,11 @@ Read .team/STATE.md first.
 
 _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
 
-Read-only in both modes.
+No code is changed in either mode; each reviewer writes only its own report.
 - No flag → **diff**: code-reviewer ∥ security ∥ review specialists / dba on a diff; G3 verdict only. Scope as given (range, paths, branch); none → working tree vs `HEAD`, empty → `HEAD~1..HEAD`.
 - `--audit` (or "audit bảo mật") → **audit**: security ∥ specialists / dba over the given scope (default whole repo); no gate.
 
 1. (lead) Open W-NNN, pipeline `review (<mode>)`, resolve the scope (`git diff --stat`).
-2. (reviewers in parallel) Diff: review the scope. Audit: trust boundaries, vulnerability classes, dependency audit, secret scan, config/IaC; large repo → list covered and skipped.
-3. (lead) Merge findings: same `file:line` and root issue → one finding, highest severity; sort blocking → should fix → suggestion.
-4. (lead) Diff: verdict **pass** or **blocked**, suggest `feature --small` / `fix`. Audit: summary in `STATE.md` and follow-up work items grouped by effort; do not start them unless asked.
+2. (reviewers in parallel) Each writes its report under the item's slug: `reports/<slug>/review.md`, `reports/<slug>/security.md`; specialists and dba report in the handoff. Diff: review the scope. Audit: trust boundaries, vulnerability classes, dependency audit, secret scan, config/IaC; large repo → list covered and skipped.
+3. (lead) Merge findings for the report to the user (the files stay as written): same `file:line` and root issue → one line naming both IDs, highest severity; sort blocking → should fix → suggestion.
+4. (lead) Diff: verdict **pass** or **blocked**, suggest `feature --small` / `fix`. Audit: summary in `STATE.md` and follow-up work items grouped by effort; do not start them unless asked. Then close the item (Lead manual §6): open findings become follow-up tickets.

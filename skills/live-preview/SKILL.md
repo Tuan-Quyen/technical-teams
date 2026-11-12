@@ -28,14 +28,14 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/reference
 | 3 | scripted check per AC in the project's e2e folder (kept as regression test), using what the user perceives (labels, real args, real requests) |
 | 4 | collect the platform's error channels (console/page errors, logcat, crash dumps, stderr + exit code, service log); any error on the changed path = FAIL unless the brief lists it as known |
 | 5 | form factors · states (empty, loading, error/offline, long content) · input (keyboard, touch/back, pipes/bad args, malformed/unauthorized requests) · lifecycle (reload/deep link, background/relaunch, quit/reopen, retry) |
-| 6 | inspect every screenshot/transcript yourself (Read shows images) against `.team/DESIGN.md` and `common-bugs.md` |
+| 6 | inspect every screenshot/transcript yourself (Read shows images) against `.team/frontend-design/` (the item's file + `_system.md`) and `common-bugs.md` |
 | 7 | stop everything you started |
 
 ## Rules
 
 | Rule | |
 |---|---|
-| Missing driver/runtime | never install it (guard blocks) → `cần quyết định` naming exactly what is needed; not a PASS |
+| Missing driver/runtime | never install it yourself (team rule: installs are the developer's or devops's change, decided by the lead) → `cần quyết định` naming exactly what is needed; not a PASS |
 | Platform not hostable here | preview what can run, list what was **not previewed**; a web build never replaces a mobile preview |
 | Evidence in the handoff | product + target · commands · runner summary · errors (count + first lines) · form factors → result + file · states/input/lifecycle → ok/issue/n/a · not previewed · known-bug IDs swept |
 | Safety | local/emulator/sandbox only, test credentials only, no secrets in specs or screenshots, outputs under `test-results/` (never `.team/`, never committed) |

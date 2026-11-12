@@ -37,13 +37,13 @@ The same intent in words selects the mode as the flag does. Record the mode in `
 
 ### Steps
 
-0. (lead) Open W-NNN, pipeline `fix (<mode>)`, with the symptom as reported.
-1. (debugger, + dba/specialist if the cause is in their domain) Reproduce, find the root cause with evidence, fix direction, risk and a regression test idea; the lead records it in `STATE.md`. Hotfix: the smallest safe fix plus a fallback (revert, flag, config). Not reproduced → report what was tried and stop. Diagnose mode ends here with a report.
+0. (lead) Open W-NNN with its slug, pipeline `fix (<mode>)`, with the symptom as reported.
+1. (debugger, + dba/specialist if the cause is in their domain) Reproduce, find the root cause with evidence, fix direction, risk and a regression test idea → `reports/<slug>/debug.md`; the lead records the root cause in one line in `STATE.md`. Hotfix: the smallest safe fix plus a fallback (revert, flag, config). Not reproduced → report what was tried and stop. Diagnose mode ends here with a report.
 2. (lead) **G1** only if high risk (shared code, data, security, behaviour users rely on) or several options; otherwise note "G1 skipped: <why>".
-3. (developer, + dba for data fixes) Fix from the diagnosis, no re-diagnosis. Hotfix: minimal change only. Fix does not hold → debugger with the new evidence.
-4. (code-reviewer + specialists, security in parallel when required) Check the fix addresses the root cause. Hotfix: anything beyond the minimal fix is blocking. Blocking → 3.
-5. (qa) Short test plan and defect record in `TASKS.md#W-NNN` → `### QA`; regression test on the faulty path, related suite, retest; reproduce and re-check in the **live preview** when a user can see the bug; QA fan-out when ≥ 2 independent platforms. FAIL → 3. PASS = **G2**.
+3. (developer, + dba for data fixes) Fix from the diagnosis in `reports/<slug>/debug.md`, no re-diagnosis. Hotfix: minimal change only. Fix does not hold → debugger with the new evidence.
+4. (code-reviewer + specialists, security in parallel when required) Check the fix addresses the root cause → `reports/<slug>/review.md` (+ `security.md`). Hotfix: anything beyond the minimal fix is blocking. Blocking → 3.
+5. (qa) Short test plan and the bug as finding `Q-01` in `qa/<slug>.md`; regression test on the faulty path, related suite, retest; reproduce and re-check in the **live preview** when a user can see the bug. FAIL → 3. PASS = **G2**.
 6. (security) Delta review since step 4. Blocking → 3.
-7. (writer) **G3** on the final code. Docs if documented behaviour changed or a CHANGELOG is kept. Hotfix: CHANGELOG only, defer the rest. → **G4**; the report gives the root cause in one sentence and the commands the user runs.
+7. (writer) **G3** on the final code. Docs if documented behaviour changed or a CHANGELOG is kept. Hotfix: CHANGELOG only, defer the rest. → **G4**; the report gives the root cause in one sentence and the commands the user runs. Close the item (Lead manual §6).
 
 Loop rules: Lead manual §3. Hotfix never lets a failing test or blocking finding through; a stalled loop pauses for the user sooner with revert/flag options.

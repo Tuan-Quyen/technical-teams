@@ -1,14 +1,11 @@
-# UI/UX design
+# Design system
 
-> Owner: **team-designer** (only the designer writes this file; everyone reads it).
-> Top: the product's design system (changes only when the system changes). Below: one section per work item. Status: `draft` → `done`. Approval (G1) is recorded by the lead in `.team/STATE.md`, not here.
-> Done items move to `.team/archive/DESIGN-<YYYY-MM>.md`. No real user data in examples.
-
-## Design system
+> Owner: **team-designer** (only the designer writes this file; everyone reads it). Path: `.team/frontend-design/_system.md`.
+> The product's design system as it is now. It changes only when the system changes; a work item's own screens live in `.team/frontend-design/<slug>.md`. When an item closes, the designer merges the tokens and components it added here.
 
 **Component library / theme:** <e.g. shadcn/ui + Tailwind theme in `tailwind.config.ts`, or MUI theme in `src/theme.ts`>
 
-**Tokens:**
+## Tokens
 | Group | Values |
 |---|---|
 | Type scale | <display / h1 / h2 / body / small — size, weight, line height> |
@@ -16,42 +13,15 @@
 | Color roles | <surface, text, muted, primary, danger, success, warning, border — light / dark> |
 | Radius · elevation · motion | <…> |
 
-**Platforms + form factors:** <web 375 / 768 / 1280 · mobile small + large phone · desktop min + typical window · TUI 80×24 — what stacks or collapses>
+## Platforms and form factors
+<web 375 / 768 / 1280 · mobile small + large phone · desktop min + typical window · TUI 80×24 — what stacks or collapses>
 
-**Layout shell:** <navigation model per platform>
+## Layout shell
+<navigation model per platform>
 
-**Glossary:** <term — meaning — never call it>
+## Components
+| Component | Use it for | States |
+|---|---|---|
 
-## W-000 — <title> · status: draft
-
-**Satisfies:** W-000.AC1 → flow F1, screen `/projects`
-
-**Users + top tasks:** <ranked>
-
-**Flows:**
-```mermaid
-flowchart LR
-  A[List] --> B[New project form] --> C{valid?}
-  C -- yes --> D[List, new row highlighted]
-  C -- no --> B
-```
-
-**Screens:**
-| Screen | URL | Primary action | Pattern | Components |
-|---|---|---|---|---|
-| Projects | `/projects` | New project | list/table | DataTable, SearchInput, FilterChips, EmptyState |
-
-**Screen specs:** <per screen: content priority; mobile + desktop wireframe>
-
-**State matrix:**
-| Screen | Empty | Loading | Partial | Success | Validation error | System error | No permission | Edge content |
-|---|---|---|---|---|---|---|---|---|
-| Projects | <…> | skeleton rows | n/a — single request | toast + highlighted row | n/a | banner + Retry | hide "New" | 80-char names wrap |
-
-**Completeness:** <per screen: capabilities designed / out of scope (agreed with ba)>
-
-**Copy:** <labels, empty and error texts>
-
-**Tokens / components changed:** <none | what>
-
-**Open questions:** <for ba / user>
+## Glossary
+<term — meaning — never call it>

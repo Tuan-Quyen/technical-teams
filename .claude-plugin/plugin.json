@@ -1,8 +1,8 @@
 {
   "name": "technical-team",
   "displayName": "Technical Team",
-  "version": "0.17.0",
-  "description": "A stack-agnostic engineering team of 14 Claude Code agents (including a UI/UX designer) led by a tech lead: tiered pipelines, quality gates G1–G4, a run kit of operating skills, a live-preview skill that tests the running app in a real browser, workflow commands, a guard hook that enforces per-role permissions, and an HR process for hiring domain specialists.",
+  "version": "0.18.0",
+  "description": "A stack-agnostic engineering team of 14 Claude Code agents (including a UI/UX designer) led by a tech lead: tiered pipelines, quality gates G1–G4, a run kit of operating skills, a live-preview skill that tests the running app in a real browser, workflow commands, a `.team/` workspace with one file per work item and role, and an HR process for hiring domain specialists. Per-role permissions are instructions in the agent files plus each agent's tool list; no hook enforces them.",
   "author": {
     "name": "ctuanquyen97",
     "email": "ctuanquyen97@gmail.com"
