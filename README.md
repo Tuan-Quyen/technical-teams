@@ -333,7 +333,7 @@ Tài liệu Claude Code xác nhận ba điều sau, và cả ba ảnh hưởng t
 
 | Vai trò | Tools | Ghi | Bash |
 |---|---|---|---|
-| lead | không khai → nhận toàn bộ tool của session | chỉ `.team/STATE.md` | chỉ `git status`, `git diff` (+ `head`/`tail`/`grep`/`wc`/`sort`/`uniq`/`cut`), script `init` |
+| lead | không khai → nhận toàn bộ tool của session | chỉ `.team/STATE.md` | chỉ lệnh đọc (`git status/diff/log/show`, `ls`, `cat`, `grep`…), script `init` |
 | ba | Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch | chỉ `.team/SPEC.md`, `.team/PRODUCT.md` | không có |
 | designer | Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch | chỉ `.team/DESIGN.md` | không có (xem screenshot bằng Read) |
 | architect | Read, Write, Edit, Glob, Grep, Skill, WebSearch, WebFetch | `.team/PLAN.md`, `.team/ARCHITECTURE.md`, `.team/adr/**` | không có |
@@ -377,7 +377,7 @@ Danh sách đầy đủ nằm ở `config/ownership.json`; mỗi project mở r�
 | Chế độ | Khi nào | Bảo vệ |
 |---|---|---|
 | Denylist (mặc định) | `commands.*` để trống | luôn chặn `sudo`, `git commit/push`, `git reset --hard`, `git clean`, bỏ thay đổi, `gh pr create/merge`, `curl … \| sh`, `rm -r` vào `/`, `~`, `..`, `.git`, `.team`, `.claude`; redirect/`tee` vào file của người khác |
-| Allowlist | bạn điền `commands.build/lint/test/run` (developer), `commands.test` + `commands.run` (qa: `run` để khởi động app cho live preview), `commands.infra` (devops) | chỉ các lệnh có tiền tố đó + lệnh chỉ-đọc |
+| Allowlist (chỉ khi `strictCommands: true`) | bạn điền `commands.build/lint/test/run` (developer), `commands.test` + `commands.run` (qa: `run` để khởi động app cho live preview), `commands.infra` (devops) | chỉ các lệnh có tiền tố đó + lệnh chỉ-đọc |
 | Chỉ-đọc | debugger, security, Explore, specialist `readonly` | chặn ghi file qua shell, `sed -i`, git thay đổi repo, `find -delete/-exec`, `xargs`, cài dependency, lệnh thay đổi hạ tầng từ xa |
 
 ### 7.5 Lệnh database và pipeline (`db-local`, dùng cho `dba`)
@@ -549,7 +549,7 @@ Mọi tùy biến nằm trong `.claude/technical-team.json`. File này do `init`
 
 | Mục | Tác dụng |
 |---|---|
-| `commands` | mỗi mục là một tiền tố lệnh; danh sách khác rỗng thì vai trò đó chuyển sang allowlist (7.4) |
+| `commands` | mỗi mục là một tiền tố lệnh; danh sách khác rỗng chỉ thành allowlist khi đặt `strictCommands: true` (7.4); mặc định chỉ denylist |
 | `paths` | **cộng thêm** vào mặc định trong `config/ownership.json`; `paths.data` mở rộng vùng ghi của dba, `paths.<specialist plugin>` mở rộng vùng của specialist đó |
 | `devopsAllowRemote` | `true` cho devops chạy `docker push`, `kubectl apply`, `terraform apply`… (mặc định tắt) |
 | `externalAgents` | agent ngoài team mà lead được gọi để lấy ngữ cảnh hiện trạng; luôn chạy chỉ-đọc, kể cả khi bạn tự gọi; `[]` để tắt |

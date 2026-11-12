@@ -130,6 +130,9 @@ export function loadConfig(projectDir) {
     data: [...(base.data || []), ...(extra.data || [])],
     commands: proj.commands || {},
     devopsAllowRemote: proj.devopsAllowRemote === true,
+    // commands.* lists are only enforced as strict allowlists when the project opts in
+    strictCommands: proj.strictCommands === true,
+    strictSkills: proj.strictSkills === true,
     db: {
       commands: (proj.db && proj.db.commands && proj.db.commands.length) ? proj.db.commands : (base.dbCommands || []),
       allowedHosts: (proj.db && proj.db.allowedHosts) || ['localhost', '127.0.0.1', '::1'],
@@ -241,6 +244,11 @@ export function hireApprovalAsk(input, env = process.env) {
   };
 }
 
+export function isTempPath(abs) {
+  const roots = [os.tmpdir(), '/tmp', '/var/tmp'];
+  return roots.some((r) => { const rel = path.relative(r, abs); return rel && !rel.startsWith('..') && !path.isAbsolute(rel); });
+}
+
 function samePath(a, b) {
   return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
 }
@@ -316,6 +324,7 @@ function checkWrite(ctx, filePath) {
   }
 
   const rel = toRel(projectDir, abs);
+  if (rel === null && isTempPath(abs)) return null; // scratch output (logs, screenshots) in the OS temp dir
   if (rel === null) return `${role} may not write outside the project (${abs}).`;
   if (rel === '') return `${role} may not write the project root itself.`;
 
@@ -428,12 +437,15 @@ function universalDenials(w, segRaw, fullCmd) {
 
 function readOnlyDenials(w, seg) {
   const cmd = w[0] || '';
-  if (hasWriteRedirect(seg)) return 'output redirection writes files; this role is read-only';
+  if (hasWriteRedirect(seg) && !redirectTargets(seg).every((t) => isTempPath(path.resolve(t.replace(/^["']|["']$/g, ''))))) return 'output redirection writes files; this role is read-only';
   if (FILE_MUTATING.has(cmd)) return `${cmd} modifies files; this role is read-only`;
   if ((cmd === 'sed' || cmd === 'perl') && w.some((a) => /^-[a-zA-Z]*i/.test(a))) return 'in-place edit; this role is read-only';
   if (cmd === 'git' && GIT_MUTATING.has(w[1])) return `git ${w[1]} changes the repository; this role uses git read-only`;
   if (cmd === 'find' && w.some((a) => ['-delete', '-exec', '-execdir', '-ok'].includes(a))) return 'find -delete/-exec is not read-only';
-  if (cmd === 'xargs') return 'xargs can run arbitrary mutations; run the command directly';
+  if (cmd === 'xargs') {
+    const inner = w.slice(1).find((a) => !a.startsWith('-'));
+    if (!inner || FILE_MUTATING.has(inner) || ['sh', 'bash', 'zsh', 'git', 'sed', 'perl'].includes(inner)) return 'xargs with a mutating or opaque command is not read-only';
+  }
   if (PKG_INSTALL.test(w.join(' '))) return 'installing or changing dependencies is not read-only; report the need instead';
   if (REMOTE_MUTATING.some((r) => r.test(w.join(' ')))) return 'this command changes remote or runtime infrastructure';
   return null;
@@ -591,18 +603,21 @@ function checkBash(ctx, command) {
       continue;
     }
     if (dbOwnerActive && isDbCommand(seg, cfg)) {
-      return `database, migration and pipeline commands are run only by dba (and db-local specialists) in this project (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
+      if (TUNNEL.test(w.join(' '))) return 'tunnels and port-forwards to databases are not allowed.';
+      const raw = rawSegs2.find((r) => r.includes(w[0])) || cmd;
+      const r = checkDbTarget(seg, raw, cfg, projectDir);
+      if (r) return `DB command blocked (only dba may run DB commands without a provable local/test target): ${r}.`;
     }
 
     switch (bashLevel) {
       case 'lead':
-        if (hasWriteRedirect(seg)) return 'lead may only inspect git state (no redirection).';
-        if (gitReadOnly(w, ['status', 'diff']) || FILTERS.test(w[0])) break;
-        return 'lead may only run `git status` and `git diff` (plus read-only filters like head/grep). Delegate everything else.';
+        if (hasWriteRedirect(seg)) return 'lead may only inspect (no redirection).';
+        if (gitReadOnly(w, ['status', 'diff', 'log', 'show', 'blame']) || FILTERS.test(w[0]) || SAFE_READ.test(w[0])) break;
+        return 'lead may only inspect (git status/diff/log/show and read-only commands like ls, cat, grep). Delegate everything else.';
       case 'code-reviewer':
         if (hasWriteRedirect(seg)) return 'code-reviewer is read-only (no redirection).';
-        if (gitReadOnly(w, ['diff', 'log']) || FILTERS.test(w[0])) break;
-        return 'code-reviewer may only run `git diff` and `git log`. Use Read/Grep/Glob for everything else.';
+        if (gitReadOnly(w, ['diff', 'log', 'show', 'status', 'blame']) || FILTERS.test(w[0]) || SAFE_READ.test(w[0])) break;
+        return 'code-reviewer may only run read-only commands (git diff/log/show/status/blame, ls, cat, grep). Use Read/Grep/Glob for everything else.';
       case 'security': {
         const r = readOnlyDenials(w, seg);
         if (r) return r + '.';
@@ -616,21 +631,20 @@ function checkBash(ctx, command) {
       case 'qa': {
         // commands.run lets qa start the app for the live preview (skill live-preview)
         const tests = [...(cfg.commands.test || []), ...(cfg.commands.run || [])];
-        if (tests.length) {
+        if (tests.length && cfg.strictCommands) {
           if (startsWithAny(seg, tests) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show'])) {
             if (hasWriteRedirect(seg)) return 'qa: write test output through the test runner, not shell redirection.';
             break;
           }
           return `qa may only run the project's test and run commands (${tests.join(', ')}) and read-only inspection commands.`;
         }
-        const r = readOnlyDenials(w, seg);
-        if (r) return `qa (no test allowlist configured): ${r}.`;
-        break;
+        if (REMOTE_MUTATING.some((r) => r.test(w.join(' ')))) return 'remote/infrastructure changes belong to devops and to you, not qa.';
+        break; // qa may run, drive and stop the app and its drivers; file writes are still checked below
       }
       case 'developer': {
         if (REMOTE_MUTATING.some((r) => r.test(w.join(' ')))) return 'remote/infrastructure changes belong to devops and to you, not the developer.';
         const allow = [...(cfg.commands.build || []), ...(cfg.commands.lint || []), ...(cfg.commands.test || []), ...(cfg.commands.run || [])];
-        if (allow.length && !(startsWithAny(seg, allow) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show', 'blame']))) {
+        if (cfg.strictCommands && allow.length && !(startsWithAny(seg, allow) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show', 'blame']))) {
           return `developer may only run the project's build/lint/test/run commands (${allow.join(', ')}) and read-only inspection commands.`;
         }
         break;
@@ -640,7 +654,7 @@ function checkBash(ctx, command) {
           return 'devops prepares and verifies infrastructure locally; pushing images, applying manifests and deploying are run by you (or enable devopsAllowRemote in .claude/technical-team.json).';
         }
         const allow = cfg.commands.infra || [];
-        if (allow.length && !(startsWithAny(seg, allow) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show']))) {
+        if (cfg.strictCommands && allow.length && !(startsWithAny(seg, allow) || SAFE_READ.test(w[0]) || gitReadOnly(w, ['status', 'diff', 'log', 'show']))) {
           return `devops may only run the configured infra commands (${allow.join(', ')}) and read-only inspection commands.`;
         }
         break;
@@ -694,6 +708,7 @@ function checkSkill(ctx, input) {
   for (const s of PLUGIN_SKILLS[role] || []) if (name === s || name === `${PLUGIN}:${s}`) return null;
   const list = Array.isArray(cfg.skills[role]) ? cfg.skills[role] : [];
   if (list.includes(name)) return null;
+  if (!cfg.strictSkills) return null; // skills are instructions, not permissions; strictSkills restores the whitelist
   return `${role} may load only run-kit and the skills listed for it in .claude/technical-team.json -> skills.${role} (${list.length ? list.join(', ') : 'none configured'}). "${name}" is not on that list.`;
 }
 

@@ -65,7 +65,7 @@ test('each .team file has its writers (TASKS.md: pm + qa for its QA subsection)'
   assert.equal(write(d, 'technical-team:ba', '.team/archive/SPEC-2026-11.md'), null);
   assert.ok(write(d, 'technical-team:ba', '.team/notes.md'));
   assert.equal(call(d, 'technical-team:ba', 'Skill', { skill: 'technical-team:business-analysis' }), null, 'ba loads its plugin skill');
-  assert.ok(call(d, 'technical-team:developer', 'Skill', { skill: 'technical-team:business-analysis' }), 'business-analysis is the ba\'s');
+  assert.equal(call(d, 'technical-team:developer', 'Skill', { skill: 'technical-team:business-analysis' }), null, 'skills are open by default');
 });
 
 test('architect owns .team/ARCHITECTURE.md and .team/adr, writer owns .team/docs, README, CHANGELOG', () => {
@@ -139,7 +139,8 @@ test('protected paths: .claude, .git, .env, outside project', () => {
   assert.ok(write(d, 'technical-team:developer', '.env'));
   assert.ok(write(d, 'technical-team:developer', 'config/.env.production'));
   assert.equal(write(d, 'technical-team:developer', '.env.example'), null);
-  assert.ok(call(d, 'technical-team:developer', 'Write', { file_path: path.join(os.tmpdir(), 'x.txt') }));
+  assert.equal(call(d, 'technical-team:developer', 'Write', { file_path: path.join(os.tmpdir(), 'x.txt') }), null, 'OS temp dir is scratch space');
+  assert.ok(call(d, 'technical-team:developer', 'Write', { file_path: '/etc/x.txt' }));
 });
 
 test('hr: specialist files only after approval, never core agents', () => {
@@ -177,7 +178,8 @@ test('lead bash: git status/diff only; init script allowed', () => {
   const d = project();
   assert.equal(bash(d, 'technical-team:lead', 'git status --short'), null);
   assert.equal(bash(d, 'technical-team:lead', 'git diff --stat | head -50'), null);
-  assert.ok(bash(d, 'technical-team:lead', 'git log -5'));
+  assert.equal(bash(d, 'technical-team:lead', 'git log -5'), null);
+  assert.equal(bash(d, 'technical-team:lead', 'ls -la src'), null);
   assert.ok(bash(d, 'technical-team:lead', 'npm test'));
   assert.ok(bash(d, 'technical-team:lead', 'git diff > out.txt'));
   assert.ok(bash(d, 'technical-team:lead', 'git diff --output=x.patch'));
@@ -191,7 +193,8 @@ test('code-reviewer bash: git diff/log only', () => {
   assert.equal(bash(d, 'technical-team:code-reviewer', 'git diff main...HEAD'), null);
   assert.equal(bash(d, 'technical-team:code-reviewer', 'git log --oneline -20'), null);
   assert.ok(bash(d, 'technical-team:code-reviewer', 'git checkout main'));
-  assert.ok(bash(d, 'technical-team:code-reviewer', 'cat /etc/passwd'));
+  assert.equal(bash(d, 'technical-team:code-reviewer', 'git show HEAD~1 && ls src'), null);
+  assert.ok(bash(d, 'technical-team:code-reviewer', 'npm install x'));
 });
 
 test('debugger/security: read-only shell', () => {
@@ -218,7 +221,7 @@ test('no-Bash roles are denied even if a tool slips through', () => {
   for (const r of ['ba', 'architect', 'pm', 'writer', 'hr']) assert.ok(bash(d, `technical-team:${r}`, 'ls'));
 });
 
-test('developer: denylist without config, allowlist with config', () => {
+test('developer: denylist; allowlist only with strictCommands', () => {
   const d = project();
   const a = 'technical-team:developer';
   assert.equal(bash(d, a, 'npm run build && npm test'), null);
@@ -236,25 +239,31 @@ test('developer: denylist without config, allowlist with config', () => {
   assert.equal(bash(c, a, 'npm run build'), null);
   assert.equal(bash(c, a, 'npm test -- auth'), null);
   assert.equal(bash(c, a, 'git diff'), null);
-  assert.ok(bash(c, a, 'npm run deploy'));
-  assert.ok(bash(c, a, 'python scripts/migrate.py'));
+  assert.equal(bash(c, a, 'npm run deploy'), null, 'command lists are not enforced unless strictCommands');
+  assert.equal(bash(c, a, './scripts/run-linux.sh --smoke'), null);
+  const s = project({ config: { strictCommands: true, commands: { build: ['npm run build'] } } });
+  assert.equal(bash(s, a, 'npm run build'), null);
+  assert.ok(bash(s, a, 'python scripts/migrate.py'), 'strictCommands restores the allowlist');
+  assert.ok(bash(c, a, 'kubectl apply -f k8s/'));
 });
 
-test('qa: allowlisted test runner when configured', () => {
-  const c = project({ config: { commands: { test: ['npm test', 'npx playwright test'] } } });
+test('qa: free in default mode; test/run allowlist only with strictCommands', () => {
+  const c = project({ config: { strictCommands: true, commands: { test: ['npm test', 'npx playwright test'] } } });
   const a = 'technical-team:qa';
   assert.equal(bash(c, a, 'npx playwright test e2e/login.spec.ts'), null);
   assert.equal(bash(c, a, 'npm test 2>&1 | tail -30'), null);
   assert.ok(bash(c, a, 'npm run build'));
   assert.ok(bash(c, a, 'npm run dev'), 'run command not configured');
-  const r = project({ config: { commands: { test: ['npx playwright test'], run: ['npm run dev', 'npm run preview'] } } });
+  const r = project({ config: { strictCommands: true, commands: { test: ['npx playwright test'], run: ['npm run dev', 'npm run preview'] } } });
   assert.equal(bash(r, a, 'npm run dev'), null, 'qa starts the app for the live preview');
   assert.equal(bash(r, a, 'npm run preview -- --port 4173'), null);
   assert.ok(bash(r, a, 'npm run build'));
   const d = project();
   assert.equal(bash(d, a, 'npm run dev'), null, 'denylist mode: starting the app is allowed');
   assert.equal(bash(d, a, 'pytest -q'), null);
-  assert.ok(bash(d, a, 'pip install pytest'));
+  assert.equal(bash(d, a, 'node scripts/launch.mjs > /tmp/app.log 2>&1 &'), null, 'qa drives the app and logs to temp');
+  assert.equal(bash(d, a, 'pkill -f electron'), null);
+  assert.ok(bash(d, a, 'kubectl apply -f x.yml'));
 });
 
 test('devops: remote-changing commands need explicit opt-in', () => {
@@ -354,11 +363,13 @@ test('dba: env file target', () => {
   assert.ok(bash(d, 'technical-team:dba', 'npx prisma migrate dev --name x'));
 });
 
-test('other roles cannot run DB/migration commands (dba owns them)', () => {
+test('other roles run DB/migration commands only against a provable local/test target', () => {
   const d = project();
-  assert.ok(bash(d, 'technical-team:developer', 'npx prisma migrate dev --name x'));
-  assert.ok(bash(d, 'technical-team:developer', 'python manage.py makemigrations'));
-  assert.ok(bash(d, 'technical-team:qa', 'psql -h localhost -d app_test -c "select 1"'));
+  assert.ok(bash(d, 'technical-team:developer', 'npx prisma migrate dev --name x'), 'target not visible');
+  assert.equal(bash(d, 'technical-team:developer', 'DATABASE_URL=postgres://u@localhost/app_test npx prisma migrate dev'), null);
+  assert.ok(bash(d, 'technical-team:developer', 'DATABASE_URL=postgres://u@db.prod.x/app npx prisma migrate deploy'));
+  assert.equal(bash(d, 'technical-team:qa', 'psql -h localhost -d app_test -c "explain select 1"'), null, 'provably local target is fine for any role');
+  assert.ok(bash(d, 'technical-team:qa', 'psql -h db.prod.example.com -d app -c "select 1"'));
   assert.equal(bash(d, 'technical-team:developer', 'npx prisma generate'), null);
   assert.equal(bash(d, 'technical-team:developer', 'npm test'), null);
 });
@@ -376,8 +387,8 @@ test('plugin repo (maintainer mode): hire writes new members into the plugin', (
   assert.ok(write(other, 'technical-team:hr', 'agents/iot-firmware.md'), 'outside the plugin repo agents/ is ordinary code');
 });
 
-test('skills: run-kit always, otherwise only the role list from project config', () => {
-  const d = project({ config: { skills: { developer: ['react-native', 'mobile-kit:ios-release'], qa: ['detox-e2e'] } } });
+test('skills: open by default; with strictSkills only run-kit and the role list', () => {
+  const d = project({ config: { strictSkills: true, skills: { developer: ['react-native', 'mobile-kit:ios-release'], qa: ['detox-e2e'] } } });
   const sk = (agent, input) => call(d, agent, 'Skill', input);
   assert.equal(sk('technical-team:developer', { skill: 'react-native' }), null);
   assert.equal(sk('technical-team:developer', { skill: 'mobile-kit:ios-release' }), null);
@@ -391,7 +402,9 @@ test('skills: run-kit always, otherwise only the role list from project config',
   assert.equal(sk('technical-team:qa', { skill: 'detox-e2e' }), null);
   assert.equal(decide({ tool_name: 'Skill', tool_input: { skill: 'anything' }, cwd: d }, env(d)), null, 'main session unrestricted');
   const none = project();
-  assert.ok(call(none, 'technical-team:developer', 'Skill', { skill: 'react-native' }), 'no config, no extra skills');
+  assert.equal(call(none, 'technical-team:developer', 'Skill', { skill: 'react-native' }), null, 'open by default');
+  const strictNone = project({ config: { strictSkills: true } });
+  assert.ok(call(strictNone, 'technical-team:developer', 'Skill', { skill: 'react-native' }), 'strictSkills: no config, no extra skills');
 });
 
 test('handoff check: template from run-kit, required labels, evidence for "xong"', async () => {
@@ -497,13 +510,14 @@ test('skills: test-process for qa, live-preview for qa, developer, designer only
   {
     const d0 = project();
     assert.equal(call(d0, 'technical-team:qa', 'Skill', { skill: 'technical-team:test-process' }), null);
-    assert.ok(call(d0, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
+    const st = project({ config: { strictSkills: true } });
+    assert.ok(call(st, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
     assert.equal(write(d0, 'technical-team:qa', '.team/TASKS.md'), null, 'qa writes its QA subsection in TASKS.md');
     assert.equal(write(d0, 'technical-team:qa', '.team/archive/TASKS-2026-11.md'), null);
     assert.ok(write(d0, 'technical-team:qa', '.team/QA.md'), 'no separate QA.md');
     assert.ok(write(d0, 'technical-team:developer', '.team/TASKS.md'));
   }
-  const d = project({ config: { skills: { designer: ['ui-ux-pro'] } } });
+  const d = project({ config: { strictSkills: true, skills: { designer: ['ui-ux-pro'] } } });
   const sk = (agent, skill) => call(d, agent, 'Skill', { skill });
   for (const r of ['qa', 'developer', 'designer']) {
     assert.equal(sk(`technical-team:${r}`, 'technical-team:live-preview'), null, r);
