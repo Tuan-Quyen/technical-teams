@@ -34,8 +34,8 @@
 
 ## Hires
 
-<!-- The lead adds a line only after the user approves a hire. The guard lets hr create the agent file only when this line exists. -->
-<!-- - HIRE-APPROVED: <specialist-name> (<YYYY-MM-DD>, scope: project|user) -->
+<!-- The lead adds a line only after the user approves a hire. hr creates the agent file only when this line exists, and the lead calls no specialist without it. -->
+<!-- - HIRE-APPROVED: <specialist-name> (<YYYY-MM-DD>, scope: project|user): "<user's words>" -->
 
 ## Specialist usage
 

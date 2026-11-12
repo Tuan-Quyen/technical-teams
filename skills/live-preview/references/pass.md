@@ -20,7 +20,7 @@ Find the app type from manifests and config (`package.json` deps, `app.json`/`ea
 
 | Product | Run it | Drive it (prefer what the project already has) | Evidence | Reference |
 |---|---|---|---|---|
-| Web app / SPA / SSR / PWA | `commands.run`, `dev`/`preview`/`start` script; prefer the production build | Playwright (or Cypress) | console + page errors, failed requests, screenshots 375 / 768 / 1280 | `references/web.md` |
+| Web app / SPA / SSR / PWA | `dev`/`preview`/`start` script; prefer the production build | Playwright (or Cypress) | console + page errors, failed requests, screenshots 375 / 768 / 1280 | `references/web.md` |
 | Mobile (React Native, Expo, Flutter, native iOS/Android, Capacitor/Ionic) | build a debug/release build onto an emulator/simulator (`npx expo run:android`, `flutter run`, `./gradlew installDebug`, `xcodebuild … -destination`) | Maestro (any stack), Detox (RN), `integration_test` / `patrol` (Flutter), Espresso / UI Automator (Android), XCUITest (iOS), Appium | device log (`adb logcat`, `xcrun simctl spawn booted log`), crashes/ANRs, screenshots on small phone + large phone (+ tablet if supported), both orientations if supported | `references/mobile.md` |
 | Desktop (Electron, Tauri, Qt, .NET WPF/WinUI/MAUI, Swift/AppKit, Java/JavaFX, GTK) | the packaged or dev build; on headless Linux wrap with `xvfb-run` | Playwright `_electron`, WebDriver (`tauri-driver`, WinAppDriver, Appium Mac2), the toolkit's UI test framework | main + renderer logs, crash dumps, screenshots at minimum and typical window size, HiDPI if supported | `references/desktop.md` |
 | CLI / TUI | the built binary or the installed entry point (not `go run` of a sub-package, not an import) | shell harness: real args, stdin, env, exit codes; TUI via a pty (`expect`, `pexpect`, `script`, `tmux send-keys` + `capture-pane`) | transcript: command, stdout, stderr, exit code; terminal snapshot for TUIs at 80×24 and wide | `references/cli.md` |
@@ -31,8 +31,8 @@ Find the app type from manifests and config (`package.json` deps, `app.json`/`ea
 
 | Before you start | If missing |
 |---|---|
-| Run command | `commands.run`, scripts, Makefile, compose, README, `.team/OPS_HANDOFF.md` → still missing: `vướng`, ask for the exact command |
-| Driver / runtime (browser runner, emulator/simulator, Xvfb, device driver) | **never install it yourself** (the guard blocks installs). `cần quyết định`: name what is needed (e.g. "`@playwright/test` dev dependency", "an Android emulator image `system-images;android-34;google_apis;x86_64`", "macOS host for the iOS simulator"). Until then report "live preview not run" — not a PASS |
+| Run command | `CLAUDE.md`, scripts, Makefile, compose, README, `.team/OPS_HANDOFF.md` → still missing: `vướng`, ask for the exact command |
+| Driver / runtime (browser runner, emulator/simulator, Xvfb, device driver) | **never install it yourself** (a dev dependency is the developer's change, an emulator or runtime the user's). `cần quyết định`: name what is needed (e.g. "`@playwright/test` dev dependency", "an Android emulator image `system-images;android-34;google_apis;x86_64`", "macOS host for the iOS simulator"). Until then report "live preview not run" — not a PASS |
 | Platform the environment cannot host (iOS simulator on Linux, Windows-only desktop app on Linux, a physical device) | preview what *can* run (Android for a cross-platform app, the web build of RN/Flutter) and say exactly what was **not** previewed; the lead puts it in the report as an open risk. A web build is supporting evidence for a mobile app, never a replacement |
 | Test data / accounts | seeds/fixtures (dba / qa), the project's test users, sandbox keys; an empty state is a case to check, not a reason to skip |
 | What to check | ACs in `.team/SPEC.md#W-NNN` (T1: bullets in `STATE.md`), screens in `.team/DESIGN.md#W-NNN`, changed entry points in `git diff --stat` |
@@ -96,4 +96,3 @@ Paste into the handoff (qa: next to the traceability table):
 | No secrets | test credentials, seeded users, sandbox keys; never paste tokens into specs, screenshots, transcripts or handoffs |
 | Don't weaken | no fixed sleeps to hide a race, no filtering an error out of the log to get green; a flaky check is a finding |
 | Keep it | the preview check stays in the suite as a regression test; the next round re-runs it |
-| Guard | with a `commands.test` allowlist, qa starts the product only through `commands.run` (and drives it through `commands.test`); add emulator/driver commands there (e.g. `adb`, `maestro test`, `xvfb-run`, `flutter test integration_test`) |

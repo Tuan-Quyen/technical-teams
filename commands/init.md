@@ -17,5 +17,5 @@ allowed-tools: Bash(node *)
 | Reminder | |
 |---|---|
 | `.team/` | commit it so the whole team shares it |
-| `.claude/technical-team.json` | theirs to edit: `commands` (allowlists for developer/qa/devops), `paths` (extra ownership globs, `paths.data`), `db` (local hosts/databases for dba), `skills` (per-role skills) |
+| `.claude/technical-team.json` | theirs to edit: `skills` — extra skills per agent (`"team-developer": ["<skill>"]`, `"*"` for everyone). Project skills by name, plugin skills as `<plugin>:<skill>`. Empty lists are fine |
 | On demand | the other `.team/` files (SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER) and `archive/` appear only when a pipeline first needs them; `.claude/agents/` appears at the first project hire (restart the session once after it) |

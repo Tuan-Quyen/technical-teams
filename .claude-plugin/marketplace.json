@@ -9,7 +9,7 @@
     {
       "name": "technical-team",
       "source": "./",
-      "description": "Stack-agnostic engineering team: tech lead and 12 roles, gated pipelines, run kit, guard hook and specialist hiring.",
+      "description": "Stack-agnostic engineering team: tech lead and 13 roles in squads with one owner per area, gated pipelines, run kit, per-agent project skills and specialist hiring.",
       "category": "development"
     }
   ]

@@ -35,7 +35,7 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/reference
 
 | Rule | |
 |---|---|
-| Missing driver/runtime | never install it (guard blocks) → `cần quyết định` naming exactly what is needed; not a PASS |
+| Missing driver/runtime | never install it yourself (dependencies are the developer's, runtimes and emulators the user's) → `cần quyết định` naming exactly what is needed; not a PASS |
 | Platform not hostable here | preview what can run, list what was **not previewed**; a web build never replaces a mobile preview |
 | Evidence in the handoff | product + target · commands · runner summary · errors (count + first lines) · form factors → result + file · states/input/lifecycle → ok/issue/n/a · not previewed · known-bug IDs swept |
 | Safety | local/emulator/sandbox only, test credentials only, no secrets in specs or screenshots, outputs under `test-results/` (never `.team/`, never committed) |

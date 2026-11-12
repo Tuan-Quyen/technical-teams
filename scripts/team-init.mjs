@@ -3,11 +3,11 @@
 //
 //   node team-init.mjs                 -> .team/STATE.md only (what every run needs)
 //   node team-init.mjs SPEC PLAN ...   -> just the named files (STATE, SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER)
-//   node team-init.mjs --config        -> also .claude/technical-team.json (only /technical-team:init passes it)
+//   node team-init.mjs --config        -> also .claude/technical-team.json (per-agent skills; only /technical-team:init passes it)
 //   node team-init.mjs --all           -> every .team file + .claude/agents/ + config (the old up-front setup)
 //
 // Never overwrites an existing file, so it can be re-run safely and cannot reset
-// ownership headers or content the owners already wrote. archive/ is not created
+// content the owners already wrote. archive/ is not created
 // here: owners create it when they first archive a section.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -57,7 +57,7 @@ if (withConfig) {
   if (!fs.existsSync(cfgDest)) {
     fs.mkdirSync(path.dirname(cfgDest), { recursive: true });
     fs.copyFileSync(path.join(ROOT, 'templates', 'technical-team.json'), cfgDest, fs.constants.COPYFILE_EXCL);
-    cfgNote = 'created .claude/technical-team.json (empty command allowlists = denylist mode)';
+    cfgNote = 'created .claude/technical-team.json (add skills per agent under "skills")';
   }
 }
 

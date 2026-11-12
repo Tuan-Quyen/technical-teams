@@ -109,7 +109,7 @@ test('every agent and skill is documented in README (and agents in run-kit or le
   for (const f of fs.readdirSync(path.join(ROOT, 'agents')).filter((x) => x.endsWith('.md'))) {
     const name = f.slice(0, -3);
     assert.ok(readme.includes('`' + name + '`'), `README mentions agent ${name}`);
-    assert.ok(read('agents/lead.md').includes(name), `lead.md mentions agent ${name}`);
+    assert.ok(read('agents/team-lead.md').includes(name), `team-lead.md mentions agent ${name}`);
   }
   for (const d of fs.readdirSync(path.join(ROOT, 'skills'))) {
     assert.ok(readme.includes('`' + d + '`'), `README mentions skill ${d}`);
@@ -122,8 +122,8 @@ test('designer and live preview are wired into the delivery pipelines', () => {
   for (const f of ['commands/feature.md', 'commands/fix.md', 'commands/test.md', 'commands/release.md', 'commands/new.md']) {
     assert.match(read(f), /live.preview/i, `${f} asks for a live preview`);
   }
-  assert.match(read('agents/qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
-  assert.match(read('agents/qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
+  assert.match(read('agents/team-qa.md'), /^  - technical-team:live-preview$/m, 'qa preloads live-preview');
+  assert.match(read('agents/team-qa.md'), /^  - technical-team:test-process$/m, 'qa preloads test-process');
   assert.match(feature, /^\| P3a \|[^\n]*\| qa \|/m, 'feature.md P3a is the qa test plan');
   assert.ok(!fs.existsSync(path.join(ROOT, 'templates', 'team', 'QA.md')), 'no separate QA.md: qa works in TASKS.md');
   assert.match(read('templates/team/TASKS.md'), /^### QA — W-000/m, 'TASKS template has the QA subsection');
@@ -143,14 +143,14 @@ test('qa gate calibration and upstream alignment stay wired', () => {
   for (const rule of ['Scope lock', 'Target lock', 'Depth per tier', 'Round focus', 'Severity needs evidence', '## 5. Micro verify']) assert.ok(tp.includes(rule), `test-process process.md: ${rule}`);
   const tps = read('skills/test-process/SKILL.md');
   for (const rule of ['Scope lock', 'Target lock', 'Depth by tier', 'Severity']) assert.ok(tps.includes(rule), `test-process SKILL.md: ${rule}`);
-  assert.match(read('agents/lead.md'), /\*\*open in-scope blocker\/critical\/major defects\*\*/, 'lead: progress = fewer open in-scope defects');
-  assert.match(read('agents/lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
-  assert.match(read('agents/developer.md'), /RTM conditions/, 'developer builds to qa conditions');
-  assert.match(read('agents/pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
-  assert.match(read('agents/code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
-  assert.match(read('agents/developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
-  assert.match(read('agents/architect.md'), /## Design escalation/, 'architect: design escalation workflow');
-  assert.match(read('agents/lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
+  assert.match(read('agents/team-lead.md'), /\*\*open in-scope blocker\/critical\/major defects\*\*/, 'lead: progress = fewer open in-scope defects');
+  assert.match(read('agents/team-lead.md'), /three consecutive rounds show no progress/, 'lead: escalation on no progress');
+  assert.match(read('agents/team-developer.md'), /RTM conditions/, 'developer builds to qa conditions');
+  assert.match(read('agents/team-pm.md'), /Screens \+ states/, 'pm tickets carry designed states');
+  assert.match(read('agents/team-code-reviewer.md'), /^\| 7 \| UI/m, 'code-reviewer UI check');
+  assert.match(read('agents/team-developer.md'), /Nghi lỗi thiết kế/, 'developer: design-flaw handoff');
+  assert.match(read('agents/team-architect.md'), /## Design escalation/, 'architect: design escalation workflow');
+  assert.match(read('agents/team-lead.md'), /\*\*Design escalation\*\*/, 'lead: routes design escalation');
 });
 
 test('preloaded skills stay small; detail lives in references', () => {
@@ -168,16 +168,16 @@ test('parallel review and micro verify are wired', () => {
   assert.match(feature, /^\| D2 \|[^\n]*security reviews the same diff in parallel/m, 'D2: security in parallel on first pass');
   assert.match(feature, /^\| D4 \|[^\n]*\*\*delta\*\*/m, 'D4: delta only');
   assert.match(feature, /^\| S2m \|[^\n]*\| qa \|/m, 'S2m micro verify by qa');
-  assert.match(read('agents/lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
+  assert.match(read('agents/team-lead.md'), /\| Micro \(small mode only\) \|/, 'lead: micro criteria');
 });
 
 test('squads and qa fan-out are wired', () => {
-  const lead = read('agents/lead.md');
-  assert.match(lead, /^## Squads$/m, 'lead: squads section');
+  const lead = read('agents/team-lead.md');
+  assert.match(lead, /^## The team: squads, agents, owned areas$/m, 'lead: squads section');
   for (const s of ['Discovery', 'Build', 'Verify', 'Support']) assert.match(lead, new RegExp(`^\\| \\*\\*${s}\\*\\* \\|`, 'm'), `lead: squad ${s}`);
   assert.match(lead, /^\| QA fan-out \|[^\n]*independent/m, 'lead: qa fan-out rule');
   assert.match(lead, /Only the merge verdict counts for G2/, 'lead: one verdict');
-  const qa = read('agents/qa.md');
+  const qa = read('agents/team-qa.md');
   for (const run of ['**core**', '**platform**', '**merge**']) assert.ok(qa.includes(run), `qa: ${run} run`);
   const feature = read('commands/feature.md');
   assert.match(feature, /^\| D3 \|[^\n]*QA fan-out/m, 'D3: qa fan-out');
@@ -189,9 +189,9 @@ test('squads and qa fan-out are wired', () => {
 });
 
 test('ba: guided elicitation, product baseline and discover mode are wired', () => {
-  assert.ok(!fs.existsSync(path.join(ROOT, 'agents', 'analyst.md')), 'analyst was renamed to ba');
-  const ba = read('agents/ba.md');
-  assert.match(ba, /^name: ba$/m);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'agents', 'analyst.md')) && !fs.existsSync(path.join(ROOT, 'agents', 'team-analyst.md')), 'analyst was renamed to ba');
+  const ba = read('agents/team-ba.md');
+  assert.match(ba, /^name: team-ba$/m);
   assert.match(ba, /^  - technical-team:business-analysis$/m, 'ba preloads business-analysis');
   for (const s of ['Ready-to-spec', 'PRODUCT.md', 'cần quyết định', 'As-is + impact']) assert.ok(ba.includes(s), `ba.md: ${s}`);
   const skill = read('skills/business-analysis/SKILL.md');
@@ -206,7 +206,7 @@ test('ba: guided elicitation, product baseline and discover mode are wired', () 
   assert.match(feature, /^\| `--discover`[^\n]*\*\*discover\*\*/m, 'feature: discover mode');
   for (const id of ['V0', 'V1', 'V2', 'V3']) assert.match(feature, new RegExp(`^\\| ${id} \\|`, 'm'), `feature.md step ${id}`);
   assert.match(frontmatter('feature'), /--discover/, 'feature argument-hint has --discover');
-  assert.match(read('agents/lead.md'), /\| Elicitation rounds \(REQ\) \|[^\n]*as written/, 'lead relays rounds unchanged');
+  assert.match(read('agents/team-lead.md'), /\| Elicitation rounds \(REQ\) \|[^\n]*as written/, 'lead relays rounds unchanged');
   assert.match(read('commands/new.md'), /PRODUCT\.md/, 'new: product baseline at N1');
   for (const h of ['## Capability map', '## Business rules', '## Backlog', '## Glossary']) assert.ok(read('templates/team/PRODUCT.md').includes(h), `PRODUCT template: ${h}`);
   for (const h of ['### As-is and impact', '### Scenarios', '### Assumptions']) assert.ok(read('templates/team/SPEC.md').includes(h), `SPEC template: ${h}`);
@@ -234,9 +234,91 @@ test('team-init creates .team files on demand, never up front', async () => {
   assert.equal(fs.readFileSync(path.join(dir, '.team', 'STATE.md'), 'utf8'), 'mine', 'never overwrites');
   assert.equal(run('BOGUS').status, 2);
   assert.equal(run('--config').status, 0);
-  assert.ok(fs.existsSync(path.join(dir, '.claude', 'technical-team.json')));
+  const cfg = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'technical-team.json'), 'utf8'));
+  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills'], 'project config holds skills only');
   assert.ok(!fs.existsSync(path.join(dir, '.claude', 'agents')));
   assert.equal(run('--all').status, 0);
   assert.equal(ls().length, 8);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'agents')));
+});
+
+// ---- team setup: team-* agents, one owner per area, no hooks, skills per agent
+
+const agentFiles = fs.readdirSync(path.join(ROOT, 'agents')).filter((f) => f.endsWith('.md')).sort();
+const agentNames = agentFiles.map((f) => f.slice(0, -3));
+const CORE = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'hr', 'lead', 'pm', 'qa', 'security', 'writer'];
+
+test('every agent is team-<role>, and its name matches its file', () => {
+  assert.deepEqual(agentNames, CORE.map((r) => `team-${r}`).sort());
+  for (const n of agentNames) {
+    const text = read(`agents/${n}.md`);
+    assert.match(text, new RegExp(`^name: ${n}$`, 'm'), `${n}: frontmatter name`);
+    assert.match(text, /^  - technical-team:run-kit$/m, `${n}: preloads run-kit`);
+  }
+});
+
+test('agents are always addressed with the team- prefix', () => {
+  const files = [...docFiles(), 'templates/technical-team.json', '.claude-plugin/plugin.json'];
+  for (const f of files) {
+    let text = read(f);
+    if (f === 'README.md') text = text.replace(/\*\*Đổi từ bản 0\.16[^\n]*/, '');
+    for (const r of CORE) {
+      assert.doesNotMatch(text, new RegExp(`technical-team:${r}(?![a-z-])`), `${f}: technical-team:${r} without team-`);
+    }
+    assert.doesNotMatch(text, /agents\/(?!team-)[a-z-]+\.md/, `${f}: agent file path without team-`);
+  }
+});
+
+test('every agent states its owned area; no Boundaries sections', () => {
+  for (const n of agentNames) {
+    const text = read(`agents/${n}.md`);
+    assert.match(text, /^\| Owns \| .+\|$/m, `${n}: Owns row`);
+    assert.doesNotMatch(text, /^\| Writes \|/m, `${n}: Writes row replaced by Owns`);
+    assert.doesNotMatch(text, /^## Boundaries/m, `${n}: no Boundaries section`);
+  }
+  const kit = read('skills/run-kit/SKILL.md');
+  assert.match(kit, /^## 4\. Ownership/m, 'run-kit: ownership map');
+  for (const r of CORE.filter((x) => x !== 'lead')) assert.match(kit.split(/^## 4\. Ownership/m)[1], new RegExp(`\\b${r}\\b`), `run-kit ownership map names ${r}`);
+  const lead = read('agents/team-lead.md');
+  assert.match(lead, /Every changed file lies in that agent's owned area/, 'lead checks ownership on every handoff');
+  for (const n of agentNames.filter((x) => x !== 'team-lead')) assert.match(lead, new RegExp('^\\|[^\\n]*\\| `' + n + '`', 'm'), `lead squad table lists ${n}`);
+});
+
+test('read-only roles have no write tools; only the lead can delegate', () => {
+  const tools = (n) => (read(`agents/${n}.md`).match(/^tools: (.+)$/m) || [, ''])[1].split(',').map((t) => t.trim());
+  for (const n of ['team-debugger', 'team-code-reviewer', 'team-security']) {
+    for (const t of ['Write', 'Edit']) assert.ok(!tools(n).includes(t), `${n} must not have ${t}`);
+  }
+  for (const n of ['team-ba', 'team-designer', 'team-architect', 'team-pm', 'team-writer', 'team-hr']) assert.ok(!tools(n).includes('Bash'), `${n} must not have Bash`);
+  for (const n of agentNames.filter((x) => x !== 'team-lead')) {
+    assert.ok(!tools(n).includes('Agent') && !tools(n).includes('Task'), `${n} must not delegate`);
+    assert.ok(tools(n).includes('Skill'), `${n} can load project skills`);
+  }
+});
+
+test('no hooks, no guard, no enforcement config', () => {
+  for (const p of ['hooks', 'config']) assert.ok(!fs.existsSync(path.join(ROOT, p)), `${p}/ removed`);
+  const manifest = JSON.parse(read('.claude-plugin/plugin.json'));
+  assert.ok(!('hooks' in manifest), 'plugin.json declares no hooks');
+  const files = docFiles().filter((f) => f !== 'README.md');
+  for (const d of fs.readdirSync(path.join(ROOT, 'skills'))) {
+    files.push(`skills/${d}/SKILL.md`);
+    const refs = path.join(ROOT, 'skills', d, 'references');
+    if (fs.existsSync(refs)) for (const f of fs.readdirSync(refs)) files.push(`skills/${d}/references/${f}`);
+  }
+  for (const f of new Set(files)) {
+    const text = read(f);
+    assert.doesNotMatch(text, /the guard|guard[- ]enforced|guard blocks|guard\.mjs|handoff hook|hooks\.json|activity hook/i, `${f}: refers to the removed guard/hooks`);
+    assert.doesNotMatch(text, /config\/(agents|ownership)\.json|externalAgents|devopsAllowRemote|\.team\/\.live|commands\.(run|test|build|lint|infra)\b/, `${f}: refers to removed config`);
+  }
+});
+
+test('project config injects skills per agent', () => {
+  const cfg = JSON.parse(read('templates/technical-team.json'));
+  assert.deepEqual(Object.keys(cfg).filter((k) => !k.startsWith('$')), ['skills']);
+  assert.deepEqual(Object.keys(cfg.skills).sort(), ['*', ...agentNames].sort(), 'one skills entry per agent, plus "*"');
+  for (const v of Object.values(cfg.skills)) assert.deepEqual(v, [], 'template lists start empty');
+  assert.match(read('skills/run-kit/SKILL.md'), /\| 10 \| Project skills \|[^\n]*technical-team\.json/, 'run-kit: agents load their project skills');
+  assert.match(read('agents/team-lead.md'), /^Skills: <skills from \.claude\/technical-team\.json/m, 'lead brief names skills');
+  assert.match(read('README.md'), /"team-developer": \[/, 'README shows the skills config');
 });

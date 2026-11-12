@@ -1,3 +1,0 @@
-{
-  "$comment": "Specialists hired into the plugin itself (hire run inside the technical-team repo), beyond the 13 core roles. Each entry: write = globs it owns (carved out of the developer's area, after .team/, docs, infra, tests, data), bash = none | readonly | developer | db-local, hookPoints and trigger tell the lead when to call it. Enforced by the guard in every project. A project can add globs for one in .claude/technical-team.json -> paths.<name>."
-}

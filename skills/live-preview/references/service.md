@@ -6,7 +6,7 @@ The "user" is a client: a frontend, a mobile app, another service, a webhook sen
 
 | Piece | Do |
 |---|---|
-| Service | `commands.run`, `docker compose up -d <svc>` (background), `npm start`, `uvicorn app:app`, `go run ./cmd/api`, `./gradlew bootRun`, `dotnet run` |
+| Service | the project's run command, `docker compose up -d <svc>` (background), `npm start`, `uvicorn app:app`, `go run ./cmd/api`, `./gradlew bootRun`, `dotnet run` |
 | Database / cache / broker | the compose services or local instances the project uses, migrated and seeded (dba owns migrations/seeds; you only run what exists). Not an in-memory fake when the change touches queries |
 | Third parties | the project's sandbox/test mode or its existing stub server (WireMock, MSW node, localstack); never live payment/email/SMS |
 | Ready | poll the health endpoint or the port; read the startup log — a warning about missing config is a finding |

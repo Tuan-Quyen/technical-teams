@@ -6,13 +6,13 @@
 
 | Step | Do |
 |---|---|
-| 1 | Optional: `/technical-team:init` — creates `.team/STATE.md` + `.claude/technical-team.json` (never overwrites). Other `.team/` files are created on demand |
+| 1 | Optional: `/technical-team:init` — creates `.team/STATE.md` + `.claude/technical-team.json` (per-agent skills; never overwrites). Other `.team/` files are created on demand |
 | 2 | Pick a mode (below) and run a command |
 
 | Mode | Start | Gates |
 |---|---|---|
 | Commands (default) | type `/technical-team:<command>` | lead runs as a subagent, stops with `Chờ duyệt …`; you answer in the main session; the lead resumes |
-| Lead as main session | `claude --agent technical-team:lead` or `"agent": "technical-team:lead"` in `.claude/settings.json` | lead asks you directly |
+| Lead as main session | `claude --agent technical-team:team-lead` or `"agent": "technical-team:team-lead"` in `.claude/settings.json` | lead asks you directly |
 
 ```mermaid
 flowchart LR
@@ -29,7 +29,7 @@ flowchart LR
 |---|---|---|---|
 | `run` | `<request>` | lead picks T0/T1/T2/TB (or `new`) and the mode | by tier |
 | `new` | `<idea \| path/to/PRD>` (empty = resume) | requirements → stack + architecture → MVP plan → milestones (delivery loop) → ops → docs → release; resumes from `.team/STATE.md` | stops only at REQ, STACK, G1, each milestone, RELEASE (+ hiring gate / escalation) |
-| `init` | `[--all]` | create `.team/STATE.md` + `.claude/technical-team.json`; `--all` = every file up front | – |
+| `init` | `[--all]` | create `.team/STATE.md` + `.claude/technical-team.json` (per-agent skills); `--all` = every file up front | – |
 | `status` | – | summary of `.team/`, no agents | – |
 | `feature` | `<description>` | ba elicitation (REQ rounds when it must ask) → plan → G1 → delivery loop (with security) → docs | G1–G4 |
 | | `<goal> --plan` | ba → architect → pm → stop, no code | G1 |
@@ -45,7 +45,7 @@ flowchart LR
 | `release` | `[version]` | devops ∥ security ∥ qa → CHANGELOG → GO/NO-GO | G2–G4 |
 | `docs` | `[scope]` | writer syncs docs | G4 |
 | | `--adr <decision>` | architect writes an ADR + updates `.team/ARCHITECTURE.md` | – |
-| `hire` | `<domain or need> [why]` | hr hires a specialist: into the plugin (in the technical-team repo) or into this project | hiring gate |
+| `hire` | `<domain or need> [why]` | hr hires a specialist `team-<name>` into this project | hiring gate |
 | | `--roster` | roster + hr review | retirement approval |
 
 Flags can also be said in words ("chỉ lên kế hoạch", "gấp", "chỉ chẩn đoán", "audit", "ghi ADR"); the lead records the mode in `STATE.md`.
@@ -76,7 +76,7 @@ flowchart LR
   SEC -- clean --> X[G2 + G3 passed]
   S -- no --> X
 ```
-Squads: Discovery (ba → designer → architect → pm → qa plan) runs as a chain; Build (developer ×N, devops, dba) in parallel on disjoint files; Verify fans out (code-reviewer ∥ security on one diff; with ≥ 2 independent platforms one core qa ∥ one qa per platform, then a merge run gives the single verdict); Support (debugger, writer, hr) on demand. The lead stays the only dispatcher.
+Squads: Discovery (ba → designer → architect → pm → qa plan) runs as a chain; Build (developer ×N, devops, dba) in parallel on disjoint files; Verify fans out (code-reviewer ∥ security on one diff; with ≥ 2 independent platforms one core qa ∥ one qa per platform, then a merge run gives the single verdict); Support (debugger, writer, hr) on demand. The lead stays the only dispatcher. Agents are named `technical-team:team-<role>`; each area of the project has one owner (run-kit §4) and nothing but the agents and the lead's handoff check keeps it that way.
 
 Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shared/test/infra/data/dependency change, no new screen) gets one qa micro verify instead of code-reviewer + qa. No round limit. Progress = fewer open in-scope blocker/critical/major defects; same failure unchanged for two rounds, or three rounds without progress → debugger → architect/ba → you. Only in-scope defects block; pre-existing ones become new work items. Suspected design flaw (developer evidence, plan-level root cause, defect cluster) → straight to the architect, who researches and revises the plan; a user-visible revision comes back to you at G1.
 
@@ -84,14 +84,12 @@ Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shar
 
 | Thing | Where | Effect |
 |---|---|---|
-| Plugin specialists | plugin `config/agents.json` (hired in the technical-team repo) | available in every project; permissions enforced by the guard |
-| Project specialists | `.team/ROSTER.md` + `HIRE-APPROVED: <name>` in `.team/STATE.md` | hired with `hire`; ignored by the guard without approval |
+| Specialists | `.claude/agents/team-<name>.md` + a row in `.team/ROSTER.md` + `HIRE-APPROVED: <name>` in `.team/STATE.md` | hired with `hire`; the lead calls one only when its row is `active` and approved |
 | Plugin skills | `business-analysis` (the ba's method: guided elicitation rounds, greenfield / operating system / discovery contexts, ready-to-spec check) | preloaded into ba |
-| | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) — preloaded into qa |
-| | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer may load it; no config needed |
-| Skills per role | `.claude/technical-team.json` → `"skills": { "designer": ["<design skill>"], "developer": ["react-native"] }` | lead names the fitting ones in each brief; the guard blocks others |
+| | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) | preloaded into qa |
+| | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer load it when needed |
+| Skills per agent | `.claude/technical-team.json` → `"skills": { "*": [], "team-designer": ["<design skill>"], "team-developer": ["react-native"] }` | the project's way to extend a role: the lead names the fitting ones in each brief, and an agent called without a brief reads its own list |
 | Your own context | skills you install and run yourself in the main session | passed to the lead as "User-provided context" |
-| External agents | `.claude/technical-team.json` → `externalAgents` (default `["Explore"]`) | the lead may call them for current-state context; the guard always runs them read-only |
+| Explore | built-in read-only agent | the lead may call it for current-state context; never as gate evidence |
 
 Full documentation: `${CLAUDE_PLUGIN_ROOT}/README.md`.
-
