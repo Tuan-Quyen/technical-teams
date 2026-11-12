@@ -1,6 +1,6 @@
 # UI/UX design
 
-> Owner: **designer** (only the designer writes this file; everyone reads it).
+> Owner: **team-designer** (only the designer writes this file; everyone reads it).
 > Top: the product's design system (changes only when the system changes). Below: one section per work item. Status: `draft` → `done`. Approval (G1) is recorded by the lead in `.team/STATE.md`, not here.
 > Done items move to `.team/archive/DESIGN-<YYYY-MM>.md`. No real user data in examples.
 

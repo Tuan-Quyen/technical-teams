@@ -1,6 +1,6 @@
 # Ops handoff
 
-> Owner: **devops** (only devops writes this file; the technical writer turns it into runbooks).
+> Owner: **team-devops** (only devops writes this file; the technical writer turns it into runbooks).
 > Raw but accurate operational facts. Mark anything not verified with `UNVERIFIED`.
 > Never write secret values: name the secret and where it lives (e.g. "`DB_PASSWORD` in the CI secret store").
 > Superseded entries move to `.team/archive/OPS_HANDOFF-<YYYY-MM>.md`.

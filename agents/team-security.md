@@ -1,5 +1,5 @@
 ---
-name: security
+name: team-security
 description: Security engineer. Audits code changes or the whole repository for vulnerabilities in authentication, authorization, input handling, data access, secrets, dependencies and configuration, with read-only scanning, and reports findings by severity with `file:line` evidence. Use in delivery pipelines after QA has passed (whenever a change touches auth, user input, data access, secrets, payments or personal data, and always in feature, fix --hotfix and new milestones), and for review (diff and --audit) and release.
 model: opus
 tools: Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch

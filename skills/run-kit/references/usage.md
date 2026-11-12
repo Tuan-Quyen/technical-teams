@@ -12,7 +12,7 @@
 | Mode | Start | Gates |
 |---|---|---|
 | Commands (default) | type `/technical-team:<command>` | lead runs as a subagent, stops with `Chờ duyệt …`; you answer in the main session; the lead resumes |
-| Lead as main session | `claude --agent technical-team:lead` or `"agent": "technical-team:lead"` in `.claude/settings.json` | lead asks you directly |
+| Lead as main session | `claude --agent technical-team:team-lead` or `"agent": "technical-team:team-lead"` in `.claude/settings.json` | lead asks you directly |
 
 ```mermaid
 flowchart LR
@@ -89,7 +89,7 @@ Small mode: a micro change (≤ 3 files, ≤ 40 lines, no security/contract/shar
 | Plugin skills | `business-analysis` (the ba's method: guided elicitation rounds, greenfield / operating system / discovery contexts, ready-to-spec check) | preloaded into ba |
 | | `test-process` (qa's full test process: plan, static review, techniques, quality characteristics, UI/UX verification, defects, test summary) — preloaded into qa |
 | | `live-preview` (run the real product — web, mobile, desktop, CLI, API/service — drive it through its interface, per-platform drivers, known-bug catalogue) | preloaded into qa; developer and designer may load it; no config needed |
-| Skills per role | `.claude/technical-team.json` → `"skills": { "designer": ["<design skill>"], "developer": ["react-native"] }` | lead names the fitting ones in each brief; the guard blocks others |
+| Skills per role | `.claude/technical-team.json` → `"skills": { "team-designer": ["<design skill>"], "team-developer": ["react-native"] }` | lead names the fitting ones in each brief; the guard blocks others |
 | Your own context | skills you install and run yourself in the main session | passed to the lead as "User-provided context" |
 | External agents | `.claude/technical-team.json` → `externalAgents` (default `["Explore"]`) | the lead may call them for current-state context; the guard always runs them read-only |
 

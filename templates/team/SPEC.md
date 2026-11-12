@@ -1,6 +1,6 @@
 # Specifications
 
-> Owner: **ba** (only the business analyst writes this file; everyone reads it).
+> Owner: **team-ba** (only the business analyst writes this file; everyone reads it).
 > One section per work item, keyed by the lead's ID. Status: `draft` → `done`. Approval (G1) is recorded by the lead in `.team/STATE.md`, not here.
 > Labels: **C** confirmed by the user · **E** evidence (file:line, document, URL) · **A** assumption. The big picture (goals, capability map, glossary, business rules) lives in `.team/PRODUCT.md`.
 > Done items move to `.team/archive/SPEC-<YYYY-MM>.md`. No secrets or real user data.

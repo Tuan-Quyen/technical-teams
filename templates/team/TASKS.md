@@ -1,6 +1,6 @@
 # Tasks
 
-> Owners: **pm** writes the tickets (table, parallel groups, notes) · **qa** writes only the `### QA` subsection of each work item (test plan, static review, RTM, execution log, defects, test summary — `test-process` skill). Neither edits the other's part; everyone reads the whole file.
+> Owners: **team-pm** writes the tickets (table, parallel groups, notes) · **team-qa** writes only the `### QA` subsection of each work item (test plan, static review, RTM, execution log, defects, test summary — `test-process` skill). Neither edits the other's part; everyone reads the whole file.
 > Tickets are derived from an approved PLAN section. Ticket status: `todo` · `doing` · `blocked` · `review` · `done` (pm only). QA status: `planned` → `executing` → `passed` | `failed` | `blocked` (qa only). The gate itself (G2) is recorded by the lead in `.team/STATE.md`.
 > Done work items move to `.team/archive/TASKS-<YYYY-MM>.md`.
 

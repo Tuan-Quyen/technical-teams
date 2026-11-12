@@ -1,6 +1,6 @@
 # Product
 
-> Owner: **ba** (only the business analyst writes this file; everyone reads it). The big picture every work item is placed in.
+> Owner: **team-ba** (only the business analyst writes this file; everyone reads it). The big picture every work item is placed in.
 > Labels: **C** confirmed by the user (words + date) · **E** evidence (file:line, document section, URL) · **A** assumption, not yet confirmed.
 > Keep it short: conclusions, not transcripts. No secrets or real user data. Removed rows move to `.team/archive/PRODUCT-<YYYY-MM>.md`.
 

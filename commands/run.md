@@ -12,8 +12,8 @@ disable-model-invocation: true
 | Situation | Do |
 |---|---|
 | Argument required | yes — empty → ask for what the team should do in one short question, stop; never guess |
-| This session **is** the tech lead (`--agent technical-team:lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:lead`, prompt below |
+| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
+| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
 | Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
 | User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (run). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
 | Always | show the lead's report as written; do not do the team's work in the main session |

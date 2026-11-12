@@ -12,8 +12,8 @@ disable-model-invocation: true
 | Situation | Do |
 |---|---|
 | Argument required | yes (`<domain or need>` or `--roster`) — empty → ask for the domain or need (and, if you can, why the team needs it) in one short question, stop; never guess |
-| This session **is** the tech lead (`--agent technical-team:lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:lead`, prompt below |
+| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
+| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
 | Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
 | User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (hire). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
 | Hiring gate answered "approve" | relay it verbatim as above, **in the foreground** (no `run_in_background`): the guard turns the lead's `HIRE-APPROVED` write into a permission prompt, and a background agent cannot show it. The user's Allow on that prompt is the approval |

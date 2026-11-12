@@ -1,6 +1,6 @@
 # Implementation plans
 
-> Owner: **architect** (only the architect writes this file; everyone reads it).
+> Owner: **team-architect** (only the architect writes this file; everyone reads it).
 > One section per work item. Status: `draft` → `done` | `superseded`. Approval (G1) is recorded by the lead in `.team/STATE.md`, not here.
 > Long-lived decisions go to `.team/adr/`; the system overview lives in `.team/ARCHITECTURE.md`.
 > Done items move to `.team/archive/PLAN-<YYYY-MM>.md`.

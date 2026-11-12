@@ -19,7 +19,7 @@ In this order, in the user's language.
 | Part | Content | Source |
 |---|---|---|
 | 1. **Waiting for you** | every pending gate and decision, with its work-item ID; `nothing` when there is none | `STATE.md` → status `waiting-for-user`, `Waiting on user` |
-| 2. **Running now** | roles with a live entry, with count and start time: `developer ×2 (14:02), dba (14:05)`; omit the line when there is none | `.team/.live/*.json` (Live agents below) |
+| 2. **Running now** | roles with a live entry, with count and start time: `team-developer ×2 (14:02), team-dba (14:05)`; omit the line when there is none | `.team/.live/*.json` (Live agents below) |
 | 3. Pipeline view | one block per active work item (below) | `STATE.md`, `TASKS.md`, `.team/.live/` |
 | 4. Specialists (count) | one line | `config/agents.json`, `ROSTER.md` |
 | 5. Next command | one per item: answer the pending gate, `new` (no argument) to resume a new-project run where it stopped, `feature` to continue, `fix` for a reported bug, … | |
@@ -67,7 +67,7 @@ Show a role only when a source names it; never list a role because the pipeline 
 | Shortcut | Applies when |
 |---|---|
 | Discovery roles all `✓` | G1 is approved — no need to prove each role |
-| Verify shows result counts | `Results` has them: `code-reviewer ✓ (0/2/3)` = blocking / should-fix / suggestions, `qa ✓ PASS`, `security ✗ (1 blocking)` |
+| Verify shows result counts | `Results` has them: `team-code-reviewer ✓ (0/2/3)` = blocking / should-fix / suggestions, `team-qa ✓ PASS`, `team-security ✗ (1 blocking)` |
 | Unknown stays unknown | when no source says, leave the role out rather than guess a mark |
 
 ### Live agents
@@ -77,8 +77,8 @@ The activity hook writes one file per running team agent to `.team/.live/<agent_
 | Rule | Detail |
 |---|---|
 | Stale | ignore an entry whose `started` is more than 12 hours old (a session that died leaves it behind) |
-| Which work item | an entry carries no work-item ID. With exactly one work item `running`, mark its live roles `●` (`developer ●×2` for two entries); with several, keep the roles on the **Running now** line only and mark `●` from STATE/TASKS evidence |
-| `lead` | belongs on the **Running now** line, never in a squad row |
+| Which work item | an entry carries no work-item ID. With exactly one work item `running`, mark its live roles `●` (`team-developer ●×2` for two entries); with several, keep the roles on the **Running now** line only and mark `●` from STATE/TASKS evidence |
+| `team-lead` | belongs on the **Running now** line, never in a squad row |
 | No `.team/.live/` | the hook has not run (or the lead is the main session): fall back to STATE/TASKS evidence, say nothing about it |
 
 ## New-project runs (pipeline `new`)
