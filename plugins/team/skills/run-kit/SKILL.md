@@ -7,23 +7,23 @@ description: Reference for running the technical team — the roster (who does w
 
 ## 1. Roster
 
-| Agent (`technical-team:…`) | Does | Writes |
-|---|---|---|
-| `team-lead` | classifies a request, runs the pipeline, keeps the resume point | `STATE.md`, moves into `archive/` |
-| `team-ba` | requirements: stories, Given/When/Then ACs, edge cases, open questions | `requirements/<slug>.md`, `PRODUCT.md` |
-| `team-designer` | design system, flows, screens, every state, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` |
-| `team-architect` | solution + implementation plan, architecture overview, ADRs | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` |
-| `team-pm` | tickets, dependencies, parallel groups, milestones, ticket status | `TASKS.md` |
-| `team-developer` | code changes per ticket or debug report, self-check | source code, config |
-| `team-debugger` | reproduce, root cause with evidence, fix direction | `reports/<slug>/debug.md` |
-| `team-code-reviewer` | review the diff, PASS / FAIL | `reports/<slug>/review.md` |
-| `team-qa` | test plan, RTM, tests, live preview, PASS / FAIL | test files, `reports/<slug>/qa.md` |
-| `team-security` | vulnerability review of a diff or the repo, PASS / FAIL | `reports/<slug>/security.md` |
-| `team-dba` | zero-downtime migrations, local/test databases only | migrations, "Data and migrations" in `system-design/<slug>.md` |
-| `team-devops` | CI/CD, Docker, manifests, local verification, remote steps for the user | infra files |
-| `team-writer` | README, API docs, CHANGELOG, runbooks | product docs, `docs/**` |
+| Agent (`technical-team:…`) | Does | Writes | Badge |
+|---|---|---|---|
+| `team-lead` | classifies a request, runs the pipeline, keeps the resume point | `STATE.md`, moves into `archive/` | 🟪 🧭 |
+| `team-ba` | requirements: stories, Given/When/Then ACs, edge cases, open questions | `requirements/<slug>.md`, `PRODUCT.md` | 🩵 🔍 |
+| `team-designer` | design system, flows, screens, every state, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` | 🩷 🎨 |
+| `team-architect` | solution + implementation plan, architecture overview, ADRs | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` | 🟦 📐 |
+| `team-pm` | tickets, dependencies, parallel groups, milestones, ticket status | `TASKS.md` | 🟨 📋 |
+| `team-developer` | code changes per ticket or debug report, self-check | source code, config | 🟩 🛠️ |
+| `team-debugger` | reproduce, root cause with evidence, fix direction | `reports/<slug>/debug.md` | 🟧 🐞 |
+| `team-code-reviewer` | review the diff, PASS / FAIL | `reports/<slug>/review.md` | 🟥 👓 |
+| `team-qa` | test plan, RTM, tests, live preview, PASS / FAIL | test files, `reports/<slug>/qa.md` | 🟨 🧪 |
+| `team-security` | vulnerability review of a diff or the repo, PASS / FAIL | `reports/<slug>/security.md` | 🟥 🛡️ |
+| `team-dba` | zero-downtime migrations, local/test databases only | migrations, "Data and migrations" in `system-design/<slug>.md` | 🟦 🗄️ |
+| `team-devops` | CI/CD, Docker, manifests, local verification, remote steps for the user | infra files | 🟩 🚢 |
+| `team-writer` | README, API docs, CHANGELOG, runbooks | product docs, `docs/**` | 🩵 ✍️ |
 
-Paths are under `.team/`. Only the agent in the Writes column writes a file; everyone reads.
+Paths are under `.team/`. Only the agent in the Writes column writes a file; everyone reads. Badge = default color and emoji; `.team/CREW.md` can override emoji, name, vibe and color per project (`/technical-team:crew`).
 
 ## 2. Pipeline workflow commands
 
@@ -76,6 +76,7 @@ User's language: <language>
 | `reports/<slug>/review.md` | code-reviewer | `reports/review.md` |
 | `reports/<slug>/security.md` | security | `reports/security.md` |
 | `reports/<slug>/debug.md` | debugger | `reports/debug.md` |
+| `CREW.md` — emoji, names, vibes, badge colors (optional) | lead, on the user's instruction | `core/CREW.md` |
 | `docs/**` | writer | — |
 | `archive/<slug>/` — every file of a closed item | lead | — |
 
@@ -83,10 +84,10 @@ Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`)
 
 ## 5. Handoff
 
-Every agent ends its reply with:
+Every agent opens its reply with `<emoji> <name>:` and ends it with:
 
 ```
-### Handoff
+### Handoff · <emoji> <name>
 - Status: done | blocked | needs-input
 - Files: <created / changed, or "none">
 - Evidence: <commands run and their result, or "none">

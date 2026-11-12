@@ -4,8 +4,9 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
 - **Tech lead (`team-lead`)**: orchestrator — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ `.team/STATE.md` để làm tiếp được khi session bị limit hoặc mở session mới.
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
-- **8 lệnh**: `run` (giao cho lead tự phân loại) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
-- **13 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
+- **9 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
+- **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
+- **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
 - **3 skill** nạp khi cần: `business-analysis`, `test-process`, `live-preview`.
 
@@ -60,34 +61,66 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 | `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
 | `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO | qa ∥ security ∥ devops (∥ dba) → writer |
 | `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` → release |
+| `/technical-team:crew` | xem hoặc đổi emoji, biệt danh, vibe, màu badge | không spawn ai; lead ghi `.team/CREW.md` |
 
 `→` là tuần tự, `∥` là song song. Ghi ADR: nói với lead "ghi quyết định …", lead giao thẳng cho architect. Không lệnh nào tự commit, push hay deploy.
 
 ## Agent
 
-| Agent | Việc | Ghi |
-|---|---|---|
-| `team-lead` | phân loại, điều phối, theo dõi | `STATE.md`, chuyển vào `archive/` |
-| `team-ba` | yêu cầu → story + AC Given/When/Then | `requirements/<slug>.md`, `PRODUCT.md` |
-| `team-designer` | flow, màn hình, mọi trạng thái, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` |
-| `team-architect` | thiết kế + kế hoạch triển khai, ADR | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` |
-| `team-pm` | ticket, phụ thuộc, nhóm song song, milestone, trạng thái ticket | `TASKS.md` |
-| `team-developer` | viết code, tự chạy build/lint/test | code |
-| `team-debugger` | tìm root cause, không sửa code | `reports/<slug>/debug.md` |
-| `team-code-reviewer` | review diff | `reports/<slug>/review.md` |
-| `team-qa` | test plan, RTM, test, live preview, PASS/FAIL | test, `reports/<slug>/qa.md` |
-| `team-security` | audit bảo mật | `reports/<slug>/security.md` |
-| `team-dba` | migration không downtime, chỉ DB local/test | migration, mục "Data and migrations" của `system-design/<slug>.md` |
-| `team-devops` | CI/CD, Docker, manifest, xác minh local | file infra |
-| `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` |
+| Agent | Việc | Ghi | Badge |
+|---|---|---|---|
+| `team-lead` | phân loại, điều phối, theo dõi | `STATE.md`, chuyển vào `archive/` | 🟪 🧭 |
+| `team-ba` | yêu cầu → story + AC Given/When/Then | `requirements/<slug>.md`, `PRODUCT.md` | 🩵 🔍 |
+| `team-designer` | flow, màn hình, mọi trạng thái, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` | 🩷 🎨 |
+| `team-architect` | thiết kế + kế hoạch triển khai, ADR | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` | 🟦 📐 |
+| `team-pm` | ticket, phụ thuộc, nhóm song song, milestone, trạng thái ticket | `TASKS.md` | 🟨 📋 |
+| `team-developer` | viết code, tự chạy build/lint/test | code | 🟩 🛠️ |
+| `team-debugger` | tìm root cause, không sửa code | `reports/<slug>/debug.md` | 🟧 🐞 |
+| `team-code-reviewer` | review diff | `reports/<slug>/review.md` | 🟥 👓 |
+| `team-qa` | test plan, RTM, test, live preview, PASS/FAIL | test, `reports/<slug>/qa.md` | 🟨 🧪 |
+| `team-security` | audit bảo mật | `reports/<slug>/security.md` | 🟥 🛡️ |
+| `team-dba` | migration không downtime, chỉ DB local/test | migration, mục "Data and migrations" của `system-design/<slug>.md` | 🟦 🗄️ |
+| `team-devops` | CI/CD, Docker, manifest, xác minh local | file infra | 🟩 🚢 |
+| `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` | 🩵 ✍️ |
 
 Mỗi agent chuyên môn có khối `## Rules` (quy tắc chung + `### Handoff`) giống hệt nhau ở cuối file, để agent tự đủ; test fail nếu 12 bản lệch nhau, nên sửa một chỗ thì sửa cả 12.
+
+## Crew: màu, emoji, vibe
+
+Mỗi agent có sẵn một **Persona** trong file của nó: `color:` trong frontmatter (màu nhãn agent trong Claude Code), emoji và vibe. Agent mở đầu câu trả lời bằng `<emoji> <tên>:`, ký tên vào handoff (`### Handoff · 🧪 Quinn`), còn lead báo trước mỗi lần spawn bằng một badge:
+
+```
+🟨 🧪 Quinn (qa) — retest Q-02
+🟥 👓 code-reviewer — review vòng 2
+```
+
+Đổi theo project bằng `/technical-team:crew`:
+
+```
+/technical-team:crew                                   xem cả team: default hay override
+/technical-team:crew qa name=Quinn vibe=cheerful       đặt biệt danh + vibe cho qa
+/technical-team:crew developer emoji=🦊 color=orange   đổi emoji và màu badge
+/technical-team:crew * vibe=terse                      cả team nói ngắn
+/technical-team:crew reset qa                          qa về mặc định
+```
+
+| Vibe có sẵn | Giọng |
+|---|---|
+| `calm` | điềm tĩnh, không dấu chấm than |
+| `cheerful` | vui vẻ, ít emoji, mừng ngắn khi xong việc |
+| `blunt` | thẳng, không rào đón |
+| `formal` | lịch sự, chính xác, không emoji trong văn |
+| `mentor` | giải thích lý do, gợi ý điều nên học |
+| `terse` | ít chữ nhất có thể |
+
+Hoặc viết vibe tự do ("nói như hướng dẫn viên du lịch"). Vibe chỉ đổi giọng: không bao giờ đổi sự thật, phạm vi, verdict hay các trường handoff; vibe kiểu "luôn PASS" bị từ chối. Màu trong `CREW.md` chỉ đổi badge của lead; màu nhãn agent trong UI lấy từ `color:` của plugin, không đổi được theo project.
 
 ## Workspace `.team/`
 
 ```
 .team/
 ├── STATE.md                    lead: ai đang làm task nào, file đang dùng, bước tiếp (điểm resume)
+├── CREW.md                     lead (theo lệnh bạn): emoji, biệt danh, vibe, màu badge — tùy chọn
 ├── TASKS.md                    pm: ticket và trạng thái
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
 ├── ARCHITECTURE.md             architect: tổng quan, trần ~200 dòng, trỏ sang ADR
@@ -108,7 +141,7 @@ Mỗi file (trừ `docs/**`) được viết theo template trong `plugins/team/t
 
 ```
 templates/
-├── core/          STATE.md · TASKS.md · PRODUCT.md · ARCHITECTURE.md
+├── core/          STATE.md · TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
 ├── requirements/  requirements.md
 ├── design/        system-design.md · DESIGN.md · frontend-design.md
 ├── adr/           adr.md
@@ -142,9 +175,8 @@ technical-team/
 ├── README.md
 └── plugins/team/        plugin technical-team
     ├── .claude-plugin/plugin.json
-    ├── LICENSE
     ├── agents/          team-lead + 12 agent
-    ├── commands/        run + 7 pipeline
+    ├── commands/        run + crew + 7 pipeline
     ├── templates/       core · requirements · design · adr · reports
     └── skills/          run-kit · business-analysis · test-process · live-preview
 ```

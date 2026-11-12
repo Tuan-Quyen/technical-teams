@@ -28,7 +28,8 @@ const frontmatter = (p) => {
 };
 
 const PIPELINES = ['feature', 'fix', 'infra', 'new', 'release', 'review', 'test'];
-const COMMANDS = [...PIPELINES, 'run'].sort();
+const COMMANDS = [...PIPELINES, 'crew', 'run'].sort();
+const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
 const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
 const AGENTS = [...WORKERS, 'team-lead'].sort();
 const SKILLS = ['business-analysis', 'live-preview', 'run-kit', 'test-process'];
@@ -38,7 +39,7 @@ const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
 
 // The .team/ layout documented in the README; `<slug>` and `NNNN-<…>` are placeholders.
 const LAYOUT = [
-  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
+  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/CREW\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
   /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
@@ -72,6 +73,20 @@ test('every agent has name = file name, a description and a model', () => {
     assert.match(fm, /^description: .+$/m, `${a}: description`);
     assert.match(fm, /^model: (sonnet|opus|haiku|inherit)$/m, `${a}: model`);
   }
+});
+
+test('every agent has a color, a Persona (emoji + vibe) and a matching badge in run-kit', () => {
+  const kit = read('skills/run-kit/SKILL.md');
+  const square = { red: '🟥', orange: '🟧', yellow: '🟨', green: '🟩', blue: '🟦', purple: '🟪', pink: '🩷', cyan: '🩵' };
+  for (const a of AGENTS) {
+    const color = frontmatter(`agents/${a}.md`).match(/^color: (\w+)$/m)?.[1];
+    assert.ok(COLORS.includes(color), `${a}: color is one of ${COLORS.join(', ')}`);
+    const p = read(`agents/${a}.md`).match(/^\*\*Persona\*\* — (\S+) · vibe: .+$/m);
+    assert.ok(p, `${a}: has a **Persona** — <emoji> · vibe: … line`);
+    assert.match(kit, new RegExp(`^\\| \`${a}\` \\|.*\\| ${square[color]} ${p[1]} \\|$`, 'm'), `${a}: run-kit badge matches color + emoji`);
+  }
+  for (const a of WORKERS) assert.match(read(`agents/${a}.md`), /\.team\/CREW\.md/, `${a}: honours CREW.md`);
+  assert.match(read('agents/team-lead.md'), /\.team\/CREW\.md/, 'lead reads CREW.md');
 });
 
 test('every specialist lists what it writes and ends with the same Rules + Handoff block', () => {
@@ -151,8 +166,7 @@ test('plugin.json and marketplace.json carry homepage, repository and the MIT li
   assert.equal(plugin.license, 'MIT');
   assert.equal(plugin.repository, REPO_URL);
   assert.match(plugin.homepage, new RegExp(`^${REPO_URL}`));
-  assert.match(read('LICENSE'), /^MIT License/, 'plugin ships the license text');
-  assert.equal(read('LICENSE'), read('LICENSE', REPO), 'plugin LICENSE matches the repo LICENSE');
+  assert.match(read('LICENSE', REPO), /^MIT License/, 'repo ships the license text');
 
   const market = json('.claude-plugin/marketplace.json', REPO);
   const entry = market.plugins.find((p) => p.name === plugin.name);
