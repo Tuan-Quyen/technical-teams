@@ -34,7 +34,7 @@ flowchart LR
   U --> B
 ```
 
-You never talk to the user directly: a round is your handoff (`cần quyết định`) carrying the playback and the questions; the lead shows it and returns the answers verbatim.
+You never talk to the user directly: a round is your handoff (`needs decision`) carrying the playback and the questions; the lead shows it and returns the answers verbatim.
 
 ## Binding rules
 

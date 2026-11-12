@@ -1,6 +1,6 @@
 # Bugs that slip past green test suites
 
-Each row: **symptom** the user sees → **how to catch it in the live preview** → **usual cause**. Sections B–P are written with web examples but apply to every product with a UI (read "console" as the platform's log, "viewport" as the device/window/terminal size); sections M, K, C, V are platform-specific. Sweep the sections that match the product and the diff and list the IDs you checked in the handoff. Add a row whenever a bug escapes to the user (report it in "Còn mở" so the plugin maintainer adds it).
+Each row: **symptom** the user sees → **how to catch it in the live preview** → **usual cause**. Sections B–P are written with web examples but apply to every product with a UI (read "console" as the platform's log, "viewport" as the device/window/terminal size); sections M, K, C, V are platform-specific. Sweep the sections that match the product and the diff and list the IDs you checked in the handoff. Add a row whenever a bug escapes to the user (report it in "Open items" so the plugin maintainer adds it).
 
 ## B — Build, environment, config
 

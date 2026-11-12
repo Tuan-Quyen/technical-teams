@@ -16,8 +16,8 @@ flowchart LR
   U[Bạn] -->|/technical-team:lệnh + ngữ cảnh| M[Session chính]
   M -->|brief| L[lead]
   L -->|brief| T[team-ba · team-designer · team-architect · team-pm · team-developer · team-debugger · team-qa · team-code-reviewer · team-security · team-devops · team-writer · team-hr · team-dba]
-  T -->|Phiếu bàn giao| L
-  L -->|Báo cáo / Chờ duyệt| M --> U
+  T -->|Handoff| L
+  L -->|Report / Waiting for approval| M --> U
 ```
 
 ## Mục lục
@@ -90,7 +90,7 @@ Gỡ plugin **không** xóa `.team/`, `README.md`, `CHANGELOG.md` hay specialist
 
 | Cách | Khởi động | Tại cổng cần duyệt |
 |---|---|---|
-| **Qua lệnh** (mặc định) | gõ `/technical-team:<lệnh>`; session chính giao cho `technical-team:team-lead` chạy như subagent | lead ghi trạng thái vào `.team/STATE.md`, trả về `Chờ duyệt …` rồi dừng; bạn trả lời ở session chính, session chính gọi lại lead |
+| **Qua lệnh** (mặc định) | gõ `/technical-team:<lệnh>`; session chính giao cho `technical-team:team-lead` chạy như subagent | lead ghi trạng thái vào `.team/STATE.md`, trả về `Waiting for approval …` rồi dừng; bạn trả lời ở session chính, session chính gọi lại lead |
 | **Lead là session chính** | `claude --agent technical-team:team-lead`, hoặc `"agent": "technical-team:team-lead"` trong `.claude/settings.json` của project | lead hỏi thẳng bạn (có `AskUserQuestion`) |
 
 | Ghi chú | |
@@ -118,7 +118,7 @@ Mọi agent của team có tiền tố `team-`; tên đầy đủ khi gọi là 
 | **Build** (song song theo ticket, tập file không giao nhau) | `team-developer` ×N | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau | source, config, manifest dependency, model ORM, schema-as-code: mọi thứ không thuộc ai khác; test cũ chỉ **Edit** khi hành vi được chủ đích thay đổi |
 | | `team-devops` | sonnet | CI/CD, Docker, deploy, hạ tầng | file hạ tầng (Dockerfile, compose, CI/CD, manifest deploy, IaC, script ops), `.team/OPS_HANDOFF.md` |
 | | `team-dba` | opus | migration không downtime, review schema/query, pipeline ETL/ELT/dbt/DAG/warehouse | migration, seed, schema dump, code pipeline, mọi lệnh DB/migrate/pipeline (chỉ trên đích local/test) |
-| **Verify** (tỏa nhánh: reviewer cùng đọc một diff; qa chia theo nền tảng) | `team-code-reviewer` | sonnet | review **code** (diff), không review project; phân mức chặn merge / nên sửa / gợi ý | không ghi gì (kết quả là danh sách phát hiện) |
+| **Verify** (tỏa nhánh: reviewer cùng đọc một diff; qa chia theo nền tảng) | `team-code-reviewer` | sonnet | review **code** (diff), không review project; phân mức blocking / should fix / suggestion | không ghi gì (kết quả là danh sách phát hiện) |
 | | `team-security` | sonnet | audit code, dependency, secrets, phân quyền, cấu hình | không ghi gì |
 | | `team-qa` | sonnet | người giữ cổng chất lượng: test plan + review tĩnh trước khi code (P3a), test tự động, **live preview** trên sản phẩm đang chạy, **xác minh UI/UX**, exploratory, báo lỗi có severity/priority, retest + regression, kết luận PASS/FAIL | test mới, fixture, dữ liệu test; section `### QA` của từng work item trong `.team/TASKS.md` |
 | **Support** (gọi khi cần) | `team-debugger` | sonnet | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa | không ghi gì (developer sửa theo chẩn đoán) |
@@ -200,7 +200,7 @@ flowchart LR
 | Micro (chỉ small mode) | ≤ 3 file, ≤ 40 dòng, không chạm test/hạ tầng/dữ liệu/dependency/build config, không thuộc diện security, không đổi API/contract/component dùng chung, không có màn hình hay flow mới. Đủ cả → một lượt qa *micro verify* thay cho code-reviewer + qa. qa thấy không đủ điều kiện thì trả "not micro" và chạy luồng thường. Báo cáo cuối ghi rõ đã đi micro |
 | Không giới hạn số vòng | không cổng nào mở sớm, không work item nào đóng khi còn lỗi |
 | Leo thang khi **cùng một lỗi còn nguyên qua 2 vòng**, hoặc **3 vòng liền không tiến triển** | debugger → architect (+ ba nếu dính AC) → tạm dừng hỏi bạn |
-| Leo thang thiết kế | developer nghi lỗi do thiết kế (thư viện không làm được theo docs, contract không giữ được cả hai phía, data model không biểu diễn được AC, cùng một lỗi cứ quay lại) → dừng sau tối đa 2 lần thử, bàn giao `cần quyết định` kèm khối **Nghi lỗi thiết kế** có bằng chứng. Lead gọi thẳng architect, không chờ đủ vòng. Architect tra tài liệu (WebSearch/WebFetch: docs đúng phiên bản, release notes, issue tracker), kết luận *thiết kế vẫn đúng* (kèm cách làm và nguồn) hoặc *sửa thiết kế* (Revision trong PLAN, ADR thay thế nếu cần, ticket/test/màn hình bị ảnh hưởng). Sửa thiết kế mà ảnh hưởng tới những gì bạn đã duyệt (AC, UX, stack/ADR, contract ngoài, chi phí) thì quay lại G1 cho phần đổi; đổi nội bộ thì lead ghi lại và chạy tiếp |
+| Leo thang thiết kế | developer nghi lỗi do thiết kế (thư viện không làm được theo docs, contract không giữ được cả hai phía, data model không biểu diễn được AC, cùng một lỗi cứ quay lại) → dừng sau tối đa 2 lần thử, bàn giao `needs decision` kèm khối **Suspected design flaw** có bằng chứng. Lead gọi thẳng architect, không chờ đủ vòng. Architect tra tài liệu (WebSearch/WebFetch: docs đúng phiên bản, release notes, issue tracker), kết luận *thiết kế vẫn đúng* (kèm cách làm và nguồn) hoặc *sửa thiết kế* (Revision trong PLAN, ADR thay thế nếu cần, ticket/test/màn hình bị ảnh hưởng). Sửa thiết kế mà ảnh hưởng tới những gì bạn đã duyệt (AC, UX, stack/ADR, contract ngoài, chi phí) thì quay lại G1 cho phần đổi; đổi nội bộ thì lead ghi lại và chạy tiếp |
 | Tiến triển | số lỗi blocker/critical/major **trong phạm vi** còn mở (cộng phát hiện chặn của review/security) phải **giảm**; tập lỗi chỉ đổi mà không giảm thì không tính |
 | Hiệu chỉnh gate của qa | ngưỡng không hạ (lỗi blocker/critical/major trong phạm vi luôn là FAIL), nhưng áp lên **đích cố định**: chỉ lỗi do thay đổi gây ra hoặc phạm AC/DESIGN của work item mới chặn; lỗi có sẵn từ trước thành work item mới. Exit criteria khóa ở G1. Độ sâu theo tầng (T2 đầy đủ, T1 nhẹ hơn, fix, hotfix). Major trở lên phải có nguồn + tác động lên người dùng, lead được trả lại lỗi xếp hạng không có căn cứ |
 | Chống "làm cho test xanh" | test bị skip, xóa, nới assertion, mock mất phần đang kiểm tra = chặn merge (code-reviewer) và FAIL (qa) |
@@ -339,7 +339,7 @@ Tài liệu của team nằm trong `.team/`, chỉ `README.md` và `CHANGELOG.md
 | commit, push, mở PR | lead đưa lệnh để bạn tự chạy |
 | chạy lệnh thay đổi thứ gì ngoài máy này: deploy, publish, database từ xa, production | devops / dba liệt kê lệnh chính xác trong phiếu bàn giao |
 | git phá hủy (`reset --hard`, `clean`), ghi `.env`, `.claude/` | — |
-| cài driver / runtime cho live preview | qa dừng ở `cần quyết định`, nêu đúng thứ cần thêm |
+| cài driver / runtime cho live preview | qa dừng ở `needs decision`, nêu đúng thứ cần thêm |
 
 dba chỉ chạy lệnh DB/migrate/pipeline khi chứng minh được đích là local/test ngay trong lệnh; không chứng minh được thì dừng và báo.
 
@@ -386,20 +386,28 @@ Nội dung agent, command và skill viết dạng bảng + sơ đồ Mermaid, b�
 
 ### Phiếu bàn giao (mọi agent, cuối mỗi lần chạy)
 
+Nhãn và tiêu đề luôn bằng tiếng Anh; nội dung theo ngôn ngữ của bạn.
+
 ```
-### Phiếu bàn giao
-- **Kết quả:** xong | vướng | cần quyết định
-- **Bằng chứng:** <output lệnh, test, hoặc file:line>
-- **Đã ghi vào:** <file đã tạo/sửa, hoặc "không">
-- **Còn mở:** <rủi ro, câu hỏi, việc chưa làm>
-- **Đề xuất bước tiếp:** <ai làm gì tiếp>
+### Handoff
+- **Result:** done | blocked | needs decision
+- **Summary:** <đã làm gì, quyết định gì và vì sao, 2–5 dòng>
+- **Evidence:** <output lệnh, test, hoặc file:line>
+- **Files changed:** <file đã tạo/sửa, hoặc "none">
+- **Open items:** <rủi ro, câu hỏi, việc chưa làm>
+- **Next steps:** <ai làm gì tiếp, và họ cần biết gì để bắt đầu: xem ở đâu, điều gì đã chốt, bẫy>
 ```
+
+Agent kế tiếp bắt đầu từ con số không, nên phiếu được viết cho người đọc đó:
 
 | Cơ chế | |
 |---|---|
+| Nội dung theo vai trò | dòng "Ends with" trong từng file agent liệt kê thứ phiếu của vai trò đó phải mang (debugger: lệnh tái hiện, nguyên nhân gốc kèm `file:line`, hướng sửa, rủi ro…) |
+| Lead chuyển tiếp nguyên văn | phần Summary, Open items, Next steps và mọi phát hiện/lỗi/chẩn đoán mà agent kế tiếp cần được dán **nguyên văn** vào brief, không tóm tắt lại |
+| Thứ cần giữ lâu | ghi vào file `.team/` của chủ; phiếu không được lưu |
 | Định nghĩa | chỉ ở `run-kit` §3 |
-| Kiểm tra | lead đọc phiếu của mọi agent: thiếu phiếu → yêu cầu bổ sung một lần, vẫn thiếu thì coi là `vướng`; `xong` không có bằng chứng → trả lại; "Đã ghi vào" phải khớp `git diff` và nằm trong vùng sở hữu của agent |
-| Lead | kết thúc bằng `## Báo cáo …` hoặc `## Chờ duyệt …` thay cho phiếu |
+| Kiểm tra | lead đọc phiếu của mọi agent: thiếu phiếu → yêu cầu bổ sung một lần, vẫn thiếu thì coi là `blocked`; `done` không có bằng chứng → trả lại; "Files changed" phải khớp `git diff` và nằm trong vùng sở hữu của agent |
+| Lead | kết thúc bằng `## Report …` hoặc `## Waiting for approval …` thay cho phiếu |
 
 ---
 
@@ -503,7 +511,7 @@ flowchart TD
 
 Skill UI/UX khai cho `team-designer`; skill frontend tương ứng khai cho `team-developer`, vì developer mới là người dựng UI. Lệnh build/test/run của project không khai ở đây: ghi vào `CLAUDE.md`, agent nào cũng đọc.
 
-Live preview cần driver của nền tảng: `@playwright/test` (web, Electron), Maestro/Detox/`integration_test` + emulator (mobile), `xvfb-run` (desktop Linux headless), Hurl/curl (API). qa không tự cài: với project chưa có thì qa dừng ở `cần quyết định` để developer/devops thêm. Với `new`, việc này nằm sẵn trong scaffold M1.
+Live preview cần driver của nền tảng: `@playwright/test` (web, Electron), Maestro/Detox/`integration_test` + emulator (mobile), `xvfb-run` (desktop Linux headless), Hurl/curl (API). qa không tự cài: với project chưa có thì qa dừng ở `needs decision` để developer/devops thêm. Với `new`, việc này nằm sẵn trong scaffold M1.
 
 ---
 
@@ -513,7 +521,7 @@ Live preview cần driver của nền tảng: `@playwright/test` (web, Electron)
 |---|---|
 | Chưa chạy end-to-end với model thật | đã kiểm chứng: unit test tính nhất quán của bộ lệnh/agent/skill/cấu hình, chạy thử `init`. Sau khi cài nên chạy `claude plugin validate . --strict` và `claude plugin details technical-team` |
 | Vùng sở hữu là quy ước | không còn guard chặn trước; lead kiểm tra sau qua phiếu bàn giao và `git diff`. Cần chặn cứng → `permissions.deny` hoặc sandbox (mục 7.3) |
-| Live preview | cần driver của nền tảng có sẵn (Playwright, Maestro/Detox, emulator Android, Xvfb…); qa không tự cài mà dừng ở `cần quyết định`. Máy không chạy được nền tảng đó (iOS simulator cần macOS, app chỉ chạy trên Windows) thì qa preview phần chạy được và ghi rõ phần chưa preview. Subagent không dùng được preview pane của app Claude; bằng chứng là output của runner, screenshot/transcript trong `test-results/`, qa và designer xem ảnh bằng Read |
+| Live preview | cần driver của nền tảng có sẵn (Playwright, Maestro/Detox, emulator Android, Xvfb…); qa không tự cài mà dừng ở `needs decision`. Máy không chạy được nền tảng đó (iOS simulator cần macOS, app chỉ chạy trên Windows) thì qa preview phần chạy được và ghi rõ phần chưa preview. Subagent không dùng được preview pane của app Claude; bằng chứng là output của runner, screenshot/transcript trong `test-results/`, qa và designer xem ảnh bằng Read |
 | Chất lượng UI | designer chỉ đặc tả và quyết định; code UI vẫn do developer viết. Kết quả đẹp hay không phụ thuộc vào skill frontend bạn khai cho `team-developer` và thư viện UI của project |
 | Chưa kiểm chứng được | preload skill bằng tên có tiền tố (`technical-team:run-kit`) trên mọi phiên bản Claude Code |
 | Thử nhanh sau khi cài | `/technical-team:status`, rồi `/technical-team:run` với một việc nhỏ và xem lead gọi đúng `technical-team:team-<vai trò>` |

@@ -31,8 +31,8 @@ Find the app type from manifests and config (`package.json` deps, `app.json`/`ea
 
 | Before you start | If missing |
 |---|---|
-| Run command | `CLAUDE.md`, scripts, Makefile, compose, README, `.team/OPS_HANDOFF.md` → still missing: `vướng`, ask for the exact command |
-| Driver / runtime (browser runner, emulator/simulator, Xvfb, device driver) | **never install it yourself** (a dev dependency is the developer's change, an emulator or runtime the user's). `cần quyết định`: name what is needed (e.g. "`@playwright/test` dev dependency", "an Android emulator image `system-images;android-34;google_apis;x86_64`", "macOS host for the iOS simulator"). Until then report "live preview not run" — not a PASS |
+| Run command | `CLAUDE.md`, scripts, Makefile, compose, README, `.team/OPS_HANDOFF.md` → still missing: `blocked`, ask for the exact command |
+| Driver / runtime (browser runner, emulator/simulator, Xvfb, device driver) | **never install it yourself** (a dev dependency is the developer's change, an emulator or runtime the user's). `needs decision`: name what is needed (e.g. "`@playwright/test` dev dependency", "an Android emulator image `system-images;android-34;google_apis;x86_64`", "macOS host for the iOS simulator"). Until then report "live preview not run" — not a PASS |
 | Platform the environment cannot host (iOS simulator on Linux, Windows-only desktop app on Linux, a physical device) | preview what *can* run (Android for a cross-platform app, the web build of RN/Flutter) and say exactly what was **not** previewed; the lead puts it in the report as an open risk. A web build is supporting evidence for a mobile app, never a replacement |
 | Test data / accounts | seeds/fixtures (dba / qa), the project's test users, sandbox keys; an empty state is a case to check, not a reason to skip |
 | What to check | ACs in `.team/SPEC.md#W-NNN` (T1: bullets in `STATE.md`), screens in `.team/DESIGN.md#W-NNN`, changed entry points in `git diff --stat` |
@@ -85,7 +85,7 @@ Paste into the handoff (qa: next to the traceability table):
 
 ## 4. Known-bug catalogue
 
-`references/common-bugs.md` lists bugs that most often slip past green suites — cross-platform sections (build/env, data/contract, state, forms/input, navigation, layout, a11y, i18n/time, auth, performance) and platform sections (mobile, desktop, CLI, service). Each row: **symptom → how to catch it in the preview → usual cause**. Sweep the sections that match the product and the diff, list the IDs you checked. When a bug escapes to the user anyway, report the missing row in "Còn mở" so the plugin maintainer adds it.
+`references/common-bugs.md` lists bugs that most often slip past green suites — cross-platform sections (build/env, data/contract, state, forms/input, navigation, layout, a11y, i18n/time, auth, performance) and platform sections (mobile, desktop, CLI, service). Each row: **symptom → how to catch it in the preview → usual cause**. Sweep the sections that match the product and the diff, list the IDs you checked. When a bug escapes to the user anyway, report the missing row in "Open items" so the plugin maintainer adds it.
 
 ## 5. Rules
 

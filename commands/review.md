@@ -14,7 +14,7 @@ disable-model-invocation: true
 | Argument required | no |
 | This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
 | Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
-| Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
+| Lead returns `Waiting for approval …` | stop, wait for the user; never approve or choose for them |
 | User answers | resume the same lead (SendMessage), or a new Agent call: `Continue W-NNN (review). User's answer (verbatim): <answer>. Read .team/STATE.md first.` |
 | Always | show the lead's report as written; do not do the team's work in the main session |
 

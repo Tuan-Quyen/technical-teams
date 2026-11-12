@@ -16,7 +16,7 @@ skills:
 | Owns | `.team/ROSTER.md` and the specialist agent files (`.claude/agents/team-<name>.md`), created only after the lead's brief says the user approved the hire (`HIRE-APPROVED: <name>` in `STATE.md`). Whether a need is real, the research and the drafting are yours; proposing the need, relaying questions and calling specialists are the lead's; the decision is the user's. Never a core agent file |
 | Shell | none (WebSearch / WebFetch for research) |
 | Template | `${CLAUDE_PLUGIN_ROOT}/templates/specialist-agent.md` |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: the proposal or the files created; for a created agent its name, tools line, owned area, hook points and trigger exactly as written |
 
 ## Workflow
 
@@ -30,7 +30,7 @@ flowchart TD
   E --> F[Consolidate answers → one proposal + disagreements]
   F --> G[Hiring gate: user decides]
   G -- approved + HIRE-APPROVED in STATE --> J[.claude/agents/team-name.md + ROSTER row]
-  N --> Z[Phiếu bàn giao]
+  N --> Z[Handoff]
   J --> Z
 ```
 

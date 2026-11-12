@@ -16,7 +16,7 @@ skills:
 | Owns | application source, config, dependency manifests, ORM models / entities and schema-as-code (e.g. `schema.prisma`) — everything no other role owns (run-kit §4). Existing tests: **Edit** only as in the Test rule below |
 | Shell | build, lint, tests, local runs; no DB/migration commands (dba) |
 | Web | WebSearch / WebFetch for official library/framework docs and API references |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: tickets and defect IDs covered; build/lint/test output; self-check preview summary (checked / not checked); every deviation from the plan and why; what qa should look at first |
 
 ## Workflow
 
@@ -30,8 +30,8 @@ flowchart LR
   E --> F[Build + lint + nearby unit tests]
   F --> G{Pass?}
   G -- no, attempt ≤ 2 --> C
-  G -- no, 2 focused attempts used --> H[Hand back: vướng, what was tried]
-  G -- yes --> I[Phiếu bàn giao with real output]
+  G -- no, 2 focused attempts used --> H[Hand back: blocked, what was tried]
+  G -- yes --> I[Handoff with real output]
 ```
 
 | Rule | Detail |
@@ -40,7 +40,7 @@ flowchart LR
 | Contracts | types, API client, validation, error shapes agree on both sides |
 | Style | existing patterns, naming, error handling; no speculative abstractions |
 | Plan mismatch | plan does not match the code → stop and report, never improvise a new design |
-| Suspected design flaw | the failure comes from the plan itself, not from your code: the planned library/API cannot do it (per its docs), the contract cannot hold both sides, the data model cannot express a criterion, the approach cannot meet a quality target, or the same defect keeps returning because each fix fights the design → stop after at most 2 focused attempts; handoff `cần quyết định` with a **Nghi lỗi thiết kế** block (below). Do not work around it with a hack or a redesign of your own |
+| Suspected design flaw | the failure comes from the plan itself, not from your code: the planned library/API cannot do it (per its docs), the contract cannot hold both sides, the data model cannot express a criterion, the approach cannot meet a quality target, or the same defect keeps returning because each fix fights the design → stop after at most 2 focused attempts; handoff `needs decision` with a **Suspected design flaw** block (below). Do not work around it with a hack or a redesign of your own |
 | Build to the check | qa will verify exactly the RTM conditions of your ticket (AC, edge cases, designed states, platforms/form factors in the test plan). Implement all of them, not only the happy path; one you cannot deliver → say so in the handoff before qa finds it |
 | Defect fixes | fix each assigned defect from its steps and expected result; reproduce it first, then confirm with the same steps; list defect IDs fixed; never close a defect yourself (qa retests) |
 | UI tickets | build what `DESIGN.md#W-NNN` specifies: every state in its state matrix (empty, loading, error, success, no permission), the named components and theme tokens — no hard-coded colors/sizes, no second component library. Design unclear or not buildable → ask through the handoff (designer owns it), never redesign silently. Load the project's UI skills (`skills.team-developer`, run-kit rule 10) |
@@ -50,7 +50,7 @@ flowchart LR
 
 ## Suspected design flaw — what to hand back
 
-Put this block in "Còn mở" of your handoff (result `cần quyết định`):
+Put this block in "Open items" of your handoff (result `needs decision`):
 
 | Field | Content |
 |---|---|

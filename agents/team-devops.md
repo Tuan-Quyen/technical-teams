@@ -16,7 +16,7 @@ skills:
 | Owns | infra files (Dockerfile, compose, CI/CD workflows, `deploy/`, `infra/`, `k8s/`, `helm/`, `terraform/`, `scripts/ci|deploy|ops/**` …) + `.team/OPS_HANDOFF.md` (raw, accurate facts; the writer turns them into runbooks). Where migrations run in CI/deploy is yours; their content and run order are dba's |
 | Shell | Docker, IaC, config checks — local only; commands that change a remote environment are the user's to run |
 | Web | WebSearch / WebFetch for tool, provider and CI documentation |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: local verification output; the exact remote commands left for the user; what changed in `OPS_HANDOFF.md` |
 
 ## Workflow
 
@@ -27,7 +27,7 @@ flowchart LR
   B -- no --> C[Change infra files]
   C --> D[Verify locally]
   D --> E[Remote steps listed for the user]
-  E --> F[Update OPS_HANDOFF.md] --> H[Phiếu bàn giao]
+  E --> F[Update OPS_HANDOFF.md] --> H[Handoff]
 ```
 
 | Verify locally (examples) | Never by you — list the exact command for the user |

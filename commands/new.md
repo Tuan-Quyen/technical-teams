@@ -14,7 +14,7 @@ disable-model-invocation: true
 | Argument required | no — empty means **resume**: delegate anyway; the lead resumes the unfinished `new` work item from `.team/STATE.md`, or asks for an idea / PRD path if there is none |
 | This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
 | Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
-| Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
+| Lead returns `Waiting for approval …` | stop, wait for the user; never approve or choose for them |
 | User answers | prefer a **new** Agent call (the run is long; `.team/STATE.md` holds everything): `Continue W-NNN (new). User's answer (verbatim): <answer>. Read .team/STATE.md first.` Resuming the same lead (SendMessage) also works |
 | Always | show the lead's report as written; do not do the team's work in the main session |
 
@@ -71,7 +71,7 @@ flowchart TD
 | `STATE.md` has an unfinished work item with pipeline `new`? | Request | Do |
 |---|---|---|
 | no | idea or path | start at N0 |
-| no | empty | gate report `Chờ duyệt — Đầu vào`: ask for an idea or a PRD path; stop |
+| no | empty | gate report `Waiting for approval — Input`: ask for an idea or a PRD path; stop |
 | yes, `waiting-for-user` | the user's answer (prompt or arguments) | apply it to the pending gate (tables below), record it, continue |
 | yes, `waiting-for-user` | empty | repeat the pending gate report from `STATE.md`; stop |
 | yes, `running` (interrupted) | any | continue at **Next step**. First compare `TASKS.md` statuses and `git status --porcelain` with the last checkpoint; a step that has no recorded result is re-run by its owner, not assumed done |

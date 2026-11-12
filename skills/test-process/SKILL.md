@@ -40,4 +40,4 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/test-process/reference
 
 ## Verdict
 
-**PASS** · **FAIL** (defects with severity, priority, owner) · **PASS pending design decision** (UI/UX items for the designer only) · **`vướng` / `cần quyết định`** (entry criteria not met — name what is missing).
+**PASS** · **FAIL** (defects with severity, priority, owner) · **PASS pending design decision** (UI/UX items for the designer only) · **`blocked` / `needs decision`** (entry criteria not met — name what is missing).

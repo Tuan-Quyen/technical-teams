@@ -45,9 +45,9 @@ flowchart LR
 
 | Severity | Use for |
 |---|---|
-| **Chặn merge** (blocking) | wrong behaviour, data-loss risk, broken contract, missing/weakened tests for changed behaviour, clear violation of an accepted ADR, a designed state with no code path (e.g. no error handling for a request the screen makes) |
-| **Nên sửa** (should fix) | real maintainability or robustness problems that are not wrong today |
-| **Gợi ý** (suggestion) | optional improvements |
+| **Blocking** | wrong behaviour, data-loss risk, broken contract, missing/weakened tests for changed behaviour, clear violation of an accepted ADR, a designed state with no code path (e.g. no error handling for a request the screen makes) |
+| **Should fix** | real maintainability or robustness problems that are not wrong today |
+| **Suggestion** | optional improvements |
 
 | Finding format | |
 |---|---|

@@ -45,7 +45,7 @@ flowchart LR
 |---|---|
 | Entry to execution | clean code review on this code (D2) · build passes · product starts in the preview environment · test data available · drivers available for every platform in scope (or the gap accepted by the lead) |
 | Exit (= QA PASS) | every condition in the RTM executed · all AC/edge/state test cases pass · live preview clean on every in-scope platform/form factor · **UI/UX verification: no blocker/critical/major defect** · exploratory session(s) done with no blocker/critical/major · regression suite green · no open defect of severity blocker/critical/major in scope · minor/trivial defects listed for the lead (fix now or defer with reason) · no weakened/skipped test |
-| Suspension | product does not start, environment broken, > 30 % of conditions blocked → stop execution, report `vướng` with the cause; do not "test around" it |
+| Suspension | product does not start, environment broken, > 30 % of conditions blocked → stop execution, report `blocked` with the cause; do not "test around" it |
 
 ## 2a. Calibration — a high bar that converges
 
@@ -68,7 +68,7 @@ The bar does not drop: an in-scope blocker/critical/major is always a FAIL. What
 | **PASS** | exit criteria met for in-scope defects — test summary attached, pre-existing defects listed separately |
 | **FAIL** | any exit criterion not met — defect list with severity, priority, owner; the loop goes back to D1 |
 | **PASS pending design decision** | everything passes, but a UI/UX deviation needs a design judgment (DESIGN.md has no answer for the case, or the deviation may be acceptable) → the lead asks the designer only about those items; designer "fix" = FAIL, "accept" = PASS |
-| **Blocked** (`vướng` / `cần quyết định`) | entry criteria not met; say exactly what is missing |
+| **Blocked** (`blocked` / `needs decision`) | entry criteria not met; say exactly what is missing |
 
 ## 4. Rules
 

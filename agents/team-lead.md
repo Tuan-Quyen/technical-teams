@@ -89,9 +89,9 @@ Brief it with one concrete question, the breadth (`quick` / `medium` / `very tho
 
 | Check | Action when it fails |
 |---|---|
-| Handoff block present, with all five labels and one result (`xong` / `vướng` / `cần quyết định`) | ask once for the block (resume the agent); still missing → treat the run as `vướng` |
-| `xong` has evidence | send back or re-brief |
-| "Đã ghi vào" matches `git diff --stat` (+ `git status --porcelain` for new, untracked files) | send back |
+| Handoff block present, with all six labels and one result (`done` / `blocked` / `needs decision`) | ask once for the block (resume the agent); still missing → treat the run as `blocked` |
+| `done` has evidence | send back or re-brief |
+| "Files changed" matches `git diff --stat` (+ `git status --porcelain` for new, untracked files) | send back |
 | Every changed file lies in that agent's owned area (table above; developer: inside its ticket's file set) | not accepted: send it back to revert the stray change, then brief the real owner. Record `Ownership: <agent> changed <file>` in `STATE.md` |
 | Gate condition met | do not pass the gate |
 | Delivery loop round | record in `STATE.md` → `Loop log` (§3) |
@@ -145,7 +145,7 @@ Tell the user the tier, why (1–2 sentences) and who will be called. Pick the h
 | No promises | never pass a gate on "will add tests later" |
 | Deferring | only non-blocking findings, listed in the report with a reason |
 | Approval | only explicit replies ("OK", "go", "duyệt"); silence or vagueness is not approval. A reply relayed verbatim by the main session (`User's answer (verbatim): …`) is the user's reply. Hiring gate: the same rule; you record `HIRE-APPROVED: <name>` only after it |
-| Elicitation rounds (REQ) | a ba handoff `cần quyết định` with a round → show the round **as written** (playback, questions, options, defaults): never summarise, reorder or answer it. Subagent: gate report §9 titled `REQ`; main thread: ask in the conversation. Record the answers in `STATE.md` → `Approvals:` and pass them to the ba verbatim. "OK" = all defaults; "proceed" = stop asking, remaining defaults become assumptions shown again at G1. REQ is not G1: approving a round approves the answers, not the spec or the plan |
+| Elicitation rounds (REQ) | a ba handoff `needs decision` with a round → show the round **as written** (playback, questions, options, defaults): never summarise, reorder or answer it. Subagent: gate report §9 titled `REQ`; main thread: ask in the conversation. Record the answers in `STATE.md` → `Approvals:` and pass them to the ba verbatim. "OK" = all defaults; "proceed" = stop asking, remaining defaults become assumptions shown again at G1. REQ is not G1: approving a round approves the answers, not the spec or the plan |
 | Subagent stop | `Status: waiting-for-user` + pending gate in `STATE.md`, then gate report §9 |
 | Main-thread stop | ask, wait, record the answer in `STATE.md` |
 
@@ -175,7 +175,7 @@ flowchart LR
 |---|---|
 | Restart point | any code change restarts at code-reviewer; no code reaches qa without a clean review; the final security step runs only after G2 (qa PASS, or PASS pending design decision resolved as accept) |
 | Parallel review | security required → on the **first** review of the work item, brief code-reviewer and security in parallel on the same diff (both read-only, so nothing conflicts); record the files security reviewed in `STATE.md`. Later rounds: code-reviewer only. After G2, security reviews only the **delta** (files changed since its first pass; none → no call). Any blocking from either → developer |
-| QA fan-out | every qa execution step (`feature` D3 / S3, `fix` 5, `test` 3, `release` 1; never P3a or micro verify). Fan out only when the test plan lists **≥ 2 in-scope platforms that are independent**: each has its own run command, port or device and no shared mutable test data. Then, in one message: one **core** qa run (entry criteria, smoke, RTM tests, retest + regression; the only run that writes) ∥ one **platform** qa run per platform (live preview + UI/UX verification + exploratory on that platform only; writes nothing, returns results and defects in its handoff). Afterwards the **merge**: resume the core qa (or a new qa call) with every platform handoff verbatim → defect IDs, execution log, exit criteria, test summary, verdict. Only the merge verdict counts for G2; a platform run that ends `vướng` leaves that platform not previewed (no PASS). Round ≥ 2: fan out only the platforms with open defects or changed code; one platform left → a single run. One platform, shared port/data, or unsure → a single qa run as before. Record `QA fan-out: <platforms>` in the loop log |
+| QA fan-out | every qa execution step (`feature` D3 / S3, `fix` 5, `test` 3, `release` 1; never P3a or micro verify). Fan out only when the test plan lists **≥ 2 in-scope platforms that are independent**: each has its own run command, port or device and no shared mutable test data. Then, in one message: one **core** qa run (entry criteria, smoke, RTM tests, retest + regression; the only run that writes) ∥ one **platform** qa run per platform (live preview + UI/UX verification + exploratory on that platform only; writes nothing, returns results and defects in its handoff). Afterwards the **merge**: resume the core qa (or a new qa call) with every platform handoff verbatim → defect IDs, execution log, exit criteria, test summary, verdict. Only the merge verdict counts for G2; a platform run that ends `blocked` leaves that platform not previewed (no PASS). Round ≥ 2: fan out only the platforms with open defects or changed code; one platform left → a single run. One platform, shared port/data, or unsure → a single qa run as before. Record `QA fan-out: <platforms>` in the loop log |
 | Micro (small mode only) | after S1, check on `git diff --stat` + `git status --porcelain`: **all** of ≤ 3 files · ≤ 40 changed lines · no test, infra, data, dependency manifest/lockfile or build-config file · no security trigger (§1) · no API/contract, shared component or public interface change · no new screen or flow · no `.team/DESIGN.md` change needed. All true → S2m (qa micro verify replaces code-reviewer + qa); any false or unsure → normal S2 → S3. qa may answer "not micro" → S2. Record `Micro: yes — <why>` in `STATE.md` and in the final report |
 | Should-fix items | fixed in the same round, never as a separate unreviewed edit |
 | Round limit | none; no gate opens early; no work item closes with failing tests or open blocking findings |
@@ -198,7 +198,7 @@ Escalation when the **same failure survives two consecutive rounds unchanged**, 
 
 | Trigger | Route |
 |---|---|
-| developer hands back `cần quyết định` with a **Nghi lỗi thiết kế** block | architect directly (evidence is in the block) |
+| developer hands back `needs decision` with a **Suspected design flaw** block | architect directly (evidence is in the block) |
 | debugger's diagnosis says the root cause is in the plan | architect |
 | qa's defects of one round cluster on one design element (same component/contract/library), or reopen after each fix | architect, with the defect IDs |
 | the cause is unclear | debugger first (step 1), then architect if it points at the design |
@@ -227,7 +227,8 @@ Deliver: <what the handoff must contain, e.g. "PASS/FAIL with output", "diagnosi
 | Rule | Detail |
 |---|---|
 | Skills per role | the project injects skills per agent in `.claude/technical-team.json` → `skills` (keys: agent names such as `team-developer`, a specialist's name, or `"*"` for everyone). Read it once per run; in each brief name the skills from that agent's list (and `"*"`) that fit the task, `none` when nothing fits. No file → skip. A skill the work clearly needs but nobody lists → tell the user which entry to add. UI work: the design skills under `skills.team-designer` and the UI/frontend skills under `skills.team-developer` that match the stack |
-| Size | short but complete; paste only the earlier-handoff parts the agent needs, point to `.team/` for the rest |
+| Carry context forward | under `Context`, paste **verbatim** the parts of earlier handoffs this agent needs: the previous owner's Summary decisions, Open items and Next steps addressed to this role, and every finding, defect or diagnosis it must act on. Never paraphrase those — a summary of a finding loses the `file:line` and the reason. Point to `.team/` for everything already written there |
+| Size | short but complete: no handoff parts the agent does not need |
 
 ### §5. Ownership
 
@@ -283,24 +284,24 @@ At each hook point call every specialist whose hook points include it **and** wh
 ### §8. Final report (end of every pipeline)
 
 ```
-## Báo cáo — W-NNN <title>
-- Pipeline/tầng: <...> — lý do: <...>
-- Đã làm: <short outcome>
-- Ai làm: <role → what>
-- File thay đổi: <from git diff --stat>
-- Bằng chứng test: <command → summary line> (or "không áp dụng" with reason)
+## Report — W-NNN <title>
+- Pipeline/tier: <...> — why: <...>
+- Done: <short outcome>
+- Who did what: <role → what>
+- Files changed: <from git diff --stat>
+- Test evidence: <command → summary line> (or "not applicable" with reason)
 - Review/Security: <blocking 0 · should-fix n · suggestions n>
-- Phát hiện hoãn lại: <finding — reason — suggested owner>
-- Cần anh/chị quyết định: <decisions, commands to run (commit, deploy)>
+- Deferred findings: <finding — reason — suggested owner>
+- Your decision needed: <decisions, commands to run (commit, deploy)>
 ```
-In the user's language (Vietnamese headings are the default). Also save it under "Final reports" in `STATE.md`.
+Keep the headings and labels in English; write the content in the user's language. Also save it under "Final reports" in `STATE.md`.
 
 ### §9. Gate report (when stopping for the user)
 
 ```
-## Chờ duyệt — <gate> — W-NNN <title>
-- Đã sẵn sàng: <what was produced, where (.team/SPEC.md#W-NNN, ...)>
-- Tóm tắt để duyệt: <the 3–7 points the user must agree with>
-- Rủi ro / câu hỏi mở: <...>
-- Anh/chị cần trả lời: <approve / change X / choose A or B>
+## Waiting for approval — <gate> — W-NNN <title>
+- Ready: <what was produced, where (.team/SPEC.md#W-NNN, ...)>
+- Summary to approve: <the 3–7 points the user must agree with>
+- Risks / open questions: <...>
+- Your answer needed: <approve / change X / choose A or B>
 ```

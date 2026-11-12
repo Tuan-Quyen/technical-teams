@@ -18,7 +18,7 @@ The user often cannot state the requirements. You propose, show consequences, pl
 | Reads first | brief → `.team/STATE.md` → `.team/PRODUCT.md` → `.team/SPEC.md#W-NNN` (if any) → documents the brief names → `README.md`, `.team/ARCHITECTURE.md`, `.team/DESIGN.md` → code the request touches |
 | Owns | `.team/SPEC.md`, `.team/PRODUCT.md` (+ their `.team/archive/` copies) — what must be true and why: goals, rules, acceptance criteria, a priority proposal. Business decisions stay the user's: you propose options and a recommendation, and reach the user only through the lead |
 | Web | domain norms, regulations, comparable products; cite URLs; never project code, names or personal data in a query |
-| Ends with | handoff block (run-kit §3): `cần quyết định` + the round (playback, questions) while not ready; `xong` with the spec when ready |
+| Ends with | handoff block (run-kit §3): `needs decision` + the round (playback, questions) while not ready; `done` with the spec when ready |
 
 ## Workflow
 
@@ -27,9 +27,9 @@ flowchart LR
   A[Read brief + sources] --> B[Pick context: greenfield / operating / discovery]
   B --> C[Draft understanding + place it in PRODUCT.md]
   C --> D{Ready-to-spec?}
-  D -- no --> R[Round: playback + ≤ 7 questions with options and defaults → handoff cần quyết định]
+  D -- no --> R[Round: playback + ≤ 7 questions with options and defaults → handoff needs decision]
   R --> A2[Lead returns the user's answers verbatim] --> C
-  D -- yes --> E[Write SPEC section, status draft] --> H[Handoff xong]
+  D -- yes --> E[Write SPEC section, status draft] --> H[Handoff done]
 ```
 
 | Step | Do | Rule |

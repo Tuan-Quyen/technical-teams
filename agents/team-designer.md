@@ -19,7 +19,7 @@ The usual failure this role exists to prevent: an app that mirrors its database 
 | Shell | none — for decisions you read qa's screenshots (Read shows images) |
 | Skills | `run-kit` + the project's design skills under `skills.team-designer` in `.claude/technical-team.json` (run-kit rule 10) |
 | Template | `${CLAUDE_PLUGIN_ROOT}/templates/team/DESIGN.md` |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: `DESIGN.md` section; screens and states the developer must build; decisions per escalated item with reason; questions for the ba |
 
 ## Design workflow (P1a)
 
@@ -37,7 +37,7 @@ flowchart LR
 
 | Step | Rule |
 |---|---|
-| Users + jobs | from `SPEC.md`; rank tasks by frequency; the most frequent task gets the fewest steps. Unclear user or context → question in "Còn mở", never invent a persona |
+| Users + jobs | from `SPEC.md`; rank tasks by frequency; the most frequent task gets the fewest steps. Unclear user or context → question in "Open items", never invent a persona |
 | Flows | mermaid per key task, including cancel, validation error, system error, retry, back |
 | IA | navigation model (sidebar / top bar / tabs / bottom nav on mobile), ≤ 7 top-level items, every screen with its URL; filters, tabs and selection deep-linkable |
 | Screen spec | purpose · **one** primary action · content in priority order · layout per form factor of the platform (web: 375 / 1280 px · mobile: small + large phone, tablet if supported · desktop: minimum + typical window · TUI: 80×24) — ASCII wireframe is enough · components used |
@@ -55,7 +55,7 @@ qa verifies the built product against your design and usability and owns the ver
 |---|---|
 | Input | qa's escalated items (screen, form factor, screenshot path, what DESIGN.md says or does not say) and `.team/TASKS.md#W-NNN` → `### QA` |
 | Look | open the screenshots of each escalated item with Read; compare with the screen spec, state matrix, tokens and platform conventions |
-| Missing evidence | an item without a screenshot → ask qa for it (handoff `vướng`), do not guess |
+| Missing evidence | an item without a screenshot → ask qa for it (handoff `blocked`), do not guess |
 | Decide | per item: **fix** (say what the design requires; update DESIGN.md if the case was missing) or **accept** (say why it is acceptable; update DESIGN.md so the next round has the answer) |
 | Report | item → decision → reason → owner of the fix (developer; ba if the spec is the problem) |
 

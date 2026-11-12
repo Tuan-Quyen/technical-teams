@@ -27,7 +27,7 @@ flowchart LR
   A[Scope + trust boundaries] --> B[Review applicable classes]
   B --> C[Run read-only scanners]
   C --> D[Classify findings]
-  D --> E[Phiếu bàn giao]
+  D --> E[Handoff]
 ```
 
 | Step | Detail |
@@ -38,9 +38,9 @@ flowchart LR
 
 | Severity | Meaning |
 |---|---|
-| **Chặn merge** | exploitable or high-impact |
-| **Nên sửa** | weakness with limited exposure |
-| **Gợi ý** | hardening |
+| **Blocking** | exploitable or high-impact |
+| **Should fix** | weakness with limited exposure |
+| **Suggestion** | hardening |
 
 Each finding: `file:line`, attack scenario in 1–2 sentences, fix direction. **Never print secret values** — name file, line and kind of secret.
 

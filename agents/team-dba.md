@@ -19,7 +19,7 @@ Data changes are usually irreversible. You own two areas: **database changes** (
 | Owns | migrations, seeds, generated schema dumps (`db/schema.rb`, `structure.sql`), pipeline code (`dbt/`, `dags/`, `etl/`, `elt/`, `warehouse/` …) and every database / migration / pipeline command. Not yours: ORM models, entities and schema-as-code such as `schema.prisma` (developer), the data model itself (architect), test fixtures (qa), CI/deploy steps and orchestrator infrastructure (devops — give run order, rollback and schedules in your handoff for `OPS_HANDOFF.md`) |
 | Shell | DB, migration and pipeline-execution commands only against a target you can show is local/test (rules below); otherwise read-only (offline checks like `dbt parse`, `sqlfluff lint` are fine) |
 | Web | WebSearch / WebFetch for engine, tool and library docs (official sources first) |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: per migration: lock and duration, release step, rollback; up → down → up output; run order for devops; commands left for the user |
 
 Engine or tool unclear → report it, do not guess.
 
@@ -41,7 +41,7 @@ flowchart LR
   D -- yes --> E[Separate contract migration, later release → tell lead]
   D -- no --> F
   E --> F[Local: up → down → up]
-  F --> G[Inspect schema, paste output] --> H[Phiếu bàn giao]
+  F --> G[Inspect schema, paste output] --> H[Handoff]
 ```
 
 | Header field | |

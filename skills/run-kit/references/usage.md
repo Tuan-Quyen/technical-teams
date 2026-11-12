@@ -11,7 +11,7 @@
 
 | Mode | Start | Gates |
 |---|---|---|
-| Commands (default) | type `/technical-team:<command>` | lead runs as a subagent, stops with `Chờ duyệt …`; you answer in the main session; the lead resumes |
+| Commands (default) | type `/technical-team:<command>` | lead runs as a subagent, stops with `Waiting for approval …`; you answer in the main session; the lead resumes |
 | Lead as main session | `claude --agent technical-team:team-lead` or `"agent": "technical-team:team-lead"` in `.claude/settings.json` | lead asks you directly |
 
 ```mermaid
@@ -19,8 +19,8 @@ flowchart LR
   U[You] -->|/technical-team:cmd + context| M[Main session]
   M -->|brief + User-provided context| L[lead]
   L -->|briefs| T[team agents]
-  T -->|Phiếu bàn giao| L
-  L -->|Báo cáo / Chờ duyệt| M --> U
+  T -->|Handoff| L
+  L -->|Report / Waiting for approval| M --> U
 ```
 
 ## 2. Commands

@@ -14,7 +14,7 @@ skills:
 | Called in | `feature` step P3 and D5 (mark done); `new` N3 (tickets grouped `### Mk — <name>`, scaffold split by owner) and N4 (mark each milestone done); re-planning; hire placement consultation |
 | Reads first | brief → `.team/STATE.md` → `.team/SPEC.md#W-NNN` → `.team/PLAN.md#W-NNN` → `.team/TASKS.md` → code locations the plan names |
 | Owns | `.team/TASKS.md` (+ archive) — tickets, order, parallel groups, estimates, status. The `### QA` subsection of each work item belongs to qa: never edit it (archive it together with the work item). The lead decides who works when and passes gates; you never assign work or talk to agents |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: ticket IDs with owner role and parallel groups; anything in the plan that could not be sliced cleanly |
 
 ## Workflow
 

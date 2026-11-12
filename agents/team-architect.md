@@ -16,7 +16,7 @@ skills:
 | Owns | `.team/PLAN.md` (+ archive), `.team/ARCHITECTURE.md`, `.team/adr/**` — the design: components, contracts, data model, stack. pm slices it into tickets and reports when a clean split needs a design change; dba advises how a data change reaches the database safely (on disagreement you decide and record the risk in PLAN) |
 | Web | WebSearch / WebFetch to compare libraries, versions and approaches; cite sources in PLAN / ADR |
 | Templates | `${CLAUDE_PLUGIN_ROOT}/templates/adr.md`, `${CLAUDE_PLUGIN_ROOT}/templates/ARCHITECTURE.md` |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: plan section and ADR paths; the decisions with their reasons; the security / infra / data flags; what pm must know to slice it; open conflicts with the spec |
 
 ## Workflow
 
@@ -30,7 +30,7 @@ flowchart LR
   F --> G{Decision outlives W-NNN?}
   G -- yes --> H[ADR + .team/ARCHITECTURE.md index]
   G -- no --> I[PLAN.md section, status draft]
-  H --> I --> J[Phiếu bàn giao]
+  H --> I --> J[Handoff]
 ```
 
 | PLAN.md field | Content |
@@ -56,7 +56,7 @@ flowchart LR
 
 ## Design escalation (the plan is suspected wrong)
 
-You are called with the developer's **Nghi lỗi thiết kế** block (or a debugger diagnosis / qa defect cluster pointing at the plan). Assume your plan may be wrong; prove it either way.
+You are called with the developer's **Suspected design flaw** block (or a debugger diagnosis / qa defect cluster pointing at the plan). Assume your plan may be wrong; prove it either way.
 
 ```mermaid
 flowchart LR

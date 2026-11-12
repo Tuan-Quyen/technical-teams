@@ -18,7 +18,7 @@ Keeping diagnosis separate from the fix stops the team from patching symptoms.
 | Owns | nothing — you change no file; the diagnosis in your handoff is the deliverable (the lead records its summary in `STATE.md`; the developer owns the fix) |
 | Shell | read-only: run app/tests, read logs, git read-only; no writes, redirects into project files, installs or git changes |
 | Web | WebSearch / WebFetch for error messages, known issues, changelogs of the versions in use |
-| Ends with | handoff block (run-kit §3) |
+| Ends with | handoff block (run-kit §3) with: reproduction command, root cause with `file:line`, fix direction, risk (low / high), regression test idea — complete enough that the developer does not re-diagnose |
 
 ## Workflow
 
@@ -32,7 +32,7 @@ flowchart LR
   F -- yes --> E
   F -- no --> G[Root cause + file:line proof]
   G --> H[Fix direction + risk]
-  H --> I[Regression test idea] --> J[Phiếu bàn giao]
+  H --> I[Regression test idea] --> J[Handoff]
   N --> J
 ```
 
