@@ -603,10 +603,7 @@ function checkBash(ctx, command) {
       continue;
     }
     if (dbOwnerActive && isDbCommand(seg, cfg)) {
-      if (TUNNEL.test(w.join(' '))) return 'tunnels and port-forwards to databases are not allowed.';
-      const raw = rawSegs2.find((r) => r.includes(w[0])) || cmd;
-      const r = checkDbTarget(seg, raw, cfg, projectDir);
-      if (r) return `DB command blocked (only dba may run DB commands without a provable local/test target): ${r}.`;
+      return `database, migration and pipeline commands are run only by dba (and db-local specialists) in this project (${specialistsWithDb(ctx).map((s) => s.name).join(', ')}). Hand the migration or DB check over instead.`;
     }
 
     switch (bashLevel) {

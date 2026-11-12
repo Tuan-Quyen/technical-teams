@@ -363,13 +363,12 @@ test('dba: env file target', () => {
   assert.ok(bash(d, 'technical-team:dba', 'npx prisma migrate dev --name x'));
 });
 
-test('other roles run DB/migration commands only against a provable local/test target', () => {
+test('other roles cannot run DB/migration commands (dba owns them)', () => {
   const d = project();
-  assert.ok(bash(d, 'technical-team:developer', 'npx prisma migrate dev --name x'), 'target not visible');
-  assert.equal(bash(d, 'technical-team:developer', 'DATABASE_URL=postgres://u@localhost/app_test npx prisma migrate dev'), null);
-  assert.ok(bash(d, 'technical-team:developer', 'DATABASE_URL=postgres://u@db.prod.x/app npx prisma migrate deploy'));
-  assert.equal(bash(d, 'technical-team:qa', 'psql -h localhost -d app_test -c "explain select 1"'), null, 'provably local target is fine for any role');
-  assert.ok(bash(d, 'technical-team:qa', 'psql -h db.prod.example.com -d app -c "select 1"'));
+  assert.ok(bash(d, 'technical-team:developer', 'npx prisma migrate dev --name x'));
+  assert.ok(bash(d, 'technical-team:developer', 'python manage.py makemigrations'));
+  assert.ok(bash(d, 'technical-team:developer', 'DATABASE_URL=postgres://u@localhost/app_test npx prisma migrate dev'), 'even a local target: dba only');
+  assert.ok(bash(d, 'technical-team:qa', 'psql -h localhost -d app_test -c "select 1"'));
   assert.equal(bash(d, 'technical-team:developer', 'npx prisma generate'), null);
   assert.equal(bash(d, 'technical-team:developer', 'npm test'), null);
 });
