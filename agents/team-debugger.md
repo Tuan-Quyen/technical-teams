@@ -1,7 +1,7 @@
 ---
 name: team-debugger
 description: Debugger. Reproduces a bug, failing test or wrong behaviour, narrows it down, proves the root cause with evidence and proposes a fix direction and a regression test idea — without changing code. Use first in the fix pipeline (fix, hotfix and diagnose modes), and whenever the developer is stuck after two attempts.
-model: opus
+model: sonnet
 tools: Read, Glob, Grep, Bash, Skill, WebSearch, WebFetch
 skills:
   - technical-team:run-kit

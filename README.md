@@ -112,16 +112,16 @@ Mọi agent của team có tiền tố `team-`; tên đầy đủ khi gọi là 
 |---|---|---|---|---|
 | — | `team-lead` | `inherit` (theo session) | người duy nhất phân việc: xếp tầng, chạy pipeline, giữ cổng, kiểm tra phiếu bàn giao, báo cáo | `.team/STATE.md` |
 | **Discovery** (nối tiếp, bước sau đọc file của bước trước) | `team-ba` | sonnet | dẫn dắt người dùng chưa rõ yêu cầu: hỏi theo vòng (lý do, phương án kèm hệ quả, đề xuất mặc định), diễn lại cách hiểu bằng kịch bản cụ thể; bức tranh tổng thể của sản phẩm; spec với acceptance criteria kiểm chứng được; `--discover` để xếp hạng nên làm gì tiếp | `.team/SPEC.md`, `.team/PRODUCT.md` |
-| | `team-designer` | opus | user flow, màn hình, đủ trạng thái (rỗng/đang tải/lỗi/không có quyền), design system, microcopy; quyết định các điểm UI/UX mà qa chuyển lên | `.team/DESIGN.md` |
+| | `team-designer` | sonnet | user flow, màn hình, đủ trạng thái (rỗng/đang tải/lỗi/không có quyền), design system, microcopy; quyết định các điểm UI/UX mà qa chuyển lên | `.team/DESIGN.md` |
 | | `team-architect` | opus | thiết kế kỹ thuật, plan triển khai, ADR | `.team/PLAN.md`, `.team/ARCHITECTURE.md`, `.team/adr/` |
 | | `team-pm` | sonnet | ticket, ước lượng, phụ thuộc, tập file độc quyền, trạng thái | ticket trong `.team/TASKS.md` |
 | **Build** (song song theo ticket, tập file không giao nhau) | `team-developer` ×N | sonnet | viết/sửa code theo plan, giữ hợp đồng backend–frontend khớp nhau | source, config, manifest dependency, model ORM, schema-as-code: mọi thứ không thuộc ai khác; test cũ chỉ **Edit** khi hành vi được chủ đích thay đổi |
 | | `team-devops` | sonnet | CI/CD, Docker, deploy, hạ tầng | file hạ tầng (Dockerfile, compose, CI/CD, manifest deploy, IaC, script ops), `.team/OPS_HANDOFF.md` |
 | | `team-dba` | opus | migration không downtime, review schema/query, pipeline ETL/ELT/dbt/DAG/warehouse | migration, seed, schema dump, code pipeline, mọi lệnh DB/migrate/pipeline (chỉ trên đích local/test) |
 | **Verify** (tỏa nhánh: reviewer cùng đọc một diff; qa chia theo nền tảng) | `team-code-reviewer` | sonnet | review **code** (diff), không review project; phân mức chặn merge / nên sửa / gợi ý | không ghi gì (kết quả là danh sách phát hiện) |
-| | `team-security` | opus | audit code, dependency, secrets, phân quyền, cấu hình | không ghi gì |
+| | `team-security` | sonnet | audit code, dependency, secrets, phân quyền, cấu hình | không ghi gì |
 | | `team-qa` | sonnet | người giữ cổng chất lượng: test plan + review tĩnh trước khi code (P3a), test tự động, **live preview** trên sản phẩm đang chạy, **xác minh UI/UX**, exploratory, báo lỗi có severity/priority, retest + regression, kết luận PASS/FAIL | test mới, fixture, dữ liệu test; section `### QA` của từng work item trong `.team/TASKS.md` |
-| **Support** (gọi khi cần) | `team-debugger` | opus | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa | không ghi gì (developer sửa theo chẩn đoán) |
+| **Support** (gọi khi cần) | `team-debugger` | sonnet | tái hiện, chứng minh nguyên nhân gốc, đề xuất hướng sửa | không ghi gì (developer sửa theo chẩn đoán) |
 | | `team-writer` | sonnet | README, API docs, CHANGELOG, runbook, hướng dẫn | `README.md`, `CHANGELOG.md`, `.team/docs/` |
 | | `team-hr` | opus | tuyển specialist khi thiếu chuyên môn domain | `.team/ROSTER.md`, file agent của specialist |
 
