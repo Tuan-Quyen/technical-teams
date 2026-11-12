@@ -28,7 +28,7 @@ Read .team/STATE.md first.
 
 _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
 
-Modes: no flag → **recruit** (hiring gate). `--roster` → **roster** review (retirement gate only if proposed).
+Modes: no flag → **recruit** (hiring gate). `--roster` (or "xem danh bạ", "rà soát specialist") → **roster** review (retirement gate only if proposed).
 
 Where a hire goes: in the technical-team plugin repo → `agents/<name>.md` + `config/agents.json` (plugin specialist, active after `/reload-plugins`). In any other project → `.claude/agents/<name>.md` + a `.team/ROSTER.md` row, valid only with `HIRE-APPROVED: <name>` in `STATE.md`.
 

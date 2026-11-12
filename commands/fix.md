@@ -30,10 +30,10 @@ _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 deli
 ### Mode
 
 - No flag → **fix** (TB): G1 only for a high-risk direction, then G2–G4; security if triggered.
-- `--hotfix` → **hotfix**: minimal fix, security always, CHANGELOG + short note only. Faster through fewer people and shorter docs, never by skipping tests or review.
-- `--diagnose` → **diagnose**: root cause only, no code.
+- `--hotfix` (or "gấp", "production", "urgent") → **hotfix**: minimal fix, security always, CHANGELOG + short note only. Faster through fewer people and shorter docs, never by skipping tests or review.
+- `--diagnose` (or "chỉ chẩn đoán", "investigate") → **diagnose**: root cause only, no code; stop after step 1.
 
-Record the mode in `STATE.md`. A diagnosed item continues at step 2 when the user asks.
+The same intent in words selects the mode as the flag does. Record the mode in `STATE.md`. A diagnosed item continues at step 2 when the user asks.
 
 ### Steps
 

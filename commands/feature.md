@@ -31,11 +31,11 @@ Other pipelines reuse the steps below by ID; keep the IDs stable.
 ### Mode
 
 - No flag → **full** (T2): Planning P0–P5, then Delivery D1–D5. Gates G1–G4, security always.
-- `--plan` → **plan-only**: Planning P0–P5, then stop after G1. No code.
-- `--small` → **small** (T1): steps S0–S5. Gates G2–G4, security only if triggered.
-- `--discover` → **discover**: steps V0–V3, then the user picks. No code.
+- `--plan` (or "chỉ lên kế hoạch", "plan only") → **plan-only**: Planning P0–P5, then stop after G1. No code.
+- `--small` (or "thay đổi nhỏ") → **small** (T1): steps S0–S5. Gates G2–G4, security only if triggered.
+- `--discover` (or "nên làm gì tiếp", "chưa rõ cần gì", "what should we build") → **discover**: steps V0–V3, then the user picks. No code.
 
-Record the mode in `STATE.md`. The user may switch mode at any time with the same W-NNN. A plan-only item resumes at D1 when the user says to build it.
+The same intent in words selects the mode as the flag does. Record the mode in `STATE.md`. The user may switch mode at any time with the same W-NNN. A plan-only item resumes at D1 when the user says to build it.
 
 ### Planning
 

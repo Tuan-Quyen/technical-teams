@@ -29,7 +29,7 @@ _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 deli
 
 Read-only in both modes.
 - No flag → **diff**: code-reviewer ∥ security ∥ review specialists / dba on a diff; G3 verdict only. Scope as given (range, paths, branch); none → working tree vs `HEAD`, empty → `HEAD~1..HEAD`.
-- `--audit` → **audit**: security ∥ specialists / dba over the given scope (default whole repo); no gate.
+- `--audit` (or "audit bảo mật") → **audit**: security ∥ specialists / dba over the given scope (default whole repo); no gate.
 
 1. (lead) Open W-NNN, pipeline `review (<mode>)`, resolve the scope (`git diff --stat`).
 2. (reviewers in parallel) Diff: review the scope. Audit: trust boundaries, vulnerability classes, dependency audit, secret scan, config/IaC; large repo → list covered and skipped.

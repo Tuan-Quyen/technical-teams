@@ -27,7 +27,7 @@ Read .team/STATE.md first.
 
 _Run by the tech lead with the Lead manual rules (§1 tiers, §2 gates, §3 delivery loop, §4 brief, §7 specialists, §8–§9 reports)._
 
-Modes: no flag → **sync** (writer, G4). `--adr <decision>` → **adr** (architect, no gate).
+Modes: no flag → **sync** (writer, G4). `--adr <decision>` (or "ghi ADR", "record decision") → **adr** (architect, no gate).
 
 ### Sync
 
