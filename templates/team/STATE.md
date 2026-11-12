@@ -1,6 +1,6 @@
 # Team state
 
-> Owner: **lead** (only the tech lead writes this file; everyone reads it).
+> Owner: **team-lead** (only the tech lead writes this file; everyone reads it).
 > Summaries and conclusions only. No logs, secrets, tokens or real user data.
 > Finished work items move to `.team/archive/STATE-<YYYY-MM>.md`.
 

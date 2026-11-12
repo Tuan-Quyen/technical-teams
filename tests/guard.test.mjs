@@ -54,39 +54,39 @@ test('other plugins and built-in agents pass through', () => {
 
 test('each .team file has its writers (TASKS.md: pm + qa for its QA subsection)', () => {
   const d = project();
-  const owners = { 'STATE.md': 'lead', 'SPEC.md': 'ba', 'PRODUCT.md': 'ba', 'DESIGN.md': 'designer', 'PLAN.md': 'architect', 'TASKS.md': ['pm', 'qa'], 'OPS_HANDOFF.md': 'devops', 'ROSTER.md': 'hr' };
+  const owners = { 'STATE.md': 'team-lead', 'SPEC.md': 'team-ba', 'PRODUCT.md': 'team-ba', 'DESIGN.md': 'team-designer', 'PLAN.md': 'team-architect', 'TASKS.md': ['team-pm', 'team-qa'], 'OPS_HANDOFF.md': 'team-devops', 'ROSTER.md': 'team-hr' };
   for (const [file, owner] of Object.entries(owners)) {
-    for (const role of ['lead', 'ba', 'designer', 'architect', 'pm', 'developer', 'qa', 'devops', 'writer', 'hr']) {
+    for (const role of ['team-lead', 'team-ba', 'team-designer', 'team-architect', 'team-pm', 'team-developer', 'team-qa', 'team-devops', 'team-writer', 'team-hr']) {
       const r = write(d, `technical-team:${role}`, `.team/${file}`);
       if ([].concat(owner).includes(role)) assert.equal(r, null, `${role} should write ${file}`);
       else assert.ok(r, `${role} must not write ${file}`);
     }
   }
-  assert.equal(write(d, 'technical-team:ba', '.team/archive/SPEC-2026-11.md'), null);
-  assert.ok(write(d, 'technical-team:ba', '.team/notes.md'));
-  assert.equal(call(d, 'technical-team:ba', 'Skill', { skill: 'technical-team:business-analysis' }), null, 'ba loads its plugin skill');
-  assert.ok(call(d, 'technical-team:developer', 'Skill', { skill: 'technical-team:business-analysis' }), 'business-analysis is the ba\'s');
+  assert.equal(write(d, 'technical-team:team-ba', '.team/archive/SPEC-2026-11.md'), null);
+  assert.ok(write(d, 'technical-team:team-ba', '.team/notes.md'));
+  assert.equal(call(d, 'technical-team:team-ba', 'Skill', { skill: 'technical-team:business-analysis' }), null, 'ba loads its plugin skill');
+  assert.ok(call(d, 'technical-team:team-developer', 'Skill', { skill: 'technical-team:business-analysis' }), 'business-analysis is the ba\'s');
 });
 
 test('architect owns .team/ARCHITECTURE.md and .team/adr, writer owns .team/docs, README, CHANGELOG', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:architect', '.team/ARCHITECTURE.md'), null);
-  assert.equal(write(d, 'technical-team:architect', '.team/adr/0001-use-postgres.md'), null);
-  assert.ok(write(d, 'technical-team:writer', '.team/adr/0002-x.md'));
-  assert.ok(write(d, 'technical-team:writer', '.team/ARCHITECTURE.md'));
-  assert.equal(write(d, 'technical-team:writer', '.team/docs/runbook/deploy.md'), null);
-  assert.ok(write(d, 'technical-team:architect', '.team/docs/x.md'));
-  assert.equal(write(d, 'technical-team:writer', 'README.md'), null);
-  assert.equal(write(d, 'technical-team:writer', 'CHANGELOG.md'), null);
-  assert.equal(write(d, 'technical-team:writer', 'packages/a/CHANGELOG.md'), null);
-  assert.ok(write(d, 'technical-team:writer', '.team/CHANGELOG.md'), 'CHANGELOG stays outside .team/');
-  assert.ok(write(d, 'technical-team:writer', 'src/index.ts'));
+  assert.equal(write(d, 'technical-team:team-architect', '.team/ARCHITECTURE.md'), null);
+  assert.equal(write(d, 'technical-team:team-architect', '.team/adr/0001-use-postgres.md'), null);
+  assert.ok(write(d, 'technical-team:team-writer', '.team/adr/0002-x.md'));
+  assert.ok(write(d, 'technical-team:team-writer', '.team/ARCHITECTURE.md'));
+  assert.equal(write(d, 'technical-team:team-writer', '.team/docs/runbook/deploy.md'), null);
+  assert.ok(write(d, 'technical-team:team-architect', '.team/docs/x.md'));
+  assert.equal(write(d, 'technical-team:team-writer', 'README.md'), null);
+  assert.equal(write(d, 'technical-team:team-writer', 'CHANGELOG.md'), null);
+  assert.equal(write(d, 'technical-team:team-writer', 'packages/a/CHANGELOG.md'), null);
+  assert.ok(write(d, 'technical-team:team-writer', '.team/CHANGELOG.md'), 'CHANGELOG stays outside .team/');
+  assert.ok(write(d, 'technical-team:team-writer', 'src/index.ts'));
 });
 
 test('old locations outside .team/ are closed to every role and name the new path', () => {
   const d = project();
   for (const [file, target] of [['ARCHITECTURE.md', '.team/ARCHITECTURE.md'], ['docs/adr/0001-x.md', '.team/adr/'], ['docs/runbook/deploy.md', '.team/docs/']]) {
-    for (const role of ['architect', 'writer', 'developer']) {
+    for (const role of ['team-architect', 'team-writer', 'team-developer']) {
       const r = write(d, `technical-team:${role}`, file);
       assert.ok(r, `${role} must not write ${file}`);
       assert.match(JSON.stringify(r), new RegExp(target.replace(/\./g, '\\.')));
@@ -96,36 +96,36 @@ test('old locations outside .team/ are closed to every role and name the new pat
 
 test('a project can opt docs/ back out of .team/ through paths.docs', () => {
   const d = project({ config: { paths: { docs: ['docs/**'] } } });
-  assert.equal(write(d, 'technical-team:writer', 'docs/site/index.md'), null);
-  assert.ok(write(d, 'technical-team:writer', 'ARCHITECTURE.md'), 'other old paths stay closed');
+  assert.equal(write(d, 'technical-team:team-writer', 'docs/site/index.md'), null);
+  assert.ok(write(d, 'technical-team:team-writer', 'ARCHITECTURE.md'), 'other old paths stay closed');
 });
 
 test('developer: source yes; docs/infra/.team no; existing tests by Edit only', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:developer', 'src/app.ts'), null);
-  assert.equal(write(d, 'technical-team:developer', 'package.json'), null);
-  assert.ok(write(d, 'technical-team:developer', 'README.md'));
-  assert.ok(write(d, 'technical-team:developer', 'Dockerfile'));
-  assert.ok(write(d, 'technical-team:developer', '.github/workflows/ci.yml'));
-  assert.equal(write(d, 'technical-team:developer', 'tests/old.test.js', 'Edit'), null);
-  assert.ok(write(d, 'technical-team:developer', 'tests/old.test.js', 'Write'), 'no full overwrite of tests');
-  assert.ok(write(d, 'technical-team:developer', 'tests/new.test.js', 'Write'), 'no new tests');
-  assert.ok(write(d, 'technical-team:developer', 'src/new.spec.ts', 'Edit'), 'non-existing test');
+  assert.equal(write(d, 'technical-team:team-developer', 'src/app.ts'), null);
+  assert.equal(write(d, 'technical-team:team-developer', 'package.json'), null);
+  assert.ok(write(d, 'technical-team:team-developer', 'README.md'));
+  assert.ok(write(d, 'technical-team:team-developer', 'Dockerfile'));
+  assert.ok(write(d, 'technical-team:team-developer', '.github/workflows/ci.yml'));
+  assert.equal(write(d, 'technical-team:team-developer', 'tests/old.test.js', 'Edit'), null);
+  assert.ok(write(d, 'technical-team:team-developer', 'tests/old.test.js', 'Write'), 'no full overwrite of tests');
+  assert.ok(write(d, 'technical-team:team-developer', 'tests/new.test.js', 'Write'), 'no new tests');
+  assert.ok(write(d, 'technical-team:team-developer', 'src/new.spec.ts', 'Edit'), 'non-existing test');
 });
 
 test('qa writes tests only; devops writes infra only', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:qa', 'tests/new.test.js'), null);
-  assert.equal(write(d, 'technical-team:qa', 'src/foo.spec.ts'), null);
-  assert.ok(write(d, 'technical-team:qa', 'src/foo.ts'));
-  assert.equal(write(d, 'technical-team:devops', 'Dockerfile'), null);
-  assert.equal(write(d, 'technical-team:devops', '.team/OPS_HANDOFF.md'), null);
-  assert.ok(write(d, 'technical-team:devops', 'src/foo.ts'));
+  assert.equal(write(d, 'technical-team:team-qa', 'tests/new.test.js'), null);
+  assert.equal(write(d, 'technical-team:team-qa', 'src/foo.spec.ts'), null);
+  assert.ok(write(d, 'technical-team:team-qa', 'src/foo.ts'));
+  assert.equal(write(d, 'technical-team:team-devops', 'Dockerfile'), null);
+  assert.equal(write(d, 'technical-team:team-devops', '.team/OPS_HANDOFF.md'), null);
+  assert.ok(write(d, 'technical-team:team-devops', 'src/foo.ts'));
 });
 
 test('read-only roles cannot write anything', () => {
   const d = project();
-  for (const r of ['debugger', 'code-reviewer', 'security']) {
+  for (const r of ['team-debugger', 'team-code-reviewer', 'team-security']) {
     assert.ok(write(d, `technical-team:${r}`, 'src/a.ts'));
     assert.ok(write(d, `technical-team:${r}`, 'tests/x.test.ts'));
   }
@@ -133,25 +133,25 @@ test('read-only roles cannot write anything', () => {
 
 test('protected paths: .claude, .git, .env, outside project', () => {
   const d = project();
-  assert.ok(write(d, 'technical-team:developer', '.claude/settings.json'));
-  assert.ok(write(d, 'technical-team:developer', '.claude/technical-team.json'));
-  assert.ok(write(d, 'technical-team:developer', '.git/config'));
-  assert.ok(write(d, 'technical-team:developer', '.env'));
-  assert.ok(write(d, 'technical-team:developer', 'config/.env.production'));
-  assert.equal(write(d, 'technical-team:developer', '.env.example'), null);
-  assert.ok(call(d, 'technical-team:developer', 'Write', { file_path: path.join(os.tmpdir(), 'x.txt') }));
+  assert.ok(write(d, 'technical-team:team-developer', '.claude/settings.json'));
+  assert.ok(write(d, 'technical-team:team-developer', '.claude/technical-team.json'));
+  assert.ok(write(d, 'technical-team:team-developer', '.git/config'));
+  assert.ok(write(d, 'technical-team:team-developer', '.env'));
+  assert.ok(write(d, 'technical-team:team-developer', 'config/.env.production'));
+  assert.equal(write(d, 'technical-team:team-developer', '.env.example'), null);
+  assert.ok(call(d, 'technical-team:team-developer', 'Write', { file_path: path.join(os.tmpdir(), 'x.txt') }));
 });
 
 test('hr: specialist files only after approval, never core agents', () => {
   const d = project({ state: '## Hires\n- HIRE-APPROVED: iot-firmware (2026-11-04)\n' });
-  assert.equal(write(d, 'technical-team:hr', '.claude/agents/iot-firmware.md'), null);
-  assert.ok(write(d, 'technical-team:hr', '.claude/agents/vrm-advisor.md'), 'not approved');
-  assert.ok(write(d, 'technical-team:hr', '.claude/agents/developer.md'), 'core name');
-  assert.ok(write(d, 'technical-team:developer', '.claude/agents/iot-firmware.md'), 'only hr');
+  assert.equal(write(d, 'technical-team:team-hr', '.claude/agents/iot-firmware.md'), null);
+  assert.ok(write(d, 'technical-team:team-hr', '.claude/agents/vrm-advisor.md'), 'not approved');
+  assert.ok(write(d, 'technical-team:team-hr', '.claude/agents/team-developer.md'), 'core name');
+  assert.ok(write(d, 'technical-team:team-developer', '.claude/agents/iot-firmware.md'), 'only hr');
   const userFile = path.join(fakeHome, '.claude', 'agents', 'iot-firmware.md');
-  assert.equal(call(d, 'technical-team:hr', 'Write', { file_path: userFile }), null);
-  assert.equal(write(d, 'technical-team:hr', '.team/ROSTER.md'), null);
-  assert.ok(write(d, 'technical-team:hr', 'src/x.ts'));
+  assert.equal(call(d, 'technical-team:team-hr', 'Write', { file_path: userFile }), null);
+  assert.equal(write(d, 'technical-team:team-hr', '.team/ROSTER.md'), null);
+  assert.ok(write(d, 'technical-team:team-hr', 'src/x.ts'));
 });
 
 const APPROVED = '- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n- HIRE-APPROVED: vrm-advisor (2026-11-01, scope: project)\n- HIRE-APPROVED: old-one (2026-01-01, scope: project)\n';
@@ -160,7 +160,7 @@ test('specialists: write only their roster scope; carve-out from developer', () 
   const d = project({ roster: ROSTER, state: APPROVED });
   assert.equal(write(d, 'iot-firmware', 'firmware/main.c'), null);
   assert.ok(write(d, 'iot-firmware', 'src/app.ts'));
-  assert.ok(write(d, 'technical-team:developer', 'firmware/main.c'), 'developer loses the carved-out path');
+  assert.ok(write(d, 'technical-team:team-developer', 'firmware/main.c'), 'developer loses the carved-out path');
   assert.ok(write(d, 'vrm-advisor', 'avatars/a.vrm'), 'read-only specialist');
   assert.ok(write(d, 'iot-firmware', 'README.md'), 'cannot claim fixed-owner paths');
 });
@@ -175,28 +175,28 @@ test('unlisted specialist file with marker is treated read-only', () => {
 
 test('lead bash: git status/diff only; init script allowed', () => {
   const d = project();
-  assert.equal(bash(d, 'technical-team:lead', 'git status --short'), null);
-  assert.equal(bash(d, 'technical-team:lead', 'git diff --stat | head -50'), null);
-  assert.ok(bash(d, 'technical-team:lead', 'git log -5'));
-  assert.ok(bash(d, 'technical-team:lead', 'npm test'));
-  assert.ok(bash(d, 'technical-team:lead', 'git diff > out.txt'));
-  assert.ok(bash(d, 'technical-team:lead', 'git diff --output=x.patch'));
-  assert.equal(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs"`), null);
-  assert.equal(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs" SPEC PLAN`), null);
-  assert.ok(bash(d, 'technical-team:lead', `node "${ROOT}/scripts/team-init.mjs" | sh`));
+  assert.equal(bash(d, 'technical-team:team-lead', 'git status --short'), null);
+  assert.equal(bash(d, 'technical-team:team-lead', 'git diff --stat | head -50'), null);
+  assert.ok(bash(d, 'technical-team:team-lead', 'git log -5'));
+  assert.ok(bash(d, 'technical-team:team-lead', 'npm test'));
+  assert.ok(bash(d, 'technical-team:team-lead', 'git diff > out.txt'));
+  assert.ok(bash(d, 'technical-team:team-lead', 'git diff --output=x.patch'));
+  assert.equal(bash(d, 'technical-team:team-lead', `node "${ROOT}/scripts/team-init.mjs"`), null);
+  assert.equal(bash(d, 'technical-team:team-lead', `node "${ROOT}/scripts/team-init.mjs" SPEC PLAN`), null);
+  assert.ok(bash(d, 'technical-team:team-lead', `node "${ROOT}/scripts/team-init.mjs" | sh`));
 });
 
 test('code-reviewer bash: git diff/log only', () => {
   const d = project();
-  assert.equal(bash(d, 'technical-team:code-reviewer', 'git diff main...HEAD'), null);
-  assert.equal(bash(d, 'technical-team:code-reviewer', 'git log --oneline -20'), null);
-  assert.ok(bash(d, 'technical-team:code-reviewer', 'git checkout main'));
-  assert.ok(bash(d, 'technical-team:code-reviewer', 'cat /etc/passwd'));
+  assert.equal(bash(d, 'technical-team:team-code-reviewer', 'git diff main...HEAD'), null);
+  assert.equal(bash(d, 'technical-team:team-code-reviewer', 'git log --oneline -20'), null);
+  assert.ok(bash(d, 'technical-team:team-code-reviewer', 'git checkout main'));
+  assert.ok(bash(d, 'technical-team:team-code-reviewer', 'cat /etc/passwd'));
 });
 
 test('debugger/security: read-only shell', () => {
   const d = project();
-  for (const r of ['debugger', 'security']) {
+  for (const r of ['team-debugger', 'team-security']) {
     const a = `technical-team:${r}`;
     assert.equal(bash(d, a, 'npm test -- --grep login 2>&1 | tail -40'), null);
     assert.equal(bash(d, a, 'git log -p -3 src/auth.ts'), null);
@@ -208,19 +208,19 @@ test('debugger/security: read-only shell', () => {
     assert.ok(bash(d, a, 'cd src && touch x'));
     assert.ok(bash(d, a, 'echo $(rm -rf build)'));
   }
-  assert.equal(bash(d, 'technical-team:security', 'npm audit --json'), null);
-  assert.ok(bash(d, 'technical-team:security', 'npm audit fix'));
-  assert.equal(bash(d, 'technical-team:debugger', 'grep -n "a > b" src/x.ts'), null, 'quoted > is not a redirect');
+  assert.equal(bash(d, 'technical-team:team-security', 'npm audit --json'), null);
+  assert.ok(bash(d, 'technical-team:team-security', 'npm audit fix'));
+  assert.equal(bash(d, 'technical-team:team-debugger', 'grep -n "a > b" src/x.ts'), null, 'quoted > is not a redirect');
 });
 
 test('no-Bash roles are denied even if a tool slips through', () => {
   const d = project();
-  for (const r of ['ba', 'architect', 'pm', 'writer', 'hr']) assert.ok(bash(d, `technical-team:${r}`, 'ls'));
+  for (const r of ['team-ba', 'team-architect', 'team-pm', 'team-writer', 'team-hr']) assert.ok(bash(d, `technical-team:${r}`, 'ls'));
 });
 
 test('developer: denylist without config, allowlist with config', () => {
   const d = project();
-  const a = 'technical-team:developer';
+  const a = 'technical-team:team-developer';
   assert.equal(bash(d, a, 'npm run build && npm test'), null);
   assert.ok(bash(d, a, 'git commit -m x'));
   assert.ok(bash(d, a, 'git push'));
@@ -242,7 +242,7 @@ test('developer: denylist without config, allowlist with config', () => {
 
 test('qa: allowlisted test runner when configured', () => {
   const c = project({ config: { commands: { test: ['npm test', 'npx playwright test'] } } });
-  const a = 'technical-team:qa';
+  const a = 'technical-team:team-qa';
   assert.equal(bash(c, a, 'npx playwright test e2e/login.spec.ts'), null);
   assert.equal(bash(c, a, 'npm test 2>&1 | tail -30'), null);
   assert.ok(bash(c, a, 'npm run build'));
@@ -259,7 +259,7 @@ test('qa: allowlisted test runner when configured', () => {
 
 test('devops: remote-changing commands need explicit opt-in', () => {
   const d = project();
-  const a = 'technical-team:devops';
+  const a = 'technical-team:team-devops';
   assert.equal(bash(d, a, 'docker build -t app .'), null);
   assert.equal(bash(d, a, 'docker compose config'), null);
   assert.ok(bash(d, a, 'docker push registry/app:1.0'));
@@ -271,22 +271,22 @@ test('devops: remote-changing commands need explicit opt-in', () => {
 
 test('only lead delegates, and only to the team', () => {
   const d = project({ roster: ROSTER, state: APPROVED });
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:developer' }), null);
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'qa' }), 'bare core name is not the plugin agent');
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'iot-firmware' }), null);
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'old-one' }), 'retired');
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'general-purpose' }));
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:lead' }));
-  assert.ok(call(d, 'technical-team:lead', 'Agent', {}));
-  assert.ok(call(d, 'technical-team:developer', 'Agent', { subagent_type: 'qa' }));
-  assert.ok(call(d, 'iot-firmware', 'Agent', { subagent_type: 'qa' }));
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'technical-team:team-developer' }), null);
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'team-qa' }), 'bare core name is not the plugin agent');
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'iot-firmware' }), null);
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'old-one' }), 'retired');
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'general-purpose' }));
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'technical-team:team-lead' }));
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', {}));
+  assert.ok(call(d, 'technical-team:team-developer', 'Agent', { subagent_type: 'team-qa' }));
+  assert.ok(call(d, 'iot-firmware', 'Agent', { subagent_type: 'team-qa' }));
 });
 
 test('invalid project config blocks writes for team agents', () => {
   const d = project();
   fs.mkdirSync(path.join(d, '.claude'), { recursive: true });
   fs.writeFileSync(path.join(d, '.claude', 'technical-team.json'), '{ nope');
-  assert.ok(write(d, 'technical-team:developer', 'src/a.ts'));
+  assert.ok(write(d, 'technical-team:team-developer', 'src/a.ts'));
 });
 
 test('roster parser and glob basics', () => {
@@ -304,31 +304,31 @@ test('roster rows without HIRE-APPROVED grant nothing', () => {
   fs.mkdirSync(path.join(d, '.claude', 'agents'), { recursive: true });
   fs.writeFileSync(path.join(d, '.claude', 'agents', 'iot-firmware.md'), '<!-- technical-team:specialist -->');
   assert.ok(write(d, 'iot-firmware', 'firmware/main.c'), 'marked specialist without approval is read-only');
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'iot-firmware' }), 'unapproved row cannot be spawned');
-  assert.equal(write(d, 'technical-team:developer', 'firmware/main.c'), null, 'no carve-out without approval');
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'iot-firmware' }), 'unapproved row cannot be spawned');
+  assert.equal(write(d, 'technical-team:team-developer', 'firmware/main.c'), null, 'no carve-out without approval');
 });
 
 test('dba (core role) owns migrations, seeds, dumps and pipelines in every project', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:dba', 'prisma/migrations/001_init/migration.sql'), null);
-  assert.equal(write(d, 'technical-team:dba', 'app/orders/migrations/0002_add_x.py'), null);
-  assert.equal(write(d, 'technical-team:dba', 'db/migrate/20261105_add_x.rb'), null);
-  assert.equal(write(d, 'technical-team:dba', 'prisma/seed.ts'), null);
-  assert.equal(write(d, 'technical-team:dba', 'db/schema.rb'), null);
-  assert.ok(write(d, 'technical-team:dba', 'prisma/schema.prisma'), 'schema.prisma stays with developer');
-  assert.ok(write(d, 'technical-team:dba', 'src/app.ts'));
-  assert.equal(write(d, 'technical-team:developer', 'prisma/schema.prisma'), null);
-  assert.ok(write(d, 'technical-team:developer', 'prisma/migrations/002/migration.sql'));
-  assert.ok(write(d, 'technical-team:developer', 'db/seeds.rb'));
-  assert.equal(write(d, 'technical-team:qa', 'tests/fixtures/users.json'), null, 'test fixtures stay with qa');
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:dba' }), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'prisma/migrations/001_init/migration.sql'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'app/orders/migrations/0002_add_x.py'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'db/migrate/20261105_add_x.rb'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'prisma/seed.ts'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'db/schema.rb'), null);
+  assert.ok(write(d, 'technical-team:team-dba', 'prisma/schema.prisma'), 'schema.prisma stays with developer');
+  assert.ok(write(d, 'technical-team:team-dba', 'src/app.ts'));
+  assert.equal(write(d, 'technical-team:team-developer', 'prisma/schema.prisma'), null);
+  assert.ok(write(d, 'technical-team:team-developer', 'prisma/migrations/002/migration.sql'));
+  assert.ok(write(d, 'technical-team:team-developer', 'db/seeds.rb'));
+  assert.equal(write(d, 'technical-team:team-qa', 'tests/fixtures/users.json'), null, 'test fixtures stay with qa');
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'technical-team:team-dba' }), null);
   const c = project({ config: { paths: { data: ['database/sql/**'] } } });
-  assert.equal(write(c, 'technical-team:dba', 'database/sql/001.sql'), null, 'project can extend data paths');
+  assert.equal(write(c, 'technical-team:team-dba', 'database/sql/001.sql'), null, 'project can extend data paths');
 });
 
 test('dba: DB commands only against explicit local/test targets', () => {
   const d = project();
-  const a = 'technical-team:dba';
+  const a = 'technical-team:team-dba';
   assert.equal(bash(d, a, 'DATABASE_URL=postgresql://app:pw@localhost:5432/app_test npx prisma migrate dev --name add_x'), null);
   assert.equal(bash(d, a, 'npx prisma migrate reset --force --skip-seed --schema prisma/schema.prisma --url postgres://u@127.0.0.1/app_dev'), null);
   assert.equal(bash(d, a, `psql -h localhost -d app_test -c "EXPLAIN SELECT * FROM orders WHERE user_id = 1"`), null);
@@ -349,49 +349,49 @@ test('dba: DB commands only against explicit local/test targets', () => {
 test('dba: env file target', () => {
   const d = project({ config: { db: { envFile: '.env.test' } } });
   fs.writeFileSync(path.join(d, '.env.test'), 'DATABASE_URL="postgresql://app@localhost:5432/app_test"\n');
-  assert.equal(bash(d, 'technical-team:dba', 'npx prisma migrate dev --name x'), null);
+  assert.equal(bash(d, 'technical-team:team-dba', 'npx prisma migrate dev --name x'), null);
   fs.writeFileSync(path.join(d, '.env.test'), 'DATABASE_URL=postgresql://app@10.0.0.5:5432/app_test\n');
-  assert.ok(bash(d, 'technical-team:dba', 'npx prisma migrate dev --name x'));
+  assert.ok(bash(d, 'technical-team:team-dba', 'npx prisma migrate dev --name x'));
 });
 
 test('other roles cannot run DB/migration commands (dba owns them)', () => {
   const d = project();
-  assert.ok(bash(d, 'technical-team:developer', 'npx prisma migrate dev --name x'));
-  assert.ok(bash(d, 'technical-team:developer', 'python manage.py makemigrations'));
-  assert.ok(bash(d, 'technical-team:qa', 'psql -h localhost -d app_test -c "select 1"'));
-  assert.equal(bash(d, 'technical-team:developer', 'npx prisma generate'), null);
-  assert.equal(bash(d, 'technical-team:developer', 'npm test'), null);
+  assert.ok(bash(d, 'technical-team:team-developer', 'npx prisma migrate dev --name x'));
+  assert.ok(bash(d, 'technical-team:team-developer', 'python manage.py makemigrations'));
+  assert.ok(bash(d, 'technical-team:team-qa', 'psql -h localhost -d app_test -c "select 1"'));
+  assert.equal(bash(d, 'technical-team:team-developer', 'npx prisma generate'), null);
+  assert.equal(bash(d, 'technical-team:team-developer', 'npm test'), null);
 });
 
 test('plugin repo (maintainer mode): hire writes new members into the plugin', () => {
   const d = project({ state: '- HIRE-APPROVED: iot-firmware (2026-11-05, scope: plugin)\n' });
   fs.mkdirSync(path.join(d, '.claude-plugin'), { recursive: true });
   fs.writeFileSync(path.join(d, '.claude-plugin', 'plugin.json'), JSON.stringify({ name: 'technical-team' }));
-  assert.equal(write(d, 'technical-team:hr', 'agents/iot-firmware.md'), null);
-  assert.equal(write(d, 'technical-team:hr', 'config/agents.json'), null);
-  assert.ok(write(d, 'technical-team:hr', 'agents/vrm-artist.md'), 'not approved');
-  assert.ok(write(d, 'technical-team:hr', 'agents/lead.md'), 'core agent');
-  assert.ok(write(d, 'technical-team:developer', 'agents/iot-firmware.md'), 'only hr');
+  assert.equal(write(d, 'technical-team:team-hr', 'agents/iot-firmware.md'), null);
+  assert.equal(write(d, 'technical-team:team-hr', 'config/agents.json'), null);
+  assert.ok(write(d, 'technical-team:team-hr', 'agents/vrm-artist.md'), 'not approved');
+  assert.ok(write(d, 'technical-team:team-hr', 'agents/team-lead.md'), 'core agent');
+  assert.ok(write(d, 'technical-team:team-developer', 'agents/iot-firmware.md'), 'only hr');
   const other = project({ state: '- HIRE-APPROVED: iot-firmware\n' });
-  assert.ok(write(other, 'technical-team:hr', 'agents/iot-firmware.md'), 'outside the plugin repo agents/ is ordinary code');
+  assert.ok(write(other, 'technical-team:team-hr', 'agents/iot-firmware.md'), 'outside the plugin repo agents/ is ordinary code');
 });
 
 test('skills: run-kit always, otherwise only the role list from project config', () => {
-  const d = project({ config: { skills: { developer: ['react-native', 'mobile-kit:ios-release'], qa: ['detox-e2e'] } } });
+  const d = project({ config: { skills: { 'team-developer': ['react-native', 'mobile-kit:ios-release'], 'team-qa': ['detox-e2e'] } } });
   const sk = (agent, input) => call(d, agent, 'Skill', input);
-  assert.equal(sk('technical-team:developer', { skill: 'react-native' }), null);
-  assert.equal(sk('technical-team:developer', { skill: 'mobile-kit:ios-release' }), null);
-  assert.equal(sk('technical-team:developer', { skill: '/react-native', args: 'x' }), null);
-  assert.equal(sk('technical-team:developer', { skill: 'technical-team:run-kit' }), null);
-  assert.equal(sk('technical-team:writer', { skill: 'run-kit' }), null);
-  assert.ok(sk('technical-team:developer', { skill: 'detox-e2e' }), 'other role\'s skill');
-  assert.ok(sk('technical-team:qa', { skill: 'react-native' }));
-  assert.ok(sk('technical-team:developer', { skill: 'technical-team:feature' }), 'commands are not skills for agents');
-  assert.ok(sk('technical-team:developer', {}), 'unreadable input is denied');
-  assert.equal(sk('technical-team:qa', { skill: 'detox-e2e' }), null);
+  assert.equal(sk('technical-team:team-developer', { skill: 'react-native' }), null);
+  assert.equal(sk('technical-team:team-developer', { skill: 'mobile-kit:ios-release' }), null);
+  assert.equal(sk('technical-team:team-developer', { skill: '/react-native', args: 'x' }), null);
+  assert.equal(sk('technical-team:team-developer', { skill: 'technical-team:run-kit' }), null);
+  assert.equal(sk('technical-team:team-writer', { skill: 'run-kit' }), null);
+  assert.ok(sk('technical-team:team-developer', { skill: 'detox-e2e' }), 'other role\'s skill');
+  assert.ok(sk('technical-team:team-qa', { skill: 'react-native' }));
+  assert.ok(sk('technical-team:team-developer', { skill: 'technical-team:feature' }), 'commands are not skills for agents');
+  assert.ok(sk('technical-team:team-developer', {}), 'unreadable input is denied');
+  assert.equal(sk('technical-team:team-qa', { skill: 'detox-e2e' }), null);
   assert.equal(decide({ tool_name: 'Skill', tool_input: { skill: 'anything' }, cwd: d }, env(d)), null, 'main session unrestricted');
   const none = project();
-  assert.ok(call(none, 'technical-team:developer', 'Skill', { skill: 'react-native' }), 'no config, no extra skills');
+  assert.ok(call(none, 'technical-team:team-developer', 'Skill', { skill: 'react-native' }), 'no config, no extra skills');
 });
 
 test('handoff check: template from run-kit, required labels, evidence for "xong"', async () => {
@@ -413,9 +413,9 @@ test('handoff check: template from run-kit, required labels, evidence for "xong"
 
 test('external agents (default Explore): lead may call them, they always run read-only', () => {
   const d = project();
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'Explore' }), null);
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'general-purpose' }));
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'Plan' }));
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'Explore' }), null);
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'general-purpose' }));
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'Plan' }));
   assert.equal(bash(d, 'Explore', 'grep -rn "TODO" src | head -50'), null);
   assert.equal(bash(d, 'Explore', 'git log --oneline -20'), null);
   assert.ok(bash(d, 'Explore', 'rm -rf build'));
@@ -428,29 +428,29 @@ test('external agents (default Explore): lead may call them, they always run rea
   assert.equal(call(d, 'Explore', 'Skill', { skill: 'anything' }), null, 'skills not restricted for external agents');
   assert.equal(write(d, 'general-purpose', 'src/a.ts'), null, 'non-listed external agents are not touched');
   const c = project({ config: { externalAgents: [] } });
-  assert.ok(call(c, 'technical-team:lead', 'Agent', { subagent_type: 'Explore' }), 'project can turn it off');
+  assert.ok(call(c, 'technical-team:team-lead', 'Agent', { subagent_type: 'Explore' }), 'project can turn it off');
   assert.equal(bash(c, 'Explore', 'rm -rf build'), null, 'and then Explore is not policed');
 });
 
 test('dba also owns data pipelines; warehouse-executing commands need a provable local target', () => {
   const d = project();
-  assert.equal(write(d, 'technical-team:dba', 'dbt/models/orders.sql'), null);
-  assert.equal(write(d, 'technical-team:dba', 'dags/daily_orders.py'), null);
-  assert.equal(write(d, 'technical-team:dba', 'etl/load_orders.py'), null);
-  assert.ok(write(d, 'technical-team:developer', 'dags/daily_orders.py'));
-  assert.ok(bash(d, 'technical-team:dba', 'dbt run --select orders'), 'remote warehouse not provable');
-  assert.ok(bash(d, 'technical-team:dba', 'bq query "select 1"'));
-  assert.ok(bash(d, 'technical-team:developer', 'dbt build'), 'only dba runs pipeline commands');
-  assert.equal(bash(d, 'technical-team:dba', 'dbt parse'), null, 'offline checks allowed');
-  assert.equal(bash(d, 'technical-team:dba', 'sqlfluff lint dbt/models'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'dbt/models/orders.sql'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'dags/daily_orders.py'), null);
+  assert.equal(write(d, 'technical-team:team-dba', 'etl/load_orders.py'), null);
+  assert.ok(write(d, 'technical-team:team-developer', 'dags/daily_orders.py'));
+  assert.ok(bash(d, 'technical-team:team-dba', 'dbt run --select orders'), 'remote warehouse not provable');
+  assert.ok(bash(d, 'technical-team:team-dba', 'bq query "select 1"'));
+  assert.ok(bash(d, 'technical-team:team-developer', 'dbt build'), 'only dba runs pipeline commands');
+  assert.equal(bash(d, 'technical-team:team-dba', 'dbt parse'), null, 'offline checks allowed');
+  assert.equal(bash(d, 'technical-team:team-dba', 'sqlfluff lint dbt/models'), null);
 });
 
 test('no overrides: bare core-role agents are not team members', () => {
   const d = project();
-  assert.equal(write(d, 'developer', '.team/SPEC.md'), null, 'a project "developer" agent is not policed as the team developer');
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'developer' }), 'lead cannot call it');
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'dba' }), 'core roles only as technical-team:<role>');
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:developer' }), null);
+  assert.equal(write(d, 'team-developer', '.team/SPEC.md'), null, 'a project "team-developer" agent is not policed as the team developer');
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'team-developer' }), 'lead cannot call it');
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'team-dba' }), 'core roles only as technical-team:<role>');
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'technical-team:team-developer' }), null);
 });
 
 test('hire gate: adding a new HIRE-APPROVED line to STATE.md asks the user, from any session', () => {
@@ -459,57 +459,57 @@ test('hire gate: adding a new HIRE-APPROVED line to STATE.md asks the user, from
   const line = '- HIRE-APPROVED: vrm-pose-specialist (2026-11-05, scope: project)';
   const isAsk = (r) => r && typeof r === 'object' && typeof r.ask === 'string';
 
-  const edit = call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n' + line });
+  const edit = call(d, 'technical-team:team-lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n' + line });
   assert.ok(isAsk(edit), 'lead Edit asks');
   assert.match(edit.ask, /vrm-pose-specialist/);
-  assert.ok(isAsk(call(d, 'technical-team:lead', 'Write', { file_path: st, content: '# State\n' + line + '\n' })), 'Write asks');
-  assert.ok(isAsk(call(d, 'technical-team:lead', 'MultiEdit', { file_path: st, edits: [{ old_string: 'a', new_string: 'x' }, { old_string: 'b', new_string: line }] })), 'MultiEdit asks');
+  assert.ok(isAsk(call(d, 'technical-team:team-lead', 'Write', { file_path: st, content: '# State\n' + line + '\n' })), 'Write asks');
+  assert.ok(isAsk(call(d, 'technical-team:team-lead', 'MultiEdit', { file_path: st, edits: [{ old_string: 'a', new_string: 'x' }, { old_string: 'b', new_string: line }] })), 'MultiEdit asks');
   assert.ok(isAsk(decide({ tool_name: 'Edit', tool_input: { file_path: st, old_string: '# State', new_string: line }, cwd: d }, env(d))), 'main session asks too');
-  assert.ok(isAsk(call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '- hire-approved: `Vrm-Pose-Specialist`' })), 'case and backticks');
+  assert.ok(isAsk(call(d, 'technical-team:team-lead', 'Edit', { file_path: st, old_string: '# State', new_string: '- hire-approved: `Vrm-Pose-Specialist`' })), 'case and backticks');
 });
 
 test('hire gate: ordinary STATE.md edits, re-written approvals and other files do not ask', () => {
   const d = project({ state: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n' });
   const st = path.join(d, '.team', 'STATE.md');
-  assert.equal(call(d, 'technical-team:lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n- Status: in-progress' }), null);
-  assert.equal(call(d, 'technical-team:lead', 'Write', { file_path: st, content: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n- W-002 open\n' }), null, 'existing approval kept');
-  assert.equal(write(d, 'technical-team:ba', '.team/SPEC.md'), null);
+  assert.equal(call(d, 'technical-team:team-lead', 'Edit', { file_path: st, old_string: '# State', new_string: '# State\n- Status: in-progress' }), null);
+  assert.equal(call(d, 'technical-team:team-lead', 'Write', { file_path: st, content: '# State\n- HIRE-APPROVED: iot-firmware (2026-11-01, scope: project)\n- W-002 open\n' }), null, 'existing approval kept');
+  assert.equal(write(d, 'technical-team:team-ba', '.team/SPEC.md'), null);
 });
 
 test('hire gate: a deny from ownership wins over the ask', () => {
   const d = project({ state: '# State\n' });
-  const r = call(d, 'technical-team:ba', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
+  const r = call(d, 'technical-team:team-ba', 'Edit', { file_path: path.join(d, '.team', 'STATE.md'), old_string: '# State', new_string: '- HIRE-APPROVED: x-spec' });
   assert.equal(typeof r, 'string', 'ba may not write STATE.md at all');
 });
 
 test('designer: writes only .team/DESIGN.md, no shell; is a core member the lead may call', () => {
   const d = project();
-  const a = 'technical-team:designer';
+  const a = 'technical-team:team-designer';
   assert.equal(write(d, a, '.team/DESIGN.md'), null);
   assert.equal(write(d, a, '.team/archive/DESIGN-2026-11.md'), null);
   for (const f of ['src/App.tsx', 'src/theme.ts', '.team/PLAN.md', '.team/SPEC.md', 'README.md', 'e2e/a.spec.ts']) assert.ok(write(d, a, f), f);
   assert.ok(bash(d, a, 'ls'), 'no shell');
-  assert.equal(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'technical-team:designer', prompt: 'x' }), null);
-  assert.ok(call(d, 'technical-team:lead', 'Agent', { subagent_type: 'designer', prompt: 'x' }), 'bare name is not the plugin agent');
+  assert.equal(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'technical-team:team-designer', prompt: 'x' }), null);
+  assert.ok(call(d, 'technical-team:team-lead', 'Agent', { subagent_type: 'team-designer', prompt: 'x' }), 'bare name is not the plugin agent');
 });
 
 test('skills: test-process for qa, live-preview for qa, developer, designer only', () => {
   {
     const d0 = project();
-    assert.equal(call(d0, 'technical-team:qa', 'Skill', { skill: 'technical-team:test-process' }), null);
-    assert.ok(call(d0, 'technical-team:developer', 'Skill', { skill: 'technical-team:test-process' }));
-    assert.equal(write(d0, 'technical-team:qa', '.team/TASKS.md'), null, 'qa writes its QA subsection in TASKS.md');
-    assert.equal(write(d0, 'technical-team:qa', '.team/archive/TASKS-2026-11.md'), null);
-    assert.ok(write(d0, 'technical-team:qa', '.team/QA.md'), 'no separate QA.md');
-    assert.ok(write(d0, 'technical-team:developer', '.team/TASKS.md'));
+    assert.equal(call(d0, 'technical-team:team-qa', 'Skill', { skill: 'technical-team:test-process' }), null);
+    assert.ok(call(d0, 'technical-team:team-developer', 'Skill', { skill: 'technical-team:test-process' }));
+    assert.equal(write(d0, 'technical-team:team-qa', '.team/TASKS.md'), null, 'qa writes its QA subsection in TASKS.md');
+    assert.equal(write(d0, 'technical-team:team-qa', '.team/archive/TASKS-2026-11.md'), null);
+    assert.ok(write(d0, 'technical-team:team-qa', '.team/QA.md'), 'no separate QA.md');
+    assert.ok(write(d0, 'technical-team:team-developer', '.team/TASKS.md'));
   }
-  const d = project({ config: { skills: { designer: ['ui-ux-pro'] } } });
+  const d = project({ config: { skills: { 'team-designer': ['ui-ux-pro'] } } });
   const sk = (agent, skill) => call(d, agent, 'Skill', { skill });
-  for (const r of ['qa', 'developer', 'designer']) {
+  for (const r of ['team-qa', 'team-developer', 'team-designer']) {
     assert.equal(sk(`technical-team:${r}`, 'technical-team:live-preview'), null, r);
     assert.equal(sk(`technical-team:${r}`, 'live-preview'), null, r);
   }
-  for (const r of ['architect', 'writer', 'pm']) assert.ok(sk(`technical-team:${r}`, 'technical-team:live-preview'), r);
-  assert.equal(sk('technical-team:designer', 'ui-ux-pro'), null, 'designer skills come from project config');
-  assert.ok(sk('technical-team:developer', 'ui-ux-pro'), 'only the role it is listed for');
+  for (const r of ['team-architect', 'team-writer', 'team-pm']) assert.ok(sk(`technical-team:${r}`, 'technical-team:live-preview'), r);
+  assert.equal(sk('technical-team:team-designer', 'ui-ux-pro'), null, 'designer skills come from project config');
+  assert.ok(sk('technical-team:team-developer', 'ui-ux-pro'), 'only the role it is listed for');
 });

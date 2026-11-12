@@ -12,8 +12,8 @@ disable-model-invocation: true
 | Situation | Do |
 |---|---|
 | Argument required | no — empty means **resume**: delegate anyway; the lead resumes the unfinished `new` work item from `.team/STATE.md`, or asks for an idea / PRD path if there is none |
-| This session **is** the tech lead (`--agent technical-team:lead` or `agent` setting) | execute the **Pipeline** below yourself |
-| Any other session | Agent tool → `subagent_type: technical-team:lead`, prompt below |
+| This session **is** the tech lead (`--agent technical-team:team-lead` or `agent` setting) | execute the **Pipeline** below yourself |
+| Any other session | Agent tool → `subagent_type: technical-team:team-lead`, prompt below |
 | Lead returns `Chờ duyệt …` | stop, wait for the user; never approve or choose for them |
 | User answers | prefer a **new** Agent call (the run is long; `.team/STATE.md` holds everything): `Continue W-NNN (new). User's answer (verbatim): <answer>. Read .team/STATE.md first.` Resuming the same lead (SendMessage) also works |
 | Always | show the lead's report as written; do not do the team's work in the main session |

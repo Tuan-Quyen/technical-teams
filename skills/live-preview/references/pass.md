@@ -8,9 +8,9 @@ Paths below are relative to `${CLAUDE_PLUGIN_ROOT}/skills/live-preview/`.
 
 | Who | When | Depth |
 |---|---|---|
-| qa | every work item whose change a user or client can observe: UI, routes/navigation, styling, i18n, CLI flags/output, API responses, messages a bot/worker sends, build/bundling/packaging config — and `release` / `new` N7 | full pass (§2), verdict input for G2 |
-| developer | before handing off a ticket with an observable change | quick pass: §2 steps 1–4 + 6 on what changed; paste the summary in your handoff |
-| designer | decisions on UI/UX items qa escalates (D3a / S3a) | reads qa's screenshots / recordings + `.team/DESIGN.md` (no shell) |
+| team-qa | every work item whose change a user or client can observe: UI, routes/navigation, styling, i18n, CLI flags/output, API responses, messages a bot/worker sends, build/bundling/packaging config — and `release` / `new` N7 | full pass (§2), verdict input for G2 |
+| team-developer | before handing off a ticket with an observable change | quick pass: §2 steps 1–4 + 6 on what changed; paste the summary in your handoff |
+| team-designer | decisions on UI/UX items qa escalates (D3a / S3a) | reads qa's screenshots / recordings + `.team/DESIGN.md` (no shell) |
 
 Not applicable (say so with the reason): a refactor with no observable change, test-only or docs-only changes, a library with no example/consumer in the repo (then the public API tests are the preview).
 

@@ -34,16 +34,16 @@ import { fileURLToPath } from 'node:url';
 
 export const PLUGIN = 'technical-team';
 export const CORE = [
-  'lead', 'ba', 'designer', 'architect', 'pm', 'developer', 'debugger',
-  'qa', 'code-reviewer', 'security', 'devops', 'writer', 'hr', 'dba',
+  'team-lead', 'team-ba', 'team-designer', 'team-architect', 'team-pm', 'team-developer', 'team-debugger',
+  'team-qa', 'team-code-reviewer', 'team-security', 'team-devops', 'team-writer', 'team-hr', 'team-dba',
 ];
 // Skills shipped with the plugin that a role may load on demand (besides run-kit),
 // without listing them in .claude/technical-team.json.
 export const PLUGIN_SKILLS = {
-  qa: ['test-process', 'live-preview'],
-  developer: ['live-preview'],
-  designer: ['live-preview'],
-  ba: ['business-analysis'],
+  'team-qa': ['test-process', 'live-preview'],
+  'team-developer': ['live-preview'],
+  'team-designer': ['live-preview'],
+  'team-ba': ['business-analysis'],
 };
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
 const AGENT_TOOLS = new Set(['Agent', 'Task']);
@@ -263,7 +263,7 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   if (cfg.pluginRepo) {
     const m = rel.match(/^agents\/([^/]+)\.md$/);
     if (m) return { owner: 'hr-agent-file', agentFile: m[1], scope: 'plugin' };
-    if (rel === 'config/agents.json') return { owner: 'hr' };
+    if (rel === 'config/agents.json') return { owner: 'team-hr' };
   }
 
   // protected areas
@@ -278,30 +278,30 @@ export function ownerOf(rel, cfg, specialists, members = {}) {
   // shared workspace
   const team = rel.match(/^\.team\/(?:archive\/)?([A-Z_]+)(?:-[^/]*)?\.md$/);
   if (team) {
-    const map = { STATE: 'lead', SPEC: 'ba', PRODUCT: 'ba', DESIGN: 'designer', PLAN: 'architect', TASKS: 'pm', OPS_HANDOFF: 'devops', ROSTER: 'hr', ARCHITECTURE: 'architect' };
+    const map = { STATE: 'team-lead', SPEC: 'team-ba', PRODUCT: 'team-ba', DESIGN: 'team-designer', PLAN: 'team-architect', TASKS: 'team-pm', OPS_HANDOFF: 'team-devops', ROSTER: 'team-hr', ARCHITECTURE: 'team-architect' };
     // TASKS.md: pm owns the tickets, qa its `### QA` subsection per work item (sections are not guard-enforced)
-    const shared = { TASKS: ['qa'] };
+    const shared = { TASKS: ['team-qa'] };
     if (map[team[1]]) return { owner: map[team[1]], also: shared[team[1]] || [] };
   }
-  if (rel.startsWith('.team/adr/')) return { owner: 'architect' };
-  if (rel.startsWith('.team/docs/')) return { owner: 'writer' };
+  if (rel.startsWith('.team/adr/')) return { owner: 'team-architect' };
+  if (rel.startsWith('.team/docs/')) return { owner: 'team-writer' };
   if (rel === '.team' || rel.startsWith('.team/')) return { owner: '__nobody__', reason: '.team/ only holds the owned files (STATE, SPEC, PRODUCT, DESIGN, PLAN, TASKS, OPS_HANDOFF, ROSTER, ARCHITECTURE), their archive/<FILE>-<period>.md copies, adr/ and docs/' };
 
-  if (matchAny(rel, cfg.architecture)) return { owner: 'architect' };
-  if (matchAny(rel, cfg.docs)) return { owner: 'writer' };
+  if (matchAny(rel, cfg.architecture)) return { owner: 'team-architect' };
+  if (matchAny(rel, cfg.docs)) return { owner: 'team-writer' };
   // Team documents live in .team/; only README.md and CHANGELOG.md stay outside. Checked
   // after the lists above so a project can opt a path back out through paths.docs/architecture.
   for (const [pattern, target] of Object.entries(cfg.relocated)) {
     if (matchAny(rel, [pattern])) return { owner: '__nobody__', reason: `team documents live in .team/; write to ${target} instead (or add this path to paths.docs in .claude/technical-team.json)` };
   }
-  if (matchAny(rel, cfg.infra)) return { owner: 'devops' };
-  if (matchAny(rel, cfg.tests)) return { owner: 'qa' };
-  if (matchAny(rel, cfg.data)) return { owner: 'dba' };
+  if (matchAny(rel, cfg.infra)) return { owner: 'team-devops' };
+  if (matchAny(rel, cfg.tests)) return { owner: 'team-qa' };
+  if (matchAny(rel, cfg.data)) return { owner: 'team-dba' };
   for (const [name, m] of Object.entries(members)) {
     if (matchAny(rel, [...(m.write || []), ...((cfg.memberPaths || {})[name] || [])])) return { owner: name };
   }
   for (const s of specialists) if (matchAny(rel, s.scope)) return { owner: s.name };
-  return { owner: 'developer' };
+  return { owner: 'team-developer' };
 }
 
 function checkWrite(ctx, filePath) {
@@ -327,7 +327,7 @@ function checkWrite(ctx, filePath) {
 
   // developer may repair existing tests broken by an intended behaviour change,
   // with Edit only (no new test files, no full overwrite).
-  if (role === 'developer' && own.owner === 'qa') {
+  if (role === 'team-developer' && own.owner === 'team-qa') {
     const exists = fs.existsSync(abs);
     if (exists && (toolName === 'Edit' || toolName === 'MultiEdit')) return null;
     return `${rel} is a test file owned by qa. developer may only Edit an existing test that broke because intended behaviour changed; new tests are qa's job.`;
@@ -338,7 +338,7 @@ function checkWrite(ctx, filePath) {
 
 function checkAgentFile(ctx, name, scope) {
   const { role, projectDir } = ctx;
-  if (role !== 'hr') return `agent definitions are written only by hr after an approved hire.`;
+  if (role !== 'team-hr') return `agent definitions are written only by hr after an approved hire.`;
   if (CORE.includes(name)) return `${name} is a core team agent; plugin agents are never written or replaced by hr.`;
   if (BUNDLED.has(name) && scope !== 'plugin') return `${name} is a plugin specialist; it is never replaced by a project or user agent file.`;
   if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) return `specialist file name must be kebab-case: ${name}.md`;
@@ -554,7 +554,7 @@ function checkBash(ctx, command) {
   if (!cmd.trim()) return null;
   // the original command (quotes intact) is used for the init-script check
   const rawSegs = cmd.split(/\|\||&&|;|\n/).map((x) => x.trim()).filter(Boolean);
-  if (rawSegs.length === 1 && isInitScript(rawSegs[0]) && ['lead'].includes(role)) return null;
+  if (rawSegs.length === 1 && isInitScript(rawSegs[0]) && ['team-lead'].includes(role)) return null;
 
   const segs = segments(cmd);
   const FILTERS = /^(head|tail|wc|grep|sort|uniq|cut)$/;
@@ -563,8 +563,8 @@ function checkBash(ctx, command) {
     if (member) return member.bash || 'none';
     if (specialist) return specialist.bash; // none | readonly | developer | db-local
     return {
-      lead: 'lead', 'code-reviewer': 'code-reviewer', debugger: 'readonly', security: 'security',
-      qa: 'qa', developer: 'developer', devops: 'devops', dba: 'db-local',
+      'team-lead': 'lead', 'team-code-reviewer': 'code-reviewer', 'team-debugger': 'readonly', 'team-security': 'security',
+      'team-qa': 'qa', 'team-developer': 'developer', 'team-devops': 'devops', 'team-dba': 'db-local',
     }[role] || 'none';
   })();
 
@@ -660,17 +660,17 @@ function checkBash(ctx, command) {
 
 function specialistsWithDb(ctx) {
   const members = Object.entries(ctx.members || {}).filter(([, m]) => m.bash === 'db-local').map(([name]) => ({ name }));
-  return [{ name: 'dba' }, ...members, ...ctx.specialists.filter((s) => s.bash === 'db-local')];
+  return [{ name: 'team-dba' }, ...members, ...ctx.specialists.filter((s) => s.bash === 'db-local')];
 }
 
 // ------------------------------------------------------------ agent spawn
 
 function checkAgentSpawn(ctx, input) {
   const { role, specialists } = ctx;
-  if (role !== 'lead') return `${role} cannot delegate; only the tech lead assigns work.`;
+  if (role !== 'team-lead') return `${role} cannot delegate; only the tech lead assigns work.`;
   const target = roleOf(input && input.subagent_type);
   if (!target) return 'lead must name a team member (subagent_type) when delegating.';
-  if (target === 'lead') return 'lead does not spawn another lead.';
+  if (target === 'team-lead') return 'lead does not spawn another lead.';
   if (target.startsWith('__not_team__:')) return `"${input.subagent_type}" is not the plugin's agent. Core roles and plugin specialists are called only as technical-team:<name>; plugin agents are never replaced by project or user agent files.`;
   if (CORE.includes(target)) return null;
   if (ctx.members && ctx.members[target]) return null;
@@ -704,7 +704,7 @@ function checkSkill(ctx, input) {
 export function teamAgentKind(input, env = process.env) {
   const role = roleOf(input && input.agent_type);
   if (!role) return null;
-  if (role === 'lead') return 'lead';
+  if (role === 'team-lead') return 'lead';
   if (CORE.includes(role) || loadMembers()[role]) return 'member';
   const projectDir = env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
   if (activeSpecialists(projectDir).some((s) => s.name === role) || isMarkedSpecialist(projectDir, role)) return 'specialist';
