@@ -18,7 +18,7 @@ Pick techniques by what the test condition is about; combine them for high-risk 
 
 | Technique | How |
 |---|---|
-| Error guessing | list likely mistakes from the defect history and the `live-preview` catalogue (`common-bugs.md`) for this area; test each |
+| Error guessing | list likely mistakes from the defect history for this area; test each |
 | Exploratory testing | **session-based**: a charter ("Explore *<area>* with *<resources/data>* to discover *<risk>*"), time box (30–60 min of agent effort), notes of what was tried, defects, questions, coverage gaps. At least one session per work item with UI or complex logic; more for high risk. Use the heuristics below to vary |
 | Checklist-based | the quality checklist and the UX verification checklist in this skill |
 
@@ -37,7 +37,7 @@ Exploratory variation heuristics: **CRUD** every object; **follow the data** (cr
 |---|---|---|
 | Unit / component | functions, components in isolation | existing tests + what the developer ran; qa adds what the ACs need |
 | Integration | modules together, API ↔ DB, client ↔ API contract | qa |
-| System / end-to-end | the whole running product through its real interface (`live-preview`) | qa |
+| System / end-to-end | the whole running product through its real interface (live preview) | qa |
 | Acceptance | does it meet the user's need — ACs + UX validation; UAT is the user's at plan approval, each milestone and the release check | qa prepares the evidence; the user accepts |
 
 ## Test types (choose per risk)

@@ -1,6 +1,6 @@
 # UI/UX verification — does it match the design, and can users actually use it?
 
-QA verifies **two** things on every screen/command the change touches, using the live-preview evidence (screenshots, captures, transcripts) and the running product:
+QA verifies **two** things on every screen/command the change touches, using the live preview evidence (screenshots, captures, transcripts) and the running product:
 
 1. **Conformance** — the implementation matches `.team/frontend-design/<slug>.md` (design system + the work item's section).
 2. **Usability** — independent of the design: a real user can complete the task efficiently and without errors. A deviation from usability that the design itself caused is still a defect; route it to the designer (escalation), not to the developer.

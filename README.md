@@ -8,7 +8,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
 - **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
-- **3 skill** nạp khi cần: `business-analysis`, `test-process`, `live-preview`.
+- **2 skill** nạp khi cần: `business-analysis`, `test-process`.
 
 ```
 bạn ──▶ /technical-team:run "login trả 500"
@@ -127,6 +127,7 @@ Agent không khai báo allowlist `tools`, nên kế thừa mọi MCP tool (Prism
 | `team-ba` · `team-pm` · `team-architect` · `team-designer` · `team-writer` | `Bash` | ✅ |
 
 - Lead ghi trong brief những MCP/skill bước đó cần và việc nào bên ngoài repo người dùng đã cho phép.
+- Mỗi bước, lead tự suy luận từ mục tiêu bước và stack để chọn skill/MCP agent cần (Figma MCP cho designer, database MCP cho dba, docs MCP cho architect/developer, issue tracker cho ba/pm, hosting/CI cho devops, browser/emulator MCP hoặc skill run/preview của project cho qa/developer/debugger…) rồi giao qua dòng `Tools:` trong brief. Agent dùng đúng tool đó; brief không ghi hoặc thiếu → tự chọn và ghi vào **Evidence**. Thiếu tool cần thiết → báo người dùng; bước kiểm tra không chạy được ghi là chưa chạy, không tính PASS.
 - Đọc qua MCP thì tự do; thay đổi bên ngoài repo (deploy, migrate DB dùng chung, tạo issue, gửi tin) chỉ khi người dùng yêu cầu. Mỗi lần gọi MCP được ghi vào **Evidence** của handoff.
 - `disallowedTools` chặn cả một tool, không chặn theo tham số. Muốn chặn cứng một hành động (vd `mcp__vercel__deploy_to_vercel`), thêm vào `permissions.deny` trong `.claude/settings.json` của project.
 - Plugin không nạp trong cloud session (claude.ai/code); điều trên chỉ áp dụng khi chạy trên máy.
@@ -208,7 +209,7 @@ technical-team/
     ├── agents/          team-lead + 12 agent
     ├── commands/        run + crew + 7 pipeline
     ├── templates/       core · requirements · design · adr · reports
-    └── skills/          run-kit · business-analysis · test-process · live-preview
+    └── skills/          run-kit · business-analysis · test-process
 ```
 
 ## Liên kết và giấy phép
