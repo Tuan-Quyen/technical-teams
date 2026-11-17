@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Focus - 25:00</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23d9482b'/%3E%3Cpath d='M16 8v8l5 3' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="src/core.js" defer></script>
+  <script src="src/storage.js" defer></script>
+  <script src="src/alerts.js" defer></script>
+  <script src="src/app.js" defer></script>
+</head>
+<body>
+  <div id="app" data-phase="focus">
+    <header class="page-header">
+      <h1 class="visually-hidden">Pomodoro timer</h1>
+      <button type="button" id="settings-btn" class="icon-btn" aria-label="Settings">
+        <svg aria-hidden="true" focusable="false" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </header>
+
+    <main class="panel" id="panel">
+      <p class="phase-label" id="phase-label">Focus</p>
+
+      <div class="timer" id="timer" role="timer" aria-label="Focus, 25:00 left">25:00</div>
+      <p class="paused-note" id="paused-note" hidden>Paused</p>
+
+      <div class="banner" id="banner" hidden>
+        <svg class="banner-icon" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <p class="banner-text" id="banner-text"></p>
+        <button type="button" class="btn btn-ghost banner-dismiss" id="banner-dismiss">Got it</button>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="primary-btn" class="btn btn-primary">Start</button>
+        <div class="secondary-actions">
+          <button type="button" id="reset-btn" class="btn btn-secondary">Reset</button>
+          <button type="button" id="skip-btn" class="btn btn-ghost">Skip</button>
+        </div>
+      </div>
+
+      <p class="count" id="count">Today: 0 sessions</p>
+    </main>
+
+    <div id="live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" id="settings-form" novalidate>
+      <h2 id="settings-title">Settings</h2>
+
+      <div class="field">
+        <label for="focus-min">Focus</label>
+        <div class="field-row">
+          <input type="text" inputmode="numeric" id="focus-min" name="focusMin" autocomplete="off" aria-describedby="focus-min-error">
+          <span class="suffix">minutes</span>
+        </div>
+        <p class="field-error" id="focus-min-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="short-min">Short break</label>
+        <div class="field-row">
+          <input type="text" inputmode="numeric" id="short-min" name="shortMin" autocomplete="off" aria-describedby="short-min-error">
+          <span class="suffix">minutes</span>
+        </div>
+        <p class="field-error" id="short-min-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="long-min">Long break</label>
+        <div class="field-row">
+          <input type="text" inputmode="numeric" id="long-min" name="longMin" autocomplete="off" aria-describedby="long-min-error">
+          <span class="suffix">minutes</span>
+        </div>
+        <p class="field-error" id="long-min-error" hidden></p>
+      </div>
+
+      <label class="check" for="notify-check">
+        <input type="checkbox" id="notify-check" name="notify">
+        <span class="check-box" aria-hidden="true"></span>
+        <span>Show a notification when time's up</span>
+      </label>
+
+      <div class="dialog-actions">
+        <button type="button" id="settings-cancel" class="btn btn-secondary">Cancel</button>
+        <button type="submit" id="settings-save" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
