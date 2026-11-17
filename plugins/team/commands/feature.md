@@ -12,6 +12,7 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 (
 
 `--small` (fits existing patterns: no new screen, contract or migration): skip steps 1–4; write 2–5 expected-behaviour bullets into STATE.md and the developer's brief (no tickets).
 
+0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. **Requirements** — `technical-team:team-ba` writes `.team/requirements/<slug>.md`. Questions → show them to the user, wait, pass the answers back.
 2. **Frontend design** — only with user-facing UI: `technical-team:team-designer` writes `.team/frontend-design/<slug>.md` (and `DESIGN.md` if missing).
 3. **System design** — `technical-team:team-architect` writes `.team/system-design/<slug>.md`. Schema or data change → `technical-team:team-dba` fills its "Data and migrations" section. Show the user a short summary and wait for OK.

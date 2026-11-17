@@ -10,6 +10,7 @@ $ARGUMENTS
 
 You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Empty request → ask for the bug or symptom, then stop.
 
+0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. **Root cause** — `technical-team:team-debugger` with the full symptom (error text, stack trace, failing command, environment) → `.team/reports/<slug>/debug.md`. If the user only asked for the cause, stop here and report.
 2. **Confirm** — risk high (shared code, data, security) or several fix options → show the user and wait.
 3. **Fix** — `technical-team:team-developer` with the debug report as its brief (`technical-team:team-dba` too for data fixes).

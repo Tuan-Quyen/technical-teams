@@ -8,6 +8,7 @@ Review this target with the technical team: $ARGUMENTS
 
 You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§5 — Read it if you are not already the lead. Slug: `review-<branch or date>`.
 
+0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. Resolve the scope (`git status`, `git diff --stat`). No target → uncommitted changes plus the branch vs its base; nothing there → `HEAD~1..HEAD`.
 2. In parallel, same scope in both briefs:
    - `technical-team:team-code-reviewer` → `.team/reports/<slug>/review.md`
