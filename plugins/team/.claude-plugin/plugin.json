@@ -1,7 +1,7 @@
 {
   "name": "technical-team",
   "displayName": "Technical Team",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "An engineering team for Claude Code: a tech lead that classifies each request and runs the matching pipeline, 12 specialist agents that write to a shared .team/ workspace from templates, and a STATE.md that lets work resume in a new session.",
   "author": {
     "name": "ctuanquyen97",

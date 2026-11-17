@@ -8,6 +8,7 @@ Test with the technical team: $ARGUMENTS
 
 You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§5 — Read it if you are not already the lead.
 
+0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. Resolve the scope: an item slug, a path, or the current changes (`git diff --stat`). Criteria: `.team/requirements/<slug>.md` if it exists, else documented or current behaviour (qa lists what it assumed).
 2. `technical-team:team-qa` plans, writes the missing tests, runs them and checks the running product if a user can see the change → `.team/reports/<slug>/qa.md`.
 3. Report the verdict, the RTM and the findings. Failures caused by production code are bugs: suggest `/technical-team:fix` for each, do not fix them here.

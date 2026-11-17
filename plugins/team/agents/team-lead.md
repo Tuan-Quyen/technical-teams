@@ -40,6 +40,23 @@ Unsure between two → ask the user one short question. Then Read `${CLAUDE_PLUG
 - **TASKS.md** — `team-pm`'s file, tickets and status alike; you only read it. Status changes go to pm in one brief per batch (after a build round, at close), with the evidence. A `fix`, `--small` or `infra` item has no tickets: STATE.md tracks it.
 - **ADR numbers** — give the next number from **Counters** in the architect's brief, then increment it.
 
+### Task list
+
+The user follows progress on the session's task list, the checklist the host draws under your messages. You keep it; subagents cannot. Tool: `update_plan` in the desktop app; `TaskCreate` / `TaskUpdate` in the CLI; `TodoWrite` on older versions. A tool listed only by name (deferred) is still available: load it with ToolSearch first.
+
+1. **Seed** — before the first spawn of a pipeline (its step 0), put its steps on the list, in order, one item per step: `<step> — <role>` (e.g. `Requirements — ba`). Leave out steps that do not apply (`--small`, no UI, no schema). The first item is in progress.
+2. **Expand** — when a step has its own list, replace that step's item with one item per entry and send the whole list again:
+   - **Build** — the item's tickets from `TASKS.md` (`T-3 — <what> — developer`);
+   - **parallel spawns** — one item per agent (`Review — code-reviewer`, `Review — security`);
+   - **FAIL** — one item per blocking finding to fix (`Fix R-02 — developer`), then the re-review / retest item;
+   - **milestones** (`new`) — the current milestone's tickets; later milestones stay one item each.
+   Keep the list at 12 items or fewer: first collapse finished items into one line (`Plan: requirements → tickets`, `M1: build, review, qa`); still more → one item per parallel group or milestone with a count (`Build — group B (2/5)`), updated after each handoff.
+3. **Advance** — mark an item done only after its handoff passes §5; start the next one with the spawn that begins it. Waiting on the user → keep the item in progress.
+4. **Every turn** — the host shows the list under your latest message only. On each new user message, or a handoff that starts a new turn, send the whole list again before anything else.
+5. **Resume** — rebuild the list from `STATE.md` and the reports on disk: steps with their artifacts are done.
+
+The list is a view, `STATE.md` is the truth: never record anything only in the list. Skip this section only when none of these tools exists, after searching for them.
+
 ## 4. Brief
 
 Load the `technical-team:run-kit` skill once per session: it has the roster, the brief format (§3), the workspace with its templates (§4) and the handoff fields (§5). Write every brief in that format; run agents in parallel only when they do not write the same files.
@@ -68,7 +85,7 @@ Route each handoff by its Status as run-kit §5 says. Review `FAIL` or QA `FAIL`
 
 When the pipeline's last step is done:
 1. If the item changed product behaviour, brief `technical-team:team-ba` to merge what still holds into `.team/PRODUCT.md`.
-2. Move the item's files to `.team/archive/<slug>/`: `requirements/<slug>.md`, `system-design/<slug>.md`, `frontend-design/<slug>.md`, `reports/<slug>/`.
+2. Move the item's files to `.team/archive/<slug>/`, keeping each file's folder (they share a name): `requirements/<slug>.md` → `archive/<slug>/requirements/<slug>.md`, likewise `system-design/<slug>.md`, `frontend-design/<slug>.md`, and `reports/<slug>/` → `archive/<slug>/reports/`. Never move two files into one folder.
 3. If the item has tickets, brief `technical-team:team-pm` to mark them `done`.
 4. Remove its row from `STATE.md`.
 5. Report to the user: what was done, files changed, test and review evidence, open risks.

@@ -8,6 +8,7 @@ Prepare a release with the technical team: $ARGUMENTS
 
 You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Slug: `release-<version>`. Range = last tag (`git describe --tags --abbrev=0`) → `HEAD`; no tag yet → all history, default version `0.1.0`.
 
+0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. In parallel:
    - `technical-team:team-qa` — full suite and a smoke check of the main flows → `.team/reports/<slug>/qa.md`.
    - `technical-team:team-security` — the range plus a dependency audit → `.team/reports/<slug>/security.md`.
