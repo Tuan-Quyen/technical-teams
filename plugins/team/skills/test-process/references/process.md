@@ -2,7 +2,7 @@
 
 > Reference of the `test-process` skill (SKILL.md holds the binding summary). Read the section you need: the activity table (§1) when writing the test plan, §2/§2a when deciding the verdict.
 
-A QA PASS means: **the product does what the spec says (verification), the user can actually use it (validation), and nothing that worked before is broken (regression)** — with evidence. Unit tests are one input; the running product (`live-preview`) and the design are the others.
+A QA PASS means: **the product does what the spec says (verification), the user can actually use it (validation), and nothing that worked before is broken (regression)** — with evidence. Unit tests are one input; the running product (previewed the way the project runs it) and the design are the others.
 
 Paths below are relative to `${CLAUDE_PLUGIN_ROOT}/skills/test-process/`.
 
@@ -34,10 +34,10 @@ flowchart LR
 | Static testing | same step | review ACs, edge cases and the frontend design for ambiguity, untestable wording, missing states, contradictions between spec / frontend design / PLAN → findings to the main session for ba / designer / architect **before** code exists (cheapest defects) | **Review findings** |
 | Test analysis | before build (once the plan is approved), refined in the first test round | test conditions: every AC, edge case, designed screen state, risk, quality characteristic in scope — **each mapped to the ticket that delivers it**, so the developer knows before coding what you will check | **Traceability (RTM)**: condition → source → ticket |
 | Test design | same | test cases with techniques (`techniques.md`); expected results from the spec/design, never from the current behaviour | RTM: condition → test case |
-| Test implementation | same | automated tests in the project's layout, preview scripts (`live-preview`), test data/fixtures, exploratory charters; check entry criteria | test files; RTM: test case → file |
+| Test implementation | same | automated tests in the project's layout, preview scripts (per the project's own preview method), test data/fixtures, exploratory charters; check entry criteria | test files; RTM: test case → file |
 | Test execution | every test round | run the suite; live preview on every platform; **UI/UX verification** (`ux-verification.md`); time-boxed exploratory session(s); compare actual vs expected; log defects; retest fixed defects; regression around the change | **Execution log** per round, **Defects** |
 | Monitoring and control | every round | progress (conditions passed/failed/blocked), defect trend, risks that changed; blocked → tell the main session what unblocks it | round summary |
-| Test completion | the round that passes, and `release` | check exit criteria, test summary report, open/deferred defects with reasons, lessons learned (escaped bugs → `live-preview` catalogue, missing ACs → ba) | **Test summary** |
+| Test completion | the round that passes, and `release` | check exit criteria, test summary report, open/deferred defects with reasons, lessons learned (escaped bugs → regression tests, missing ACs → ba) | **Test summary** |
 
 ## 2. Entry and exit criteria (defaults; the test plan may tighten them)
 

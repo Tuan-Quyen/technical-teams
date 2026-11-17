@@ -53,7 +53,8 @@ Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
-Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any, MCP tools / project skills to use and which outside changes the user allowed>
+Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any, which outside changes the user allowed>
+Tools: <skills / mcp__server__* / commands this step needs, each with what it is for — chosen by the lead for this step; none → –>
 User's language: <language>
 ```
 
@@ -65,7 +66,7 @@ User's language: <language>
 
 ```
 Rules: write only the files under Write (none = advise only). Never write .team/STATE.md, never commit or push.
-       Reading MCP is free; an outside change only if Constraints says the user allowed it.
+       Use the Tools line. Reading MCP is free; an outside change only if Constraints says the user allowed it.
 Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
 ```
 

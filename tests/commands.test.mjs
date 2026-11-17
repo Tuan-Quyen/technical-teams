@@ -32,7 +32,7 @@ const COMMANDS = [...PIPELINES, 'crew', 'run'].sort();
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
 const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
 const AGENTS = [...WORKERS, 'team-lead'].sort();
-const SKILLS = ['business-analysis', 'live-preview', 'run-kit', 'test-process'];
+const SKILLS = ['business-analysis', 'run-kit', 'test-process'];
 const TEMPLATE_DIRS = ['adr', 'core', 'design', 'reports', 'requirements'];
 const DOCS = [...walk('commands'), ...walk('agents'), ...walk('skills'), ...walk('templates')];
 const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';

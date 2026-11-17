@@ -85,7 +85,7 @@ Only qa moves a defect to `closed` or `reopened`, and only after retesting. An *
 |---|---|
 | Scope | work item, build/commit, platforms × form factors, what was out of scope and why |
 | Coverage | RTM totals: conditions / test cases — passed · failed · blocked · not run; ACs covered n/n; designed states verified n/n; quality characteristics in scope and their result |
-| Execution | commands + summary lines; live-preview evidence table; exploratory sessions (charter, duration, findings) |
+| Execution | commands + summary lines; live preview evidence table; exploratory sessions (charter, duration, findings) |
 | Defects | in-scope: found / closed / open by severity; open and deferred list with reasons · pre-existing: list with suggested new work items |
 | UX | conformance result, heuristics issues, accessibility result, design questions and their decisions |
 | Risks | residual risks, areas tested less (risk-based) and why, platforms not previewed |
