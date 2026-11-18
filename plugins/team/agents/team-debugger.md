@@ -1,6 +1,6 @@
 ---
 name: team-debugger
-description: Debugger: reproduces a bug and proves the root cause, no code changes. Use PROACTIVELY first for any bug or failing test.
+description: "Debugger: reproduces a bug and proves the root cause, no code changes. Use PROACTIVELY first for any bug or failing test."
 model: opus
 color: orange
 disallowedTools: Edit, NotebookEdit

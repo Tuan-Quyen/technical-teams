@@ -1,6 +1,6 @@
 ---
 name: team-writer
-description: Technical writer: README, API docs, CHANGELOG, runbooks. Use PROACTIVELY when a change affects usage, API or operations.
+description: "Technical writer: README, API docs, CHANGELOG, runbooks. Use PROACTIVELY when a change affects usage, API or operations."
 model: sonnet
 color: cyan
 disallowedTools: Bash, NotebookEdit

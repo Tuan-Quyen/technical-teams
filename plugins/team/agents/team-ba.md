@@ -1,6 +1,6 @@
 ---
 name: team-ba
-description: Business analyst: user stories and Given/When/Then ACs in `.team/requirements/`. Use PROACTIVELY at the start of new work or when requirements are unclear.
+description: "Business analyst: user stories and Given/When/Then ACs in `.team/requirements/`. Use PROACTIVELY at the start of new work or when requirements are unclear."
 model: sonnet
 color: cyan
 disallowedTools: Bash, NotebookEdit

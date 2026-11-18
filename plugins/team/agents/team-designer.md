@@ -1,6 +1,6 @@
 ---
 name: team-designer
-description: UI/UX designer: flows, screens and states in `.team/frontend-design/`. Use PROACTIVELY when work has user-facing UI.
+description: "UI/UX designer: flows, screens and states in `.team/frontend-design/`. Use PROACTIVELY when work has user-facing UI."
 model: opus
 color: pink
 disallowedTools: Bash, NotebookEdit

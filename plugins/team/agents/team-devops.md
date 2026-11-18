@@ -1,6 +1,6 @@
 ---
 name: team-devops
-description: DevOps engineer: CI/CD, Docker, deploy manifests, ops scripts. Use PROACTIVELY for infrastructure and release work.
+description: "DevOps engineer: CI/CD, Docker, deploy manifests, ops scripts. Use PROACTIVELY for infrastructure and release work."
 model: sonnet
 color: green
 ---

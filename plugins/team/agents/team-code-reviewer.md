@@ -1,6 +1,6 @@
 ---
 name: team-code-reviewer
-description: Code reviewer: findings and PASS/FAIL in `.team/reports/<slug>/review.md`. Use PROACTIVELY after any code change.
+description: "Code reviewer: findings and PASS/FAIL in `.team/reports/<slug>/review.md`. Use PROACTIVELY after any code change."
 model: sonnet
 color: red
 disallowedTools: NotebookEdit

@@ -1,6 +1,6 @@
 ---
 name: team-pm
-description: Project manager: turns a system design into tickets in `.team/TASKS.md` and updates their status. Use PROACTIVELY after a design is approved.
+description: "Project manager: turns a system design into tickets in `.team/TASKS.md` and updates their status. Use PROACTIVELY after a design is approved."
 model: sonnet
 color: yellow
 disallowedTools: Bash, NotebookEdit

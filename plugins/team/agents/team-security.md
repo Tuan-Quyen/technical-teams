@@ -1,6 +1,6 @@
 ---
 name: team-security
-description: Security engineer: audits for vulnerabilities, PASS/FAIL in `.team/reports/<slug>/security.md`. Use PROACTIVELY when a change touches auth, input, data, secrets or payments.
+description: "Security engineer: audits for vulnerabilities, PASS/FAIL in `.team/reports/<slug>/security.md`. Use PROACTIVELY when a change touches auth, input, data, secrets or payments."
 model: opus
 color: red
 disallowedTools: NotebookEdit

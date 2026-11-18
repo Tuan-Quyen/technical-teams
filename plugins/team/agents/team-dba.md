@@ -1,6 +1,6 @@
 ---
 name: team-dba
-description: Database engineer: schema, zero-downtime migrations, risky queries (local/test DBs only). Use PROACTIVELY when a change touches schema or data.
+description: "Database engineer: schema, zero-downtime migrations, risky queries (local/test DBs only). Use PROACTIVELY when a change touches schema or data."
 model: opus
 color: blue
 ---

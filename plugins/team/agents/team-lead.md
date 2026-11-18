@@ -1,6 +1,6 @@
 ---
 name: team-lead
-description: Tech lead: picks a pipeline, spawns the team, keeps `.team/STATE.md`. Use PROACTIVELY for multi-step, multi-role work or when handed the whole workflow.
+description: "Tech lead: picks a pipeline, spawns the team, keeps `.team/STATE.md`. Use PROACTIVELY for multi-step, multi-role work or when handed the whole workflow."
 model: inherit
 color: purple
 ---

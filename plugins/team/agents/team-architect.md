@@ -1,6 +1,6 @@
 ---
 name: team-architect
-description: Software architect: system design, ADRs, `ARCHITECTURE.md`. Use PROACTIVELY for feature design, stack choice and design decisions.
+description: "Software architect: system design, ADRs, `ARCHITECTURE.md`. Use PROACTIVELY for feature design, stack choice and design decisions."
 model: opus
 color: blue
 disallowedTools: Bash, NotebookEdit

@@ -1,6 +1,6 @@
 ---
 name: team-qa
-description: QA engineer: test plan, missing tests, live checks, PASS/FAIL in `.team/reports/<slug>/qa.md`. Use PROACTIVELY after a clean code review.
+description: "QA engineer: test plan, missing tests, live checks, PASS/FAIL in `.team/reports/<slug>/qa.md`. Use PROACTIVELY after a clean code review."
 model: sonnet
 color: yellow
 ---

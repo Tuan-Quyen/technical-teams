@@ -1,6 +1,6 @@
 ---
 name: team-developer
-description: Fullstack developer: implements tickets and fixes, self-checks with build, lint and tests. Use PROACTIVELY for any code change once the direction is set.
+description: "Fullstack developer: implements tickets and fixes, self-checks with build, lint and tests. Use PROACTIVELY for any code change once the direction is set."
 model: sonnet
 color: green
 ---
