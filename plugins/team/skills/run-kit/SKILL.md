@@ -1,6 +1,6 @@
 ---
 name: run-kit
-description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does.
+description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does. Also load it before spawning team agents yourself, without a pipeline command, for work with more than one step.
 ---
 
 # technical-team run kit
@@ -81,7 +81,7 @@ Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
 
 | File | Owner | Template (`${CLAUDE_PLUGIN_ROOT}/templates/…`) |
 |---|---|---|
-| `STATE.md` — who works on what, files in use, next step (resume point) | lead | `core/STATE.md` |
+| `STATE.md` — who works on what, files in use, next step (resume point) | the orchestrating session: lead, or whoever spawns agents directly | `core/STATE.md` |
 | `TASKS.md` — tickets and status | pm | `core/TASKS.md` |
 | `PRODUCT.md` — current truth of the product | ba | `core/PRODUCT.md` |
 | `ARCHITECTURE.md` — overview, ~200 lines max, points to ADRs | architect | `core/ARCHITECTURE.md` |
@@ -106,6 +106,17 @@ Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`)
 - Current truth only: overwrite stale lines; history lives in git, not in the file.
 - One home per fact; elsewhere, link it.
 - Each template has a **Budget** line. Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
+
+### Orchestrating without the lead
+
+Spawning team agents yourself, without a pipeline command, makes you the orchestrating session: the lead's bookkeeping for that work is yours.
+
+- One step (one agent, one handoff) → no `STATE.md` row.
+- Two or more steps, or work someone may resume later → before the first spawn, add a row from `core/STATE.md` (Pipeline: `direct`). After each handoff, overwrite it.
+- An open row already covers the item → update that row; never add a second one.
+- Item finished → remove its row and move its files to `archive/<slug>/`, as the lead's close step does.
+- Same rules as the lead: `Next step` ≤ 30 words, overwrite, never append, whole file within its Budget.
+- Spawned agents never write `STATE.md`.
 
 ## 5. Handoff
 

@@ -135,6 +135,14 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   assert.ok(!fs.existsSync(path.join(ROOT, 'skills/run-kit/references')), 'run-kit has no usage guide');
 });
 
+test('STATE.md belongs to the orchestrating session, with or without the lead', () => {
+  const kit = read('skills/run-kit/SKILL.md');
+  assert.match(kit, /^### Orchestrating without the lead$/m, 'run-kit covers direct orchestration');
+  assert.match(frontmatter('skills/run-kit/SKILL.md'), /spawning team agents yourself/, 'run-kit loads for direct orchestration');
+  assert.match(read('templates/core/STATE.md'), /Orchestrating without the lead/, 'STATE template points to the rule');
+  for (const a of WORKERS) assert.doesNotMatch(read(`agents/${a}.md`), /STATE\.md` and `\.team\/archive\/` are the lead's/, `${a}: STATE is not lead-only`);
+});
+
 test('TASKS.md belongs to pm alone', () => {
   for (const f of DOCS) assert.doesNotMatch(read(f), /Status column|lead \(Status\)/, `${f}: only pm writes TASKS.md`);
   assert.doesNotMatch(read('agents/team-lead.md'), /You write only[^\n]*TASKS/, 'lead does not write TASKS.md');
