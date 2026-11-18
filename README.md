@@ -87,7 +87,7 @@ Mỗi agent chuyên môn có khối `## Rules` (quy tắc chung + `### Handoff`)
 
 ## Crew: màu, emoji, vibe
 
-Mỗi agent có sẵn một **Persona** trong file của nó: `color:` trong frontmatter (màu nhãn agent trong Claude Code), emoji và vibe. Agent mở đầu câu trả lời bằng `<emoji> <tên>:`, ký tên vào handoff (`### Handoff · 🧪 Quinn`), còn lead báo trước mỗi lần spawn bằng một badge:
+Persona (emoji, biệt danh, vibe, màu badge) của cả 13 agent nằm ở **một chỗ**: `.team/CREW.md`. Lead tự tạo file này từ template với giá trị mặc định ở lần chạy đầu; bạn sửa trực tiếp file đó hoặc dùng `/technical-team:crew`. File agent chỉ giữ `color:` trong frontmatter (màu nhãn agent trong Claude Code). Agent mở đầu câu trả lời bằng `<emoji> <tên>:`, ký tên vào handoff (`### Handoff · 🧪 Quinn`), còn lead báo trước mỗi lần spawn bằng một badge:
 
 ```
 🟨 🧪 Quinn (qa) — retest Q-02
@@ -97,7 +97,7 @@ Mỗi agent có sẵn một **Persona** trong file của nó: `color:` trong fro
 Đổi theo project bằng `/technical-team:crew`:
 
 ```
-/technical-team:crew                                   xem cả team: default hay override
+/technical-team:crew                                   xem cả team: mặc định hay đã tùy biến
 /technical-team:crew qa name=Quinn vibe=cheerful       đặt biệt danh + vibe cho qa
 /technical-team:crew developer emoji=🦊 color=orange   đổi emoji và màu badge
 /technical-team:crew * vibe=terse                      cả team nói ngắn
@@ -151,7 +151,7 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 ```
 .team/
 ├── STATE.md                    lead: ai đang làm task nào, file đang dùng, bước tiếp (điểm resume)
-├── CREW.md                     lead (theo lệnh bạn): emoji, biệt danh, vibe, màu badge — tùy chọn
+├── CREW.md                     lead tự tạo (mặc định), bạn tùy biến: emoji, biệt danh, vibe, màu badge
 ├── TASKS.md                    pm: ticket và trạng thái
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
 ├── ARCHITECTURE.md             architect: tổng quan, trần ~200 dòng, trỏ sang ADR

@@ -3,6 +3,7 @@ Verdict: PENDING | PASS | FAIL | PASS pending design decision · Round <n>
 # <slug> — QA
 
 > Owner: **team-qa**. Findings are cumulative: an ID (`Q-01`…) is never reused; status open → fixed → verified (or dropped, with the reason). **Round detail** holds the latest round only: replace it every round.
+> **Budget:** ≤ 120 lines. Cells ≤ 25 words; RTM keeps the last 2 round columns. **Round detail** ≤ 12 lines, replaced each round; verified/dropped findings collapse to one `Closed:` line of IDs.
 
 ## Test plan
 - Scope in / out: <…>
@@ -21,6 +22,8 @@ Verdict: PENDING | PASS | FAIL | PASS pending design decision · Round <n>
 | ID | Title | Severity | Owner | Found | Status |
 |---|---|---|---|---|---|
 | Q-01 | <title> | blocker / critical / major / minor | developer | R1 | open |
+
+Closed: <IDs verified or dropped, or "none">
 
 ## Round detail (latest round only)
 - Round: R<n> · <YYYY-MM-DD> · build <commit or "working tree">

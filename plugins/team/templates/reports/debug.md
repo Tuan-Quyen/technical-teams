@@ -3,6 +3,7 @@ Result: root cause found | not reproduced
 # <slug> — debug
 
 > Owner: **team-debugger**.
+> **Budget:** ≤ 50 lines. Symptom and root cause one line each; output trimmed to the lines that prove it.
 
 ## Symptom
 <as reported: error text, failing command, environment>

@@ -1,6 +1,7 @@
 # Design system
 
 > Owner: **team-designer**. The UI rules every screen follows. Per-item screens live in `frontend-design/<slug>.md`.
+> **Budget:** ≤ 150 lines. Tokens and rules as tables; no per-screen detail.
 
 ## Foundations
 | Token | Value | Use |

@@ -2,6 +2,7 @@
 
 > Owner: **team-ba**. The current truth of the product. When an item closes, what its requirements established is merged here. Short; delete rows that are no longer true.
 > Basis: **C** confirmed by the user · **E** evidenced (file:line, doc) · **A** assumption.
+> **Budget:** ≤ 150 lines. One row per rule; no history.
 
 ## Vision
 <whose problem, what the product is, in two sentences>

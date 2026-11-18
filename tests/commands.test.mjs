@@ -95,18 +95,20 @@ test('the lead finds project agents and briefs them with the team rules', () => 
   assert.match(kit, /\*\*Briefing a project specialist\*\*/, 'run-kit has the specialist brief');
 });
 
-test('every agent has a color, a Persona (emoji + vibe) and a matching badge in run-kit', () => {
-  const kit = read('skills/run-kit/SKILL.md');
-  const square = { red: '🟥', orange: '🟧', yellow: '🟨', green: '🟩', blue: '🟦', purple: '🟪', pink: '🩷', cyan: '🩵' };
+test('every agent has a color; persona defaults live only in the CREW template', () => {
+  const crew = read('templates/core/CREW.md');
   for (const a of AGENTS) {
     const color = frontmatter(`agents/${a}.md`).match(/^color: (\w+)$/m)?.[1];
     assert.ok(COLORS.includes(color), `${a}: color is one of ${COLORS.join(', ')}`);
-    const p = read(`agents/${a}.md`).match(/^\*\*Persona\*\* — (\S+) · vibe: .+$/m);
-    assert.ok(p, `${a}: has a **Persona** — <emoji> · vibe: … line`);
-    assert.match(kit, new RegExp(`^\\| \`${a}\` \\|.*\\| ${square[color]} ${p[1]} \\|$`, 'm'), `${a}: run-kit badge matches color + emoji`);
+    assert.doesNotMatch(read(`agents/${a}.md`), /\*\*Persona\*\*/, `${a}: no Persona in the agent file`);
+    const row = crew.split('\n').find((l) => l.startsWith(`| \`${a}\` |`));
+    assert.ok(row, `${a}: has a default row in the CREW template`);
+    const [, , emoji, name, vibe, rowColor] = row.split('|').map((c) => c.trim());
+    assert.ok(emoji !== '–' && name !== '–' && vibe !== '–', `${a}: CREW row has emoji, name and vibe`);
+    assert.equal(rowColor, color, `${a}: CREW default color matches frontmatter`);
   }
-  for (const a of WORKERS) assert.match(read(`agents/${a}.md`), /\.team\/CREW\.md/, `${a}: honours CREW.md`);
-  assert.match(read('agents/team-lead.md'), /\.team\/CREW\.md/, 'lead reads CREW.md');
+  for (const a of WORKERS) assert.match(read(`agents/${a}.md`), /\.team\/CREW\.md/, `${a}: reads CREW.md`);
+  assert.match(read('agents/team-lead.md'), /Missing → create it from `\$\{CLAUDE_PLUGIN_ROOT\}\/templates\/core\/CREW\.md`/, 'lead creates CREW.md');
 });
 
 test('every specialist lists what it writes and ends with the same Rules + Handoff block', () => {
@@ -128,7 +130,7 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   const sections = [...kit.matchAll(/^## \d+\. (.+)$/gm)].map((m) => m[1]);
   assert.deepEqual(sections, ['Roster', 'Pipeline workflow commands', 'Writing a brief', 'Workspace `.team/`', 'Handoff']);
   for (const a of AGENTS) assert.ok(kit.includes(`| \`${a}\` |`), `roster lists ${a}`);
-  for (const c of PIPELINES) assert.ok(kit.includes(`| \`${c}`), `pipelines list ${c}`);
+  for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
   assert.ok(!fs.existsSync(path.join(ROOT, 'skills/run-kit/references')), 'run-kit has no usage guide');
 });
