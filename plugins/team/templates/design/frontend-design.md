@@ -2,6 +2,10 @@
 
 Follows: `frontend-design/DESIGN.md`
 
+> **Budget:** ≤ 150 lines per item. One table row per screen state; big work → one file per milestone (`<slug>-m2.md`).
+
+
+
 ## Users and top tasks
 | User | Task | Frequency |
 |---|---|---|

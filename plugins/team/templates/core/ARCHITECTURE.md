@@ -1,6 +1,7 @@
 # Architecture
 
 > Owner: **team-architect**. The system as it is now, at most ~200 lines. Reasons live in `.team/adr/`; link to them by number instead of copying.
+> **Budget:** ≤ 200 lines. Shape of the system now; reasons are ADR links.
 
 ## Purpose and context
 <what the system does, for whom, what it talks to>

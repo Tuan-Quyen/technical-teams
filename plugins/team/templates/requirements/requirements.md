@@ -2,6 +2,8 @@
 
 Status: draft | confirmed
 
+> **Budget:** ≤ 150 lines per item. ACs as table rows with concrete values; answered questions move into ACs or facts, then leave **Open questions**.
+
 ## Goal
 <whose problem, what is better afterwards>
 

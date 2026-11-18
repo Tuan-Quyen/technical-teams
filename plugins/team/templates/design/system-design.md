@@ -2,6 +2,8 @@
 
 Status: draft | approved
 
+> **Budget:** ≤ 200 lines per item. Decisions and contracts, not code walk-throughs — cite `file:line`. Big work → one file per milestone (`<slug>-m2.md`); a revision replaces the section, it is never appended.
+
 ## Approach
 <how the change fits the system, in a few sentences>
 
