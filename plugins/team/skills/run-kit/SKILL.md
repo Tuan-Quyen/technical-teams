@@ -1,6 +1,6 @@
 ---
 name: run-kit
-description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does. Also load it before spawning team agents yourself, without a pipeline command, for work with more than one step.
+description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does. Also load it before spawning team agents yourself, without a pipeline command, for work with more than one step or that may pause and be resumed.
 ---
 
 # technical-team run kit
@@ -111,7 +111,7 @@ Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`)
 
 Spawning team agents yourself, without a pipeline command, makes you the orchestrating session: the lead's bookkeeping for that work is yours.
 
-- One step (one agent, one handoff) → no `STATE.md` row.
+- One step that finishes in one handoff → no `STATE.md` row.
 - Two or more steps, or work someone may resume later → before the first spawn, add a row from `core/STATE.md` (Pipeline: `direct`). After each handoff, overwrite it.
 - An open row already covers the item → update that row; never add a second one.
 - Item finished → remove its row and move its files to `archive/<slug>/`, as the lead's close step does.
