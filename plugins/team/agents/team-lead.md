@@ -88,7 +88,7 @@ Route each handoff by its Status as run-kit §5 says. Review `FAIL` or QA `FAIL`
 
 When the pipeline's last step is done:
 1. If the item changed product behaviour, brief `technical-team:team-ba` to merge what still holds into `.team/PRODUCT.md`.
-2. Move the item's files to `.team/archive/<slug>/`: `requirements/<slug>.md`, `system-design/<slug>.md`, `frontend-design/<slug>.md`, `reports/<slug>/`.
+2. Move the item's files to `.team/archive/<slug>/`: `requirements/<slug>.md`, `system-design/<slug>.md` and its milestone files `<slug>-m<n>.md`, `frontend-design/<slug>.md` and its `<slug>-m<n>.md`, `reports/<slug>/`.
 3. If the item has tickets, brief `technical-team:team-pm` to mark them `done`.
 4. Remove its row from `STATE.md`.
 5. Report to the user: what was done, files changed, test and review evidence, open risks.
