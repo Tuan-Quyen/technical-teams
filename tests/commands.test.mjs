@@ -73,7 +73,7 @@ test('every agent has name = file name, a description and a model', () => {
     assert.match(fm, /^description: .+$/m, `${a}: description`);
     const desc = fm.match(/^description: (.+)$/m)[1];
     assert.ok(desc.startsWith('"') || !/: /.test(desc), `${a}: a description with ": " must be quoted, or the YAML frontmatter breaks`);
-    assert.match(fm, /^model:(sonnet|opus|haiku|inherit)$/m, `${a}: model`);
+    assert.match(fm, /^model: (sonnet|opus|haiku|inherit)$/m, `${a}: model`);
   }
 });
 
