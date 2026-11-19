@@ -1,0 +1,38 @@
+name: pomodoro-timer
+
+on:
+  push:
+    paths:
+      - 'example/pomodoro-timer/**'
+      - '.github/workflows/pomodoro-timer.yml'
+  pull_request:
+    paths:
+      - 'example/pomodoro-timer/**'
+      - '.github/workflows/pomodoro-timer.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pomodoro-timer-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: example/pomodoro-timer
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: example/pomodoro-timer/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
