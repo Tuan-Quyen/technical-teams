@@ -60,7 +60,7 @@ Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
-Constraints: <scope, user decisions so far (verbatim + date: they count as the user's consent), finding IDs to fix, ADR number if any, which outside changes the user allowed>
+Constraints: <scope, user decisions so far (verbatim + date; each is consent only for the action it names), finding IDs to fix, ADR number if any, which outside changes the user allowed>
 Tools: <skills / mcp__server__* / commands this step needs, each with what it is for — chosen by the lead for this step; none → –>
 User's language: <language>
 Reply: open with `<emoji> <name>:` · end with `### Handoff · <emoji> <name>` (row in `.team/CREW.md`)
