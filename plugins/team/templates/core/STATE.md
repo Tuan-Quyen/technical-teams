@@ -1,6 +1,6 @@
 # Team state
 
-> Owner: **team-lead** only. Open work only — a closed item's row is removed and its files go to `.team/archive/<slug>/`.
+> Owner: the orchestrating session only — **team-lead** in a pipeline, or whoever spawns team agents directly (run-kit § Orchestrating without the lead). Spawned agents never write it. Open work only — a closed item's row is removed and its files go to `.team/archive/<slug>/`.
 > This file is the resume point: a new or resumed session reads it first and continues at **Next step**.
 > **Budget:** ≤ 60 lines. Cells are short phrases; `Next step` ≤ 30 words, the next action only. Overwrite, never append — history is in git.
 
@@ -8,7 +8,7 @@
 
 | Slug | Pipeline | Step | Agent | Ticket | Files in use | Status | Next step |
 |---|---|---|---|---|---|---|---|
-| <kebab-slug> | <feature / fix / review / test / infra / release / new> | <step number + name> | <team-… or "user"> | <T-n or –> | <only the files this step reads/writes> | running / waiting-for-user / blocked / paused | <next action, ≤ 30 words> |
+| <kebab-slug> | <feature / fix / review / test / infra / release / new / direct> | <step number + name> | <team-… or "user"> | <T-n or –> | <only the files this step reads/writes> | running / waiting-for-user / blocked / paused | <next action, ≤ 30 words> |
 
 ### Notes
 <!-- Only what a cold session needs and has no other home: ≤ 5 bullets per item. -->

@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+
+/* Self-hosted Inter (OFL 1.1, see src/assets/fonts/OFL.txt). Digits are tabular, so the swap never shifts them. */
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('./assets/fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Landscape phones: short viewports get a smaller ring and halved gaps. */
+@custom-variant short (@media (max-height: 560px));
+
+@theme {
+  --color-bg-base: #0a0b10;
+  --color-bg-surface: #12141b;
+  --color-bg-elevated: #1a1d26;
+  --color-border-subtle: #262a35;
+  --color-border-strong: #6b7280;
+  --color-text-primary: #f4f5f7;
+  --color-text-secondary: #a1a7b3;
+  --color-text-muted: #858c9a;
+  --color-text-on-accent: #0a0b10;
+  --color-phase-focus: #ff6b6b;
+  --color-phase-short: #2dd4bf;
+  --color-phase-long: #a78bfa;
+  --color-ring-track: rgb(255 255 255 / 0.08);
+  --color-status-error: #fca5a5;
+  --color-status-warn: #fbbf24;
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* `bg-accent`, `text-accent`, `outline-accent` follow the active phase through `--accent`. */
+@theme inline {
+  --color-accent: var(--accent);
+}
+
+/* Registered so the accent can transition (600 ms crossfade on a phase change). */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ff6b6b;
+}
+
+/* The runtime sets `data-phase` on <html>; without it the page keeps the Focus accent. */
+:root {
+  --accent: var(--color-phase-focus);
+  color-scheme: dark;
+  transition: --accent 600ms var(--ease-out-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
+}
+
+:root[data-phase='focus'] {
+  --accent: var(--color-phase-focus);
+}
+
+:root[data-phase='short'] {
+  --accent: var(--color-phase-short);
+}
+
+:root[data-phase='long'] {
+  --accent: var(--color-phase-long);
+}
+
+html,
+body,
+#root {
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}

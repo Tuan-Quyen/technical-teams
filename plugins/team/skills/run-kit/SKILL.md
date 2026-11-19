@@ -1,6 +1,6 @@
 ---
 name: run-kit
-description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does.
+description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does. Also load it before spawning team agents yourself, without a pipeline command, for work with more than one step or that may pause and be resumed.
 ---
 
 # technical-team run kit
@@ -60,14 +60,15 @@ Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
-Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any, which outside changes the user allowed>
+Constraints: <scope, user decisions so far (verbatim + date; each is consent only for the action it names), finding IDs to fix, ADR number if any, which outside changes the user allowed>
 Tools: <skills / mcp__server__* / commands this step needs, each with what it is for — chosen by the lead for this step; none → –>
 User's language: <language>
+Reply: open with `<emoji> <name>:` · end with `### Handoff · <emoji> <name>` (row in `.team/CREW.md`)
 ```
 
 - Name files, not "the findings above": the agent cannot see the conversation.
 - Pass user answers verbatim.
-- Parallel agents never share a file in **Write**.
+- Parallel agents never share a file in **Write**, and never share tree-wide state: no installs or whole-tree formatters while others run. Name the parallel agents under **Constraints** (`parallel with: qa, devops`) so each one holds back.
 
 **Briefing a project specialist** — it has none of the team's Rules, so the brief carries them. Use the format above, then add:
 
@@ -81,7 +82,7 @@ Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
 
 | File | Owner | Template (`${CLAUDE_PLUGIN_ROOT}/templates/…`) |
 |---|---|---|
-| `STATE.md` — who works on what, files in use, next step (resume point) | lead | `core/STATE.md` |
+| `STATE.md` — who works on what, files in use, next step (resume point) | the orchestrating session: lead, or whoever spawns agents directly | `core/STATE.md` |
 | `TASKS.md` — tickets and status | pm | `core/TASKS.md` |
 | `PRODUCT.md` — current truth of the product | ba | `core/PRODUCT.md` |
 | `ARCHITECTURE.md` — overview, ~200 lines max, points to ADRs | architect | `core/ARCHITECTURE.md` |
@@ -105,7 +106,18 @@ Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`)
 - Point, do not explain: `file:line`, commit, test name, finding or ticket ID, ADR number.
 - Current truth only: overwrite stale lines; history lives in git, not in the file.
 - One home per fact; elsewhere, link it.
-- Each template has a **Budget** line. Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
+- Each template has a **Budget** line. Count every line, blank ones too: the last line number of a `Read`, or `wc -l` / `(Get-Content f).Count` (not `Measure-Object -Line`, which skips blank lines). Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
+
+### Orchestrating without the lead
+
+Spawning team agents yourself, without a pipeline command, makes you the orchestrating session: the lead's bookkeeping for that work is yours.
+
+- One step that finishes in one handoff → no `STATE.md` row.
+- Two or more steps, or work someone may resume later → before the first spawn, add a row from `core/STATE.md` (Pipeline: `direct`). After each handoff, overwrite it.
+- An open row already covers the item → update that row; never add a second one.
+- Item finished → remove its row and move its files to `archive/<slug>/`, as the lead's close step does.
+- Same rules as the lead: `Next step` ≤ 30 words, overwrite, never append, whole file within its Budget.
+- Spawned agents never write `STATE.md`.
 
 ## 5. Handoff
 
@@ -121,6 +133,6 @@ Every agent opens its reply with `<emoji> <name>:` and ends it with:
 
 | Status | Means | Next move |
 |---|---|---|
-| `done` | step finished, evidence attached | next step of the pipeline (no evidence → treat as `blocked`) |
+| `done` | step finished, evidence attached | next step of the pipeline (no evidence → treat as `blocked`; no Handoff block → ask the agent for it first) |
 | `blocked` | cannot continue | debugger for an unclear failure, architect for a design problem, otherwise the user |
 | `needs-input` | a decision belongs to the user | ask the user, pass the answer back verbatim |

@@ -37,6 +37,7 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/test-process/reference
 | Severity | major+ cites a source (AC, designed state, heuristic, WCAG, convention) **and** a concrete user impact, else at most minor; unsure → lower level |
 | Independence | expected results from spec/frontend design/docs/conventions, never from current behaviour |
 | Usability | spec-compliant but unusable = defect; caused by the design → escalate as a design question |
+| Tool limits | name at plan time what the browser or emulator tool cannot do (hide a tab, a viewport below its minimum, reduced motion, real notifications or sound) → cover it with unit or integration tests and mark the live check `not run`, never PASS |
 
 ## Verdict
 

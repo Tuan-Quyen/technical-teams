@@ -71,6 +71,8 @@ test('every agent has name = file name, a description and a model', () => {
     const fm = frontmatter(`agents/${a}.md`);
     assert.match(fm, new RegExp(`^name: ${a}$`, 'm'), `${a}: name`);
     assert.match(fm, /^description: .+$/m, `${a}: description`);
+    const desc = fm.match(/^description: (.+)$/m)[1];
+    assert.ok(desc.startsWith('"') || !/: /.test(desc), `${a}: a description with ": " must be quoted, or the YAML frontmatter breaks`);
     assert.match(fm, /^model: (sonnet|opus|haiku|inherit)$/m, `${a}: model`);
   }
 });
@@ -133,6 +135,14 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
   assert.ok(!fs.existsSync(path.join(ROOT, 'skills/run-kit/references')), 'run-kit has no usage guide');
+});
+
+test('STATE.md belongs to the orchestrating session, with or without the lead', () => {
+  const kit = read('skills/run-kit/SKILL.md');
+  assert.match(kit, /^### Orchestrating without the lead$/m, 'run-kit covers direct orchestration');
+  assert.match(frontmatter('skills/run-kit/SKILL.md'), /spawning team agents yourself/, 'run-kit loads for direct orchestration');
+  assert.match(read('templates/core/STATE.md'), /Orchestrating without the lead/, 'STATE template points to the rule');
+  for (const a of WORKERS) assert.doesNotMatch(read(`agents/${a}.md`), /STATE\.md` and `\.team\/archive\/` are the lead's/, `${a}: STATE is not lead-only`);
 });
 
 test('TASKS.md belongs to pm alone', () => {

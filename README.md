@@ -150,7 +150,7 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 
 ```
 .team/
-├── STATE.md                    lead: ai đang làm task nào, file đang dùng, bước tiếp (điểm resume)
+├── STATE.md                    session điều phối (lead, hoặc session tự gọi agent): ai đang làm task nào, file đang dùng, bước tiếp (điểm resume)
 ├── CREW.md                     lead tự tạo (mặc định), bạn tùy biến: emoji, biệt danh, vibe, màu badge
 ├── TASKS.md                    pm: ticket và trạng thái
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
