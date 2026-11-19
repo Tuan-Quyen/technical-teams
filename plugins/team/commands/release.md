@@ -17,4 +17,4 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
 2. `technical-team:team-writer` drafts the CHANGELOG / release notes for the range, breaking changes first. No version given → propose one by semver.
 3. Report **GO** or **NO-GO** with reasons, blocking items, test results and the exact commands the user runs (tag, push, deploy, rollback). Close per lead §6.
 
-Never tag, push, publish or deploy.
+Do not tag, push, publish or deploy unless the user asks.

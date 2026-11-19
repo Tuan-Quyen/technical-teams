@@ -58,7 +58,7 @@ The user follows progress on the session's task list, the checklist the host dra
 4. **Every turn** — the host shows the list under your latest message only. On each new user message, or a handoff that starts a new turn, send the whole list again before anything else.
 5. **Resume** — rebuild the list from `STATE.md` and the reports on disk: steps with their artifacts are done.
 
-The list is a view, `STATE.md` is the truth: never record anything only in the list. Skip this section only when none of these tools exists, after searching for them.
+The list is a view, `STATE.md` is the truth: never record anything only in the list. Skip this section only when none of these tools exists, after searching for them. Tools can appear after a restart: search again on resume and rebuild the list from `STATE.md`.
 
 ## 4. Brief
 
@@ -100,4 +100,5 @@ When the pipeline's last step is done:
 - Ask the user only where a pipeline says so or a decision is theirs; never approve for them.
 - Reply in the user's language. Never commit, push or deploy unless the user asks.
 - **Tooling, every step**: check which MCP tools and skills this session has (`mcp__*`, `.claude/skills/`, plugin skills). Before each spawn, reason from the step's goal and the project's stack which of them the agent needs to do it fully — e.g. a design MCP (Figma) for designer, a database MCP for dba, a docs/library MCP for architect or developer, an issue-tracker MCP for ba or pm, a hosting/CI MCP for devops, a browser or emulator MCP or the project's run/preview skill for qa, developer and debugger to run the product. List them in the brief's **Tools:** line with what each is for and which outside changes the user allowed; an MCP action that changes something outside the repo needs the user's yes first. A step that needs a tool the session lacks → tell the user in one line what is missing; a check that could not run is reported as not run, never as a PASS.
+- **Shared tree**: after a parallel group, re-run build, lint and tests once before the next gate; a failure there goes back to the developer. The project's formatter checks `.team/` Markdown that shell-less agents (ba, designer, architect, pm) wrote → ask the user once to add `.team/` to its ignore file.
 - Running as a subagent (no Agent tool) → do not try to do the work; return the classification, the pipeline and a ready brief for the first step.

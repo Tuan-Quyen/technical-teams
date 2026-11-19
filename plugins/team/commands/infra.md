@@ -17,4 +17,4 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
 4. **Runbook** — `technical-team:team-writer` writes `.team/docs/runbooks/<slug>.md` (build, deploy, rollback) from the real files; `technical-team:team-architect` updates "Operations" in `ARCHITECTURE.md` if it changed.
 5. **Close** — lead §6, with the exact remote commands for the user in order, plus rollback.
 
-Never apply, deploy or push.
+Do not apply, deploy or push unless the user asks.

@@ -60,14 +60,15 @@ Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
-Constraints: <scope, user decisions so far, finding IDs to fix, ADR number if any, which outside changes the user allowed>
+Constraints: <scope, user decisions so far (verbatim + date: they count as the user's consent), finding IDs to fix, ADR number if any, which outside changes the user allowed>
 Tools: <skills / mcp__server__* / commands this step needs, each with what it is for — chosen by the lead for this step; none → –>
 User's language: <language>
+Reply: open with `<emoji> <name>:` · end with `### Handoff · <emoji> <name>` (row in `.team/CREW.md`)
 ```
 
 - Name files, not "the findings above": the agent cannot see the conversation.
 - Pass user answers verbatim.
-- Parallel agents never share a file in **Write**.
+- Parallel agents never share a file in **Write**, and never share tree-wide state: no installs or whole-tree formatters while others run. Name the parallel agents under **Constraints** (`parallel with: qa, devops`) so each one holds back.
 
 **Briefing a project specialist** — it has none of the team's Rules, so the brief carries them. Use the format above, then add:
 
@@ -105,7 +106,7 @@ Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`)
 - Point, do not explain: `file:line`, commit, test name, finding or ticket ID, ADR number.
 - Current truth only: overwrite stale lines; history lives in git, not in the file.
 - One home per fact; elsewhere, link it.
-- Each template has a **Budget** line. Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
+- Each template has a **Budget** line. Count every line, blank ones too: the last line number of a `Read`, or `wc -l` / `(Get-Content f).Count` (not `Measure-Object -Line`, which skips blank lines). Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
 
 ### Orchestrating without the lead
 
@@ -132,6 +133,6 @@ Every agent opens its reply with `<emoji> <name>:` and ends it with:
 
 | Status | Means | Next move |
 |---|---|---|
-| `done` | step finished, evidence attached | next step of the pipeline (no evidence → treat as `blocked`) |
+| `done` | step finished, evidence attached | next step of the pipeline (no evidence → treat as `blocked`; no Handoff block → ask the agent for it first) |
 | `blocked` | cannot continue | debugger for an unclear failure, architect for a design problem, otherwise the user |
 | `needs-input` | a decision belongs to the user | ask the user, pass the answer back verbatim |
