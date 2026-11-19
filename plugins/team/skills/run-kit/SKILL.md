@@ -41,7 +41,7 @@ The pipelines (`→` sequential, `∥` parallel). Each command file lists its st
 | Command | For | Pipeline | Stops for the user at |
 |---|---|---|---|
 | `feature` | a new capability or behaviour change | ba → designer (UI) → architect (+dba) → pm → developer → code-reviewer ∥ security → qa → writer | ba questions, design OK |
-| `feature --small` | a change that fits existing patterns | developer → code-reviewer → qa | — |
+| `feature --small` | a change that fits existing patterns | developer → code-reviewer (∥ security) → qa (→ writer) | — |
 | `fix` | a bug, error, failing test | debugger → developer → code-reviewer (∥ security) → qa | risky fix options |
 | `review` | a diff, branch or range; no code changes | code-reviewer ∥ security (∥ dba) | — |
 | `test` | missing tests for a scope | qa | — |
@@ -117,6 +117,7 @@ Spawning team agents yourself, without a pipeline command, makes you the orchest
 - An open row already covers the item → update that row; never add a second one.
 - Item finished → remove its row and move its files to `archive/<slug>/`, as the lead's close step does.
 - Same rules as the lead: `Next step` ≤ 30 words, overwrite, never append, whole file within its Budget.
+- A lead subagent's returned plan → take over its `STATE.md` row and continue from it.
 - Spawned agents never write `STATE.md`.
 
 ## 5. Handoff

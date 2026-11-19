@@ -6,7 +6,9 @@ disable-model-invocation: true
 
 Prepare a release with the technical team: $ARGUMENTS
 
-You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Slug: `release-<version>`. Range = last tag (`git describe --tags --abbrev=0`) → `HEAD`; no tag yet → all history, default version `0.1.0`.
+You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Range = last tag (`git describe --tags --abbrev=0`) → `HEAD`; no tag yet → all history.
+
+**Version** — resolve it before step 0; the slug is `release-<version>`. Given → use it. No tag → `0.1.0`. Else propose the next semver from the range's commits (any breaking → major, else any `feat` → minor, else patch) and use it.
 
 0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. In parallel:
@@ -14,7 +16,7 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
    - `technical-team:team-security` — the range plus a dependency audit → `.team/reports/<slug>/security.md`.
    - `technical-team:team-devops` — build, config names, migration order, deploy and rollback readiness (local checks only), in its reply.
    - `technical-team:team-dba` — only if migrations were added in the range.
-2. `technical-team:team-writer` drafts the CHANGELOG / release notes for the range, breaking changes first. No version given → propose one by semver.
+2. `technical-team:team-writer` drafts the CHANGELOG / release notes for the range, breaking changes first. Version is the lead's: confirm it matches the range's changes or flag a mismatch; do not pick another.
 3. Report **GO** or **NO-GO** with reasons, blocking items, test results and the exact commands the user runs (tag, push, deploy, rollback). Close per lead §6.
 
 Do not tag, push, publish or deploy unless the user asks.
