@@ -14,4 +14,5 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§5 �
    - `technical-team:team-code-reviewer` → `.team/reports/<slug>/review.md`
    - `technical-team:team-security` → `.team/reports/<slug>/security.md`
    Add `technical-team:team-dba` if the diff has migrations.
-3. Report one verdict (PASS only if both pass), the de-duplicated findings by severity with `file:line`, and a fix order. Offer `/technical-team:fix` for blocking findings. Remove the STATE row.
+3. Report one verdict (PASS only if both pass), the de-duplicated findings by severity with `file:line`, and a fix order. Offer `/technical-team:fix` for blocking findings.
+4. **Close** — remove the item's STATE row and move `reports/<slug>/` to `.team/archive/<slug>/` (lead §6 steps 2 and 4).

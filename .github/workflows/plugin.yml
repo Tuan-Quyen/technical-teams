@@ -1,0 +1,41 @@
+name: plugin
+
+on:
+  push:
+    paths:
+      - 'plugins/**'
+      - 'tests/**'
+      - '.claude-plugin/**'
+      - 'package.json'
+      - 'README.md'
+      - '.github/workflows/plugin.yml'
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - 'tests/**'
+      - '.claude-plugin/**'
+      - 'package.json'
+      - 'README.md'
+      - '.github/workflows/plugin.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plugin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Tests skip `claude plugin validate --strict` when the CLI is absent;
+      # install it so they run. Static manifest check, no API key set.
+      - run: npm install -g @anthropic-ai/claude-code@2.1.328
+      - run: claude --version
+      - run: npm test

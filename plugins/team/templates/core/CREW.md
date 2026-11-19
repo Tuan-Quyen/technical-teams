@@ -39,4 +39,6 @@
 
 ## Notes
 
+- Claude Code offers only 8 colors for 13 agents, so colors group roles, not people: red = gates (code-reviewer, security), green = builders (developer, devops), blue = design/data (architect, dba), yellow = planning/checking (pm, qa), cyan = words/needs (ba, writer); purple, orange, pink are single (lead, debugger, designer). The emoji is the unique key in a badge.
+- 🩷 / 🩵 stand for pink / cyan because Unicode has no pink or cyan square.
 - Color sets the badge the lead shows before each spawn (`🟨 🧪 qa — retest Q-02`). The agent's label color in the Claude Code UI comes from the plugin's own `color:` and cannot be changed per project.
