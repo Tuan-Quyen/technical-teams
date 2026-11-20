@@ -49,7 +49,7 @@ The pipelines (`→` sequential, `∥` parallel). Each command file lists its st
 | `release` | release readiness, GO / NO-GO | qa ∥ security ∥ devops (∥ dba) → writer | — |
 | `new` | a product from an idea or PRD | ba → architect ∥ designer → architect → pm → per milestone: developer → review → qa → devops → writer → release | ba questions, stack, milestones |
 
-**Workflow-backed steps** — a command may run its parallel steps through the Workflow tool (`review`, `release`, the build loop of `feature`, `fix`, `infra` and `new` in `build-loop.js`, and the ticket check of `feature` and `new` in `plan-tickets.js` (pm writes, code checks, pm fixes); scripts in `${CLAUDE_PLUGIN_ROOT}/workflows/`). The lead still writes every §3 brief and passes them in `args`; the script spawns the agents with a result schema (status, verdict, findings, handoff) and returns `needsUser` entries (blocked, needs-input, agent died) for the lead to route per §5. `STATE.md` is set to `running` before the launch and updated when the result arrives. Call each by name (`technical-team:team-review`, `team-release`, `team-build-loop`, `team-plan-tickets`); only if the name is not found, Read the file and pass its text as `script`. `build-loop` also runs the FAIL loops (fix, re-review, re-qa, up to `maxRounds`) and the group check after parallel tickets; it returns `stuck` or `stopped` for the lead to route, and a re-run passes the full `groups` with `startAt` / `fromGroup` for where to resume. Workflows run only when the tool is available AND the user typed a slash command of this plugin for the item (`/technical-team:run` counts); otherwise the command's inline steps run, and the STATE row records `workflows: yes|no` so a resumed item keeps its choice.
+**Workflow-backed steps** — a command may run its parallel steps through the Workflow tool (`review`, `release`, the build loop of `feature`, `fix`, `infra` and `new` in `build-loop.js`, and the ticket check of `feature` and `new` in `plan-tickets.js`; scripts in `${CLAUDE_PLUGIN_ROOT}/workflows/`): the lead writes every §3 brief, the script spawns the agents and returns `needsUser` entries for the lead to route. Call, fallback, STATE row, routing and re-run rules are in §6. Workflows run only when the tool is available AND the user typed a slash command of this plugin for the item (`/technical-team:run` counts); otherwise the command's inline steps run, and the STATE row records `workflows: yes|no` so a resumed item keeps its choice.
 
 Loops: review or QA `FAIL` → back to the developer with the finding IDs, then review again. Unclear failure → debugger. Design looks wrong → architect. Same findings after 3 rounds → ask the user.
 
@@ -139,3 +139,32 @@ Every agent opens its reply with `<emoji> <name>:` and ends it with:
 | `done` | step finished, evidence attached | next step of the pipeline (no evidence → treat as `blocked`; no Handoff block → ask the agent for it first) |
 | `blocked` | cannot continue | debugger for an unclear failure, architect for a design problem, otherwise the user |
 | `needs-input` | a decision belongs to the user | ask the user, pass the answer back verbatim |
+
+## 6. Workflow steps
+
+How every command runs a step through the Workflow tool. The command gives the opt-in, the workflow name, the `args` and any command-specific routing; the rest is here.
+
+- **Run** — write every agent's §3 brief yourself, then set the item's STATE row (step `<n> (workflow)`, status `running`) and call `Workflow` with `name: 'technical-team:team-…'` and the command's `args`. Only if the name is not found: Read `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` (the file the command names) and pass its text as `script` with the same args.
+- **Task list** — one item per workflow phase in place of the items for the steps it covers (build-loop: `Build`, `Review`, `Test`, `Docs`); the command's own items otherwise.
+- **While it runs** — tell the user it runs in the background and the result arrives as a task notification. The workflow cannot ask the user; the lead does.
+- **Result** — update STATE and the task list, then route by `status`:
+
+| Status | Do |
+|---|---|
+| `done` | next step of the command; report `review.disputed` findings for their owners to decide |
+| `stuck` | findings still failing after `maxRounds` → ask the user (lead §5); plan-tickets: show `tickets` and `issues` (`groups` / `milestones` empty) and decide with the user |
+| `stopped` | route every `needsUser` entry below (`stoppedAt` names the stage); review and release have no `status`: route their `needsUser` the same way |
+
+| `needsUser` status | Do |
+|---|---|
+| `blocked`, `needs-input` | the §5 table |
+| `missing` | agent died or was skipped, no result → re-spawn that agent once; still missing → ask the user |
+| `no-verdict` | reviewer or qa returned no PASS/FAIL → treat as `blocked`, with its handoff |
+| `disputed` | every blocking finding of a failing reviewer was refuted: show them and `remaining` (not auto-fixed); the user decides. Accepted → re-run with `acceptDisputed: [finding IDs]` and `startAt: "qa"` (`"review"` if other findings remain) |
+| `unowned`, `unsafe-path` | no fixer was spawned, nothing fixed: findings whose file matches no ticket's `files`, or with an absolute, `..`, `.git/` or `.claude/` path. Show them, ask who owns them; never widen a ticket's `files` or add a ticket without the answer. Re-run with `startAt: "review"` and the updated `groups` |
+
+- **Re-run (build-loop)** — call again with the **full** `groups` (fix routing needs them) and the user's answer verbatim in `context`; resume from `stoppedAt`:
+  - `Build`, round 0 → `startAt: "build"`, `fromGroup` = index (from 0) of the group holding the stopped ticket named in `needsUser`; that group re-runs whole, earlier groups are not rebuilt.
+  - `Build`, round ≥ 1 (a fix stopped) or `Review` → `startAt: "review"`.
+  - `Test` → `startAt: "qa"`. `Docs` → `startAt: "qa"` with no `qaBrief` (the writer runs again).
+  - A re-run restarts the round count.
