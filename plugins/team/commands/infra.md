@@ -12,6 +12,9 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
 
 0. **Task list** — before the first spawn, put the steps below on the session's task list, one item per step (`update_plan` in the desktop app; `TaskCreate`/`TaskUpdate` in the CLI, loaded via ToolSearch if deferred; else `TodoWrite`), and keep it current (lead §3 *Task list*).
 1. **Propose** — `technical-team:team-devops` in proposal mode: files, verification, remote steps, rollback. Show it to the user and wait for OK.
+**Build loop (steps 2–3)** — the proposal and its OK (step 1) stay inline. **Workflow tool available** (also if deferred; your typing this command is the opt-in) → run steps 2–3 as one workflow, as `${CLAUDE_PLUGIN_ROOT}/commands/feature.md` describes for its build loop (task list, STATE row `2–3 (workflow)`, result handling, re-run): Read `${CLAUDE_PLUGIN_ROOT}/workflows/build-loop.js`, call Workflow with `script` = the file text unchanged and `args` = `{slug, groups: [[{ticket: "infra", role: "devops", brief: <step 2 brief>, files: <files from the proposal>}]], reviewBriefs: {"code-reviewer": …, "security": …}}` with no `qaBrief` and no `writerBrief`. The runbook (step 4) stays inline after `done`.
+**No Workflow tool** → run steps 2–3 below.
+
 2. **Build** — `technical-team:team-devops` implements and verifies locally.
 3. **Review** — in parallel: `technical-team:team-code-reviewer` → `.team/reports/<slug>/review.md`, `technical-team:team-security` → `.team/reports/<slug>/security.md`. FAIL → step 2.
 4. **Runbook** — `technical-team:team-writer` writes `.team/docs/runbooks/<slug>.md` (build, deploy, rollback) from the real files; `technical-team:team-architect` updates "Operations" in `ARCHITECTURE.md` if it changed.

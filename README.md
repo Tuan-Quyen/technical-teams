@@ -65,6 +65,8 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 
 `→` là tuần tự, `∥` là song song. Ghi ADR: nói với lead "ghi quyết định …", lead giao thẳng cho architect. Không lệnh nào tự commit, push hay deploy.
 
+`review`, `release` và vòng build → review → qa của `feature`/`fix`/`infra`/`new` (`workflows/build-loop.js`, có vòng sửa tối đa 3 lượt) chạy bằng Workflow tool của Claude Code (script trong `plugins/team/workflows/`, chạy nền, một thẻ tiến độ); không có Workflow tool thì chạy inline như cũ.
+
 ## Agent
 
 | Agent | Việc | Ghi | Badge |
