@@ -150,10 +150,12 @@ test('TASKS.md belongs to pm alone', () => {
   assert.doesNotMatch(read('agents/team-lead.md'), /You write only[^\n]*TASKS/, 'lead does not write TASKS.md');
 });
 
+const WORKFLOW_NAMES = fs.readdirSync(path.join(ROOT, 'workflows')).filter((f) => f.endsWith('.js')).map((f) => read(`workflows/${f}`).match(/^  name: '([^']+)'/m)[1]);
+
 test('every referenced agent, skill and plugin file exists', () => {
   for (const f of DOCS) {
     const s = read(f);
-    for (const [, name] of s.matchAll(/technical-team:(team-[a-z-]+)/g)) assert.ok(AGENTS.includes(name), `${f}: missing agent ${name}`);
+    for (const [, name] of s.matchAll(/technical-team:(team-[a-z-]+)/g)) assert.ok(AGENTS.includes(name) || WORKFLOW_NAMES.includes(name), `${f}: missing agent ${name}`);
     for (const [, name] of s.matchAll(/technical-team:([a-z]+-[a-z-]+)`/g)) {
       if (!name.startsWith('team-')) assert.ok(SKILLS.includes(name), `${f}: missing skill ${name}`);
     }
@@ -223,6 +225,10 @@ test('every workflow script is used by a command, parses, and only spawns real a
     assert.doesNotThrow(() => new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'budget', 'workflow', body), `${w}: parses as JS`);
     const meta = new Function(`${src.match(/^export (const meta = \{[\s\S]*?\n\})/m)[1]}; return meta;`)();
     assert.ok(meta.name && meta.description, `${w}: meta has name and description`);
+    assert.match(meta.whenToUse || '', /^Internal step of \/technical-team:.+run .+ instead of invoking this directly\.$/, `${w}: meta.whenToUse tells a direct caller to run the command`);
+    assert.ok(commands.includes(`technical-team:${meta.name}`), `${w}: a command calls it by name technical-team:${meta.name}`);
+    assert.match(src, /if you invoked this directly, \$\{how\}/, `${w}: the args error carries the run-the-command hint`);
+    assert.match(src, /const HOW = 'run \/technical-team:/, `${w}: HOW hint`);
     const literal = src.match(/^export const meta = (\{[\s\S]*?\n\})/m)[1].replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, "''");
     assert.doesNotMatch(literal, /\$\{|`|\.\.\.|\(|\/\//, `${w}: meta is a pure literal (no templates, calls, spreads, comments)`);
     const idents = [...literal.matchAll(/\b([A-Za-z_]\w*)\b(?!\s*:)/g)].map((m) => m[1]).filter((id) => !['true', 'false', 'null'].includes(id));
@@ -287,6 +293,18 @@ test('every command that runs a workflow carries the shared opt-in sentence; run
   assert.match(read('templates/core/STATE.md'), /\| Workflows \|/, 'STATE row has a Workflows field');
 });
 
+test('commands call workflows by name; the file text is passed only in the fallback', () => {
+  for (const c of COMMANDS) {
+    const text = read(`commands/${c}.md`);
+    if (!text.includes('workflows/')) continue;
+    assert.doesNotMatch(text, /the file text unchanged|Read it again|Read the file again/, `${c}: no pass-the-file-text instruction`);
+    const uses = text.match(/`script`/g) || [];
+    const fallbacks = text.match(/if the name is not found, Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/[\w-]+\.js` and pass its text as `script` with the same args/g) || [];
+    assert.equal(uses.length, fallbacks.length, `${c}: \`script\` only appears in the fallback`);
+    assert.match(text, /name: 'technical-team:team-[\w-]+'/, `${c}: calls Workflow by name`);
+  }
+});
+
 test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   const block = (src, name) => {
     const lines = src.split('\n');
@@ -336,8 +354,10 @@ test('args keys: every key a workflow script reads is documented by its commands
     for (const cmd of cmds) {
       for (const m of cmd.matchAll(/`args` = `(\{[^`]*\})`/g)) {
         const snippet = m[1];
-        const named = [...cmd.slice(0, m.index).matchAll(/workflows\/([\w-]+\.js)/g)].pop();
-        if (!named || named[1] !== w) continue;
+        const metaName = read(`workflows/${w}`).match(/^  name: '([^']+)'/m)[1];
+        const allNames = WORKFLOWS.map((x) => read(`workflows/${x}`).match(/^  name: '([^']+)'/m)[1]);
+        const named = [...cmd.slice(0, m.index).matchAll(/technical-team:(team-[\w-]+)'|workflows\/([\w-]+\.js)/g)].filter((h) => !h[1] || allNames.includes(h[1])).pop();
+        if (!named || !(named[1] === metaName || named[2] === w)) continue;
         let inner = snippet.slice(1, -1);
         while (/[{[][^{}[\]]*[}\]]/.test(inner)) inner = inner.replace(/[{[][^{}[\]]*[}\]]/g, '');
         const keys = inner.split(',').map((k) => k.split(':')[0].trim()).filter(Boolean);
