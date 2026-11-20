@@ -150,10 +150,12 @@ test('TASKS.md belongs to pm alone', () => {
   assert.doesNotMatch(read('agents/team-lead.md'), /You write only[^\n]*TASKS/, 'lead does not write TASKS.md');
 });
 
+const WORKFLOW_NAMES = fs.readdirSync(path.join(ROOT, 'workflows')).filter((f) => f.endsWith('.js')).map((f) => read(`workflows/${f}`).match(/^  name: '([^']+)'/m)[1]);
+
 test('every referenced agent, skill and plugin file exists', () => {
   for (const f of DOCS) {
     const s = read(f);
-    for (const [, name] of s.matchAll(/technical-team:(team-[a-z-]+)/g)) assert.ok(AGENTS.includes(name), `${f}: missing agent ${name}`);
+    for (const [, name] of s.matchAll(/technical-team:(team-[a-z-]+)/g)) assert.ok(AGENTS.includes(name) || WORKFLOW_NAMES.includes(name), `${f}: missing agent ${name}`);
     for (const [, name] of s.matchAll(/technical-team:([a-z]+-[a-z-]+)`/g)) {
       if (!name.startsWith('team-')) assert.ok(SKILLS.includes(name), `${f}: missing skill ${name}`);
     }
@@ -223,6 +225,10 @@ test('every workflow script is used by a command, parses, and only spawns real a
     assert.doesNotThrow(() => new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'budget', 'workflow', body), `${w}: parses as JS`);
     const meta = new Function(`${src.match(/^export (const meta = \{[\s\S]*?\n\})/m)[1]}; return meta;`)();
     assert.ok(meta.name && meta.description, `${w}: meta has name and description`);
+    assert.match(meta.whenToUse || '', /^Internal step of \/technical-team:.+run .+ instead of invoking this directly\.$/, `${w}: meta.whenToUse tells a direct caller to run the command`);
+    assert.ok(commands.includes(`technical-team:${meta.name}`), `${w}: a command calls it by name technical-team:${meta.name}`);
+    assert.match(src, /if you invoked this directly, \$\{how\}/, `${w}: the args error carries the run-the-command hint`);
+    assert.match(src, /const HOW = 'run \/technical-team:/, `${w}: HOW hint`);
     const literal = src.match(/^export const meta = (\{[\s\S]*?\n\})/m)[1].replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, "''");
     assert.doesNotMatch(literal, /\$\{|`|\.\.\.|\(|\/\//, `${w}: meta is a pure literal (no templates, calls, spreads, comments)`);
     const idents = [...literal.matchAll(/\b([A-Za-z_]\w*)\b(?!\s*:)/g)].map((m) => m[1]).filter((id) => !['true', 'false', 'null'].includes(id));
@@ -246,16 +252,18 @@ test('the shared schema and contract blocks are identical across workflow script
   };
   const ref = read('workflows/review.js');
   const SHARED = ['FINDING', 'RESULT', 'SKEPTIC', 'CONTRACT', 'clean', 'dataBlock', 'parseArgs', 'skepticPrompt', 'verifyFindings', 'dedupe'];
+  const PLAN_SHARED = ['clean', 'dataBlock', 'parseArgs'];
   const RELEASE_ONLY_MISSING = ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe'];
   for (const name of SHARED) assert.ok(block(ref, name), `review.js has ${name}`);
   for (const w of WORKFLOWS) {
     const src = read(`workflows/${w}`);
-    for (const name of SHARED) {
+    for (const name of w === 'plan-tickets.js' ? PLAN_SHARED : SHARED) {
       const b = block(src, name);
       if (b) assert.equal(b, block(ref, name), `${w}: ${name} drifted from review.js`);
       else assert.ok(w === 'release.js' && RELEASE_ONLY_MISSING.includes(name), `${w}: missing ${name}`);
     }
   }
+  for (const name of ['root', 'safePath']) assert.equal(block(read('workflows/plan-tickets.js'), name), block(read('workflows/build-loop.js'), name), `plan-tickets: ${name} drifted from build-loop.js`);
   // Skeptics get no agentType (they must not inherit "write the report"); agent text goes into a data block.
   assert.doesNotMatch(block(ref, 'verifyFindings'), /agentType/, 'skeptics run without an agentType');
   assert.match(block(ref, 'skepticPrompt'), /dataBlock\(/, 'skeptic prompt wraps the finding in a data block');
@@ -275,6 +283,66 @@ test('the shared schema and contract blocks are identical across workflow script
   for (const c of ['feature', 'fix', 'infra', 'new']) assert.match(read(`commands/${c}.md`), /workflows\/build-loop\.js/, `${c}: uses build-loop`);
 });
 
+test('every command that runs a workflow carries the shared opt-in sentence; run and the lead state the opt-in rules', () => {
+  const sentence = "**Workflow opt-in** — the Workflow tool is available (also if deferred) AND the user typed a slash command of this plugin for this item (this command, or `/technical-team:run`, which hands the chosen pipeline to the lead) → run the workflow. Otherwise (no tool, or the lead was started without a slash command) → run the steps inline below.";
+  const users = COMMANDS.filter((c) => read(`commands/${c}.md`).includes('workflows/'));
+  assert.deepEqual(users, ['feature', 'fix', 'infra', 'new', 'release', 'review'], 'commands that run workflows');
+  for (const c of users) assert.ok(read(`commands/${c}.md`).includes(sentence), `${c}: has the Workflow opt-in sentence`);
+  assert.match(read('commands/run.md'), /Typing `\/technical-team:run` is your opt-in for the workflows/, 'run.md states the opt-in');
+  assert.match(read('agents/team-lead.md'), /`workflows: yes\|no`/, 'the lead records workflows: yes|no in the STATE row');
+  assert.match(read('templates/core/STATE.md'), /\| Workflows \|/, 'STATE row has a Workflows field');
+});
+
+test('commands call workflows by name; the file text is passed only in the fallback', () => {
+  for (const c of COMMANDS) {
+    const text = read(`commands/${c}.md`);
+    if (!text.includes('workflows/')) continue;
+    assert.doesNotMatch(text, /the file text unchanged|Read it again|Read the file again/, `${c}: no pass-the-file-text instruction`);
+    const uses = text.match(/`script`/g) || [];
+    const fallbacks = text.match(/if the name is not found, Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/[\w-]+\.js` and pass its text as `script` with the same args/g) || [];
+    assert.equal(uses.length, fallbacks.length, `${c}: \`script\` only appears in the fallback`);
+    assert.match(text, /name: 'technical-team:team-[\w-]+'/, `${c}: calls Workflow by name`);
+  }
+});
+
+test('plan-tickets checkTickets enforces the ticket rules in code', () => {
+  const block = (src, name) => {
+    const lines = src.split('\n');
+    const i = lines.findIndex((l) => l.startsWith(`const ${name} = `));
+    assert.ok(i >= 0, `has ${name}`);
+    if (!/[{[]$/.test(lines[i])) return lines[i];
+    return lines.slice(i, lines.findIndex((l, j) => j > i && /^[}\]]$/.test(l)) + 1).join('\n');
+  };
+  const src = read('workflows/plan-tickets.js');
+  const code = ['root', 'ROLES', 'safePath', 'checkTickets'].map((n) => block(src, n)).join(';\n');
+  const check = new Function('a', `${code}; return checkTickets;`)({});
+  const t = (id, group, files, o = {}) => ({ id, title: id, role: 'developer', group, files, dependsOn: [], acs: ['AC-1'], ...o });
+  const rules = (tickets) => check(tickets).map((i) => i.rule).sort();
+  assert.deepEqual(rules([t('T-1', 1, ['src/a.js']), t('T-2', 1, ['src/b.js']), t('T-3', 2, ['src/a.js'], { dependsOn: ['T-1', 'T-2'] })]), [], 'clean set');
+  assert.deepEqual(rules([t('T-1', 1, ['src/a.js']), t('T-2', 1, ['./src/a.js'])]), ['file-overlap'], 'same file in a group');
+  assert.deepEqual(rules([t('T-1', 1, ['src/a']), t('T-2', 1, ['src/a/b.js'])]), ['file-overlap'], 'directory prefix overlap');
+  assert.deepEqual(rules([t('T-1', 1, ['src/ab.js']), t('T-2', 1, ['src/a/b.js'])]), [], 'a name prefix is not a directory prefix');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-2', 1, ['b.js'], { dependsOn: ['T-1'] })]), ['dependency-order'], 'dependency in the same group');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-2'] }), t('T-2', 2, ['b.js'])]), ['dependency-order'], 'dependency in a later group');
+  assert.ok(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-2'] }), t('T-2', 2, ['b.js'], { dependsOn: ['T-1'] })]).includes('cycle'), 'cycle');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-9'] })]), ['unknown-dependency'], 'unknown dependsOn');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-1'] })]), ['self-dependency'], 'self dependency');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-2', 3, ['b.js'])]), ['group-gap'], 'group gap');
+  assert.deepEqual(rules([t('T-1', 1, ['../x.js'])]), ['unsafe-path'], 'unsafe path');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { acs: [] })]), ['acs'], 'missing AC');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-1', 1, ['b.js'])]), ['unique-id'], 'duplicate id');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { role: 'qa' })]), ['role'], 'invalid role');
+  assert.deepEqual(rules([t('T-1', 1, [])]), ['files'], 'no files');
+  assert.deepEqual(rules([]), ['no-tickets'], 'empty ticket list');
+  assert.deepEqual(rules([t('T-1', 1, ['src/A.js']), t('T-2', 1, ['src/a.JS'])]), ['file-overlap'], 'overlap ignores case');
+  const m = (id, milestone, group, files, o = {}) => t(id, group, files, { milestone, ...o });
+  assert.deepEqual(rules([m('T-1', 1, 1, ['a.js']), m('T-2', 2, 1, ['a.js'], { dependsOn: ['T-1'] })]), [], 'same group and file in different milestones, dependency on an earlier milestone');
+  assert.deepEqual(rules([m('T-1', 2, 1, ['a.js']), m('T-2', 1, 1, ['b.js'], { dependsOn: ['T-1'] })]), ['dependency-order'], 'dependency on a later milestone');
+  assert.deepEqual(rules([m('T-1', 1, 1, ['a.js']), m('T-2', 2, 2, ['b.js'])]), ['group-gap'], 'group gap inside the second milestone');
+  assert.deepEqual(rules([m('T-1', 1, 1, ['a.js']), m('T-2', 1, 1, ['a.js'])]), ['file-overlap'], 'overlap inside one milestone');
+  assert.deepEqual(rules([m('T-1', 0, 1, ['a.js'])]), ['milestone'], 'invalid milestone');
+});
+
 test('args keys: every key a workflow script reads is documented by its commands, and every documented key is read', () => {
   for (const w of WORKFLOWS) {
     const src = read(`workflows/${w}`);
@@ -284,7 +352,12 @@ test('args keys: every key a workflow script reads is documented by its commands
     const text = cmds.join('\n');
     for (const key of read_) assert.match(text, new RegExp(`\\b${key}\\b`), `${w}: args.${key} is not mentioned in any command that runs it`);
     for (const cmd of cmds) {
-      for (const [, snippet] of cmd.matchAll(/`args` = `(\{[^`]*\})`/g)) {
+      for (const m of cmd.matchAll(/`args` = `(\{[^`]*\})`/g)) {
+        const snippet = m[1];
+        const metaName = read(`workflows/${w}`).match(/^  name: '([^']+)'/m)[1];
+        const allNames = WORKFLOWS.map((x) => read(`workflows/${x}`).match(/^  name: '([^']+)'/m)[1]);
+        const named = [...cmd.slice(0, m.index).matchAll(/technical-team:(team-[\w-]+)'|workflows\/([\w-]+\.js)/g)].filter((h) => !h[1] || allNames.includes(h[1])).pop();
+        if (!named || !(named[1] === metaName || named[2] === w)) continue;
         let inner = snippet.slice(1, -1);
         while (/[{[][^{}[\]]*[}\]]/.test(inner)) inner = inner.replace(/[{[][^{}[\]]*[}\]]/g, '');
         const keys = inner.split(',').map((k) => k.split(':')[0].trim()).filter(Boolean);

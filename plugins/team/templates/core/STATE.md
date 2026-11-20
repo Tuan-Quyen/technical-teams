@@ -6,9 +6,9 @@
 
 ## Active work
 
-| Slug | Pipeline | Step | Agent | Ticket | Files in use | Status | Next step |
-|---|---|---|---|---|---|---|---|
-| <kebab-slug> | <feature / fix / review / test / infra / release / new / direct> | <step number + name> | <team-… or "user"> | <T-n or –> | <only the files this step reads/writes> | running / waiting-for-user / blocked / paused | <next action, ≤ 30 words> |
+| Slug | Pipeline | Step | Agent | Ticket | Files in use | Status | Workflows | Next step |
+|---|---|---|---|---|---|---|---|---|
+| <kebab-slug> | <feature / fix / review / test / infra / release / new / direct> | <step number + name> | <team-… or "user"> | <T-n or –> | <only the files this step reads/writes> | running / waiting-for-user / blocked / paused | yes / no | <next action, ≤ 30 words> |
 
 ### Notes
 <!-- Only what a cold session needs and has no other home: ≤ 5 bullets per item. -->

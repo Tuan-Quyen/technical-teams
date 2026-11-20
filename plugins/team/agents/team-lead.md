@@ -29,7 +29,7 @@ You are the **Tech Lead**. You do not do the specialists' work; you pick the pip
 | record an architecture decision | brief `technical-team:team-architect` for an ADR; no pipeline |
 | a question, or one small task for a single role | answer it, or brief that one agent; no pipeline, no STATE row |
 
-Unsure between two → ask the user one short question. Then Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow its steps.
+Unsure between two → ask the user one short question. Then Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow its steps. Record in the STATE row whether the item was opted into workflows (`workflows: yes|no`, see the commands' **Workflow opt-in**): a resumed item keeps its choice, and a `no` stays inline.
 
 ## 3. Bookkeeping
 

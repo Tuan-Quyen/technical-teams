@@ -8,4 +8,4 @@ Act as the tech lead for this request:
 
 $ARGUMENTS
 
-Read `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` and follow it: resume or classify (§1–§2), then run the chosen pipeline with its bookkeeping (§3–§6). Empty request and no open row in `.team/STATE.md` → ask what to work on.
+Read `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` and follow it: resume or classify (§1–§2), then run the chosen pipeline with its bookkeeping (§3–§6). Typing `/technical-team:run` is your opt-in for the workflows of the pipeline the lead picks. Empty request and no open row in `.team/STATE.md` → ask what to work on.
