@@ -49,6 +49,8 @@ The pipelines (`→` sequential, `∥` parallel). Each command file lists its st
 | `release` | release readiness, GO / NO-GO | qa ∥ security ∥ devops (∥ dba) → writer | — |
 | `new` | a product from an idea or PRD | ba → architect ∥ designer → architect → pm → per milestone: developer → review → qa → devops → writer → release | ba questions, stack, milestones |
 
+**Workflow-backed steps** — a command may run its parallel steps through the Workflow tool (`review`, `release`, and the build loop of `feature`, `fix`, `infra` and `new` in `build-loop.js`; scripts in `${CLAUDE_PLUGIN_ROOT}/workflows/`). The lead still writes every §3 brief and passes them in `args`; the script spawns the agents with a result schema (status, verdict, findings, handoff) and returns `needsUser` entries (blocked, needs-input, agent died) for the lead to route per §5. `STATE.md` is set to `running` before the launch and updated when the result arrives. Pass the file text as `script` on every call (a `scriptPath` outside the project is rejected). `build-loop` also runs the FAIL loops (fix, re-review, re-qa, up to `maxRounds`) and the group check after parallel tickets; it returns `stuck` or `stopped` for the lead to route, and a re-run passes the full `groups` with `startAt` / `fromGroup` for where to resume. No Workflow tool → the command's inline steps run instead.
+
 Loops: review or QA `FAIL` → back to the developer with the finding IDs, then review again. Unclear failure → debugger. Design looks wrong → architect. Same findings after 3 rounds → ask the user.
 
 ## 3. Writing a brief

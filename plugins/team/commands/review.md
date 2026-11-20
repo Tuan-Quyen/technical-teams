@@ -14,5 +14,8 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§5 �
    - `technical-team:team-code-reviewer` → `.team/reports/<slug>/review.md`
    - `technical-team:team-security` → `.team/reports/<slug>/security.md`
    Add `technical-team:team-dba` if the diff has migrations.
+
+   **Workflow tool available** (also if deferred; your typing this command is the opt-in) → write each agent's run-kit §3 brief yourself, set the item's STATE row (step `2 (workflow)`, status `running`), then Read `${CLAUDE_PLUGIN_ROOT}/workflows/review.js` and call Workflow with `script` = the file text unchanged (Read it again for every call) and `args` = `{slug, briefs: {"code-reviewer": "<brief>", "security": "<brief>", "dba": "<brief, only with migrations>"}, context}`. Tell the user it runs in the background; the result arrives as a task notification. It returns `{verdict, findings, disputed, handoffs, needsUser}`: each blocking finding was re-checked by a skeptic of the same role, and refuted ones sit in `disputed`, not deleted. Update STATE, route every `needsUser` entry per run-kit §5 (the workflow cannot ask the user), report `disputed` findings for their owners to decide, then go to step 3.
+   **No Workflow tool** → spawn the agents inline as above.
 3. Report one verdict (PASS only if both pass), the de-duplicated findings by severity with `file:line`, and a fix order. Offer `/technical-team:fix` for blocking findings.
 4. **Close** — remove the item's STATE row and move `reports/<slug>/` to `.team/archive/<slug>/` (lead §6 steps 2 and 4).

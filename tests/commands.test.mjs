@@ -209,6 +209,92 @@ test('plugin.json and marketplace.json carry homepage, repository and the MIT li
   assert.equal(entry.homepage, plugin.homepage);
 });
 
+const WORKFLOWS = fs.readdirSync(path.join(ROOT, 'workflows')).filter((f) => f.endsWith('.js')).sort();
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
+test('every workflow script is used by a command, parses, and only spawns real agents', () => {
+  assert.ok(WORKFLOWS.length > 0, 'has workflow scripts');
+  const commands = COMMANDS.map((c) => read(`commands/${c}.md`)).join('\n');
+  for (const w of WORKFLOWS) {
+    assert.ok(commands.includes(`\${CLAUDE_PLUGIN_ROOT}/workflows/${w}`), `${w}: referenced by a command`);
+    const src = read(`workflows/${w}`);
+    assert.match(src, /^export const meta = /m, `${w}: has meta`);
+    const body = src.replace(/^export const meta/m, 'const meta');
+    assert.doesNotThrow(() => new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', 'budget', 'workflow', body), `${w}: parses as JS`);
+    const meta = new Function(`${src.match(/^export (const meta = \{[\s\S]*?\n\})/m)[1]}; return meta;`)();
+    assert.ok(meta.name && meta.description, `${w}: meta has name and description`);
+    const literal = src.match(/^export const meta = (\{[\s\S]*?\n\})/m)[1].replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, "''");
+    assert.doesNotMatch(literal, /\$\{|`|\.\.\.|\(|\/\//, `${w}: meta is a pure literal (no templates, calls, spreads, comments)`);
+    const idents = [...literal.matchAll(/\b([A-Za-z_]\w*)\b(?!\s*:)/g)].map((m) => m[1]).filter((id) => !['true', 'false', 'null'].includes(id));
+    assert.deepEqual(idents, [], `${w}: meta has only keys and literals`);
+    for (const [, name] of src.matchAll(/technical-team:(team-[a-z-]+)/g)) assert.ok(AGENTS.includes(name), `${w}: unknown agent ${name}`);
+    for (const [, role] of src.matchAll(/'((?:code-reviewer|security|dba|qa|devops|writer|developer|debugger|architect|ba|pm|designer))'/g)) {
+      assert.ok(AGENTS.includes(`team-${role}`), `${w}: unknown role ${role}`);
+    }
+    assert.doesNotMatch(src, /Date\.now|Math\.random|new Date\(\s*\)/, `${w}: no non-deterministic calls`);
+  }
+});
+
+test('the shared schema and contract blocks are identical across workflow scripts', () => {
+  const block = (src, name) => {
+    const lines = src.split('\n');
+    const i = lines.findIndex((l) => l.startsWith(`const ${name} = `));
+    if (i < 0) return null;
+    if (!/[{[]$/.test(lines[i])) return lines[i];
+    const end = lines.findIndex((l, j) => j > i && /^[}\]]$/.test(l));
+    return lines.slice(i, end + 1).join('\n');
+  };
+  const ref = read('workflows/review.js');
+  const SHARED = ['FINDING', 'RESULT', 'SKEPTIC', 'CONTRACT', 'clean', 'dataBlock', 'parseArgs', 'skepticPrompt', 'verifyFindings', 'dedupe'];
+  const RELEASE_ONLY_MISSING = ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe'];
+  for (const name of SHARED) assert.ok(block(ref, name), `review.js has ${name}`);
+  for (const w of WORKFLOWS) {
+    const src = read(`workflows/${w}`);
+    for (const name of SHARED) {
+      const b = block(src, name);
+      if (b) assert.equal(b, block(ref, name), `${w}: ${name} drifted from review.js`);
+      else assert.ok(w === 'release.js' && RELEASE_ONLY_MISSING.includes(name), `${w}: missing ${name}`);
+    }
+  }
+  // Skeptics get no agentType (they must not inherit "write the report"); agent text goes into a data block.
+  assert.doesNotMatch(block(ref, 'verifyFindings'), /agentType/, 'skeptics run without an agentType');
+  assert.match(block(ref, 'skepticPrompt'), /dataBlock\(/, 'skeptic prompt wraps the finding in a data block');
+  assert.doesNotMatch(read('workflows/build-loop.js'), /fix:unmatched/, 'unowned findings never get a fixer');
+  // parseArgs: a malformed args string must fail loudly, not as a misleading "args needs slug".
+  const parseArgs = new Function(`${block(ref, 'parseArgs')}; return parseArgs;`)();
+  assert.deepEqual(parseArgs('{"slug":"x"}', 'w'), { slug: 'x' });
+  assert.deepEqual(parseArgs({ slug: 'x' }, 'w'), { slug: 'x' });
+  assert.equal(parseArgs(undefined, 'w'), undefined);
+  assert.throws(() => parseArgs('{"slug": ', 'w'), /w: args arrived as a string that is not valid JSON/);
+  // safePath rejects paths that could widen a fixer's Write scope.
+  const sp = block(read('workflows/build-loop.js'), 'safePath');
+  const safePath = new Function('root', `${sp}; return safePath;`)('D:/repo');
+  assert.equal(safePath('.\\src\\a.js'), 'src/a.js');
+  assert.equal(safePath('D:\\repo\\src\\a.js'), 'src/a.js');
+  for (const bad of ['.', './', '.GIT/hooks/x', 'a/.Claude/x', '/etc/passwd', 'C:/x', 'E:\\x\\y', '~/x', 'src/../../x', '..', '.git/hooks/pre-commit', 'a/.claude/settings.json', '']) assert.equal(safePath(bad), null, `safePath rejects "${bad}"`);
+  for (const c of ['feature', 'fix', 'infra', 'new']) assert.match(read(`commands/${c}.md`), /workflows\/build-loop\.js/, `${c}: uses build-loop`);
+});
+
+test('args keys: every key a workflow script reads is documented by its commands, and every documented key is read', () => {
+  for (const w of WORKFLOWS) {
+    const src = read(`workflows/${w}`);
+    const read_ = new Set([...src.matchAll(/\b(?:a|A|args)\.([A-Za-z_]\w*)/g)].map((m) => m[1]));
+    const cmds = COMMANDS.filter((c) => read(`commands/${c}.md`).includes(`workflows/${w}`)).map((c) => read(`commands/${c}.md`));
+    assert.ok(cmds.length, `${w}: has a command`);
+    const text = cmds.join('\n');
+    for (const key of read_) assert.match(text, new RegExp(`\\b${key}\\b`), `${w}: args.${key} is not mentioned in any command that runs it`);
+    for (const cmd of cmds) {
+      for (const [, snippet] of cmd.matchAll(/`args` = `(\{[^`]*\})`/g)) {
+        let inner = snippet.slice(1, -1);
+        while (/[{[][^{}[\]]*[}\]]/.test(inner)) inner = inner.replace(/[{[][^{}[\]]*[}\]]/g, '');
+        const keys = inner.split(',').map((k) => k.split(':')[0].trim()).filter(Boolean);
+        assert.ok(keys.length, `${w}: parsed documented keys`);
+        for (const key of keys) assert.ok(read_.has(key), `${w}: documented args key "${key}" is never read by the script`);
+      }
+    }
+  }
+});
+
 const claude = spawnSync('claude', ['--version'], { shell: true, encoding: 'utf8' });
 const hasClaude = claude.status === 0;
 
