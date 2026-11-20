@@ -148,11 +148,70 @@ describe('alerts', () => {
       expect(shown).toHaveLength(1)
     })
 
-    it('audio never armed (reload): no chime, the notification still shows', async () => {
+    it('user never interacted after a reload: no chime, the notification still shows', async () => {
+      chime.armOnGesture()
       phaseEnded(end(1))
       await flush()
       expect(plays()).toBe(0)
       expect(shown).toHaveLength(1)
+    })
+
+    it.each([
+      ['pointerdown', () => new PointerEvent('pointerdown')],
+      ['keydown', () => new KeyboardEvent('keydown', { key: 'a' })],
+      ['touchend', () => new Event('touchend')],
+    ])('after a reload, the first %s re-arms the chime (R-01)', async (_name, make) => {
+      chime.armOnGesture()
+      phaseEnded(end(1))
+      await flush()
+      expect(plays()).toBe(0)
+      document.dispatchEvent(make())
+      await flush()
+      phaseEnded(end(2))
+      await flush()
+      expect(plays()).toBe(1)
+    })
+
+    it('resume stays suspended: listeners are kept and the next gesture retries (R-01)', async () => {
+      let stuck = true
+      class StuckContext extends FakeAudioContext {
+        override resume() {
+          if (!stuck) audio.state = 'running'
+          return Promise.resolve()
+        }
+      }
+      vi.stubGlobal('AudioContext', StuckContext)
+      const remove = vi.spyOn(document, 'removeEventListener')
+      chime.armOnGesture()
+      document.dispatchEvent(new PointerEvent('pointerdown'))
+      await flush()
+      expect(chime.ready()).toBe(false)
+      expect(remove).not.toHaveBeenCalled()
+      stuck = false
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
+      await flush()
+      expect(chime.ready()).toBe(true)
+      expect(remove).toHaveBeenCalledTimes(3)
+      phaseEnded(end(1))
+      await flush()
+      expect(plays()).toBe(1)
+      remove.mockRestore()
+    })
+
+    it('stops listening once the audio is running, and a second call adds nothing', async () => {
+      const add = vi.spyOn(document, 'addEventListener')
+      const remove = vi.spyOn(document, 'removeEventListener')
+      chime.armOnGesture()
+      chime.armOnGesture()
+      expect(add).toHaveBeenCalledTimes(3)
+      document.dispatchEvent(new PointerEvent('pointerdown'))
+      await flush()
+      expect(chime.ready()).toBe(true)
+      expect(remove).toHaveBeenCalledTimes(3)
+      chime.armOnGesture() // already ready: no new listeners
+      expect(add).toHaveBeenCalledTimes(3)
+      add.mockRestore()
+      remove.mockRestore()
     })
 
     it.each(['denied', 'default', 'absent'] as const)(

@@ -54,7 +54,7 @@ Target: modern evergreen browsers (latest Chrome, Edge, Firefox, Safari). No ver
 | Web Locks (optional) | Works; the chime may play twice with two tabs open.                  |
 
 - **Notifications**: permission is asked on the first Start, or via "Allow notifications" in Settings. Never on page load. Needs a secure context (HTTPS or `localhost`).
-- **Sound**: one chime generated with Web Audio, no audio file. Browsers allow audio only after a click; if still blocked, it fails silently.
+- **Sound**: one chime generated with Web Audio, no audio file. Browsers allow audio only after a click or key press; after a reload the first interaction anywhere on the page re-arms it, and if still blocked, it fails silently.
 - **Fullscreen**: requested on a click; Esc or the Exit button leaves it, the timer is unaffected.
 
 ## How timing works
@@ -69,7 +69,7 @@ Target: modern evergreen browsers (latest Chrome, Edge, Firefox, Safari). No ver
 
 - If Start was pressed only in tab A and tab B finishes the phase first, no sound plays (the notification still shows).
 - Browsers without Web Locks may play the chime twice when two tabs are open.
-- After a reload, a missed phase end shows the notification and caption but no chime (audio needs a click first).
+- After a reload, the chime is silent until you first click, tap or press a key on the page; the notification and caption always show.
 - The 90 s "away" margin is an estimate.
 - Not verified in a real browser by QA: background-tab (hidden) accuracy, sound, notifications, two tabs, fullscreen and screen readers. These are covered by automated tests only.
 

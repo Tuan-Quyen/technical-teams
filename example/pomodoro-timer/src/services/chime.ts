@@ -10,21 +10,49 @@ function contextClass(): AudioContextCtor | undefined {
   return w.AudioContext ?? w.webkitAudioContext
 }
 
+/** Creates (once) and resumes the audio context; resolves when that attempt settles. Never throws. */
+function start(): Promise<void> {
+  try {
+    if (!context) {
+      const Ctor = contextClass()
+      if (!Ctor) return Promise.resolve()
+      context = new Ctor()
+    }
+    if (context.state !== 'running') return context.resume().catch(() => undefined)
+  } catch {
+    // no audio: the timer and notifications still work
+  }
+  return Promise.resolve()
+}
+
 /**
  * Creates (once) and resumes the audio context. Call it from a user gesture (the Start click),
  * since browsers keep a context created elsewhere suspended. Never throws.
  */
 export function arm(): void {
-  try {
-    if (!context) {
-      const Ctor = contextClass()
-      if (!Ctor) return
-      context = new Ctor()
-    }
-    if (context.state !== 'running') void context.resume().catch(() => undefined)
-  } catch {
-    // no audio: the timer and notifications still work
+  void start()
+}
+
+const GESTURES = ['pointerdown', 'keydown', 'touchend'] as const
+let removeGestureListeners: (() => void) | null = null
+
+/**
+ * After a reload there is no Start click, so the context would stay suspended and a phase end
+ * would be silent (R-01). Arms on the first pointerdown, keydown or touchend anywhere in the
+ * document, and stops listening once the context is running. Safe to call more than once.
+ */
+export function armOnGesture(): void {
+  if (removeGestureListeners || ready()) return
+  const onGesture = () => {
+    void start().then(() => {
+      if (ready()) removeGestureListeners?.()
+    })
   }
+  removeGestureListeners = () => {
+    for (const type of GESTURES) document.removeEventListener(type, onGesture, true)
+    removeGestureListeners = null
+  }
+  for (const type of GESTURES) document.addEventListener(type, onGesture, true)
 }
 
 /** True when a chime would be audible now: the context exists and is running. */
@@ -59,5 +87,6 @@ export function play(): boolean {
 
 /** Test hook: drop the context. */
 export function disarm(): void {
+  removeGestureListeners?.()
   context = null
 }

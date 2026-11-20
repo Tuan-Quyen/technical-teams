@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useFullscreen } from './useFullscreen.ts'
 
@@ -75,5 +76,72 @@ describe('useFullscreen', () => {
       document.dispatchEvent(new Event('fullscreenchange'))
     })
     expect(result.current.open).toBe(false)
+  })
+
+  it('unmounted while native: leaves fullscreen (R-06)', async () => {
+    const exitFullscreen = vi.fn(() => {
+      active = null
+      return Promise.resolve()
+    })
+    document.exitFullscreen = exitFullscreen
+    const { result, unmount } = renderHook(() => useFullscreen())
+    act(() => {
+      result.current.enter()
+    })
+    await act(async () => {
+      resolveRequest()
+      await Promise.resolve()
+    })
+    expect(exitFullscreen).not.toHaveBeenCalled()
+    unmount()
+    expect(exitFullscreen).toHaveBeenCalledTimes(1)
+  })
+
+  it('unmounted before the browser answers: leaves fullscreen once it is granted (R-06)', async () => {
+    const exitFullscreen = vi.fn(() => {
+      active = null
+      return Promise.resolve()
+    })
+    document.exitFullscreen = exitFullscreen
+    const { result, unmount } = renderHook(() => useFullscreen())
+    act(() => {
+      result.current.enter()
+    })
+    unmount()
+    expect(exitFullscreen).not.toHaveBeenCalled()
+    await act(async () => {
+      resolveRequest()
+      await Promise.resolve()
+    })
+    expect(exitFullscreen).toHaveBeenCalledTimes(1)
+  })
+
+  it('StrictMode: enter, grant, then unmount exits exactly once (R-06)', async () => {
+    const exitFullscreen = vi.fn(() => {
+      active = null
+      return Promise.resolve()
+    })
+    document.exitFullscreen = exitFullscreen
+    const { result, unmount } = renderHook(() => useFullscreen(), { wrapper: StrictMode })
+    act(() => {
+      result.current.enter()
+    })
+    await act(async () => {
+      resolveRequest()
+      await Promise.resolve()
+    })
+    expect(exitFullscreen).not.toHaveBeenCalled()
+    unmount()
+    expect(exitFullscreen).toHaveBeenCalledTimes(1)
+  })
+
+  it('StrictMode double-mount does not exit anything (R-06)', () => {
+    const exitFullscreen = vi.fn(() => {
+      active = null
+      return Promise.resolve()
+    })
+    document.exitFullscreen = exitFullscreen
+    renderHook(() => useFullscreen(), { wrapper: StrictMode })
+    expect(exitFullscreen).not.toHaveBeenCalled()
   })
 })

@@ -32,6 +32,17 @@ export function useFullscreen(): FocusModeControl {
     [setMode],
   )
 
+  // Unmounting closes the view: leave native fullscreen, and make a pending grant exit on arrival.
+  // No state update here: the component is gone.
+  useEffect(
+    () => () => {
+      const wasNative = mode.current === 'native'
+      mode.current = 'closed'
+      if (wasNative) void fullscreen.exit()
+    },
+    [],
+  )
+
   const enter = useCallback(() => {
     setMode('overlay')
     void fullscreen.enter().then((granted) => {

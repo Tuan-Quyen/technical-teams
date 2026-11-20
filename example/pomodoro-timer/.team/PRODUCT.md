@@ -31,7 +31,7 @@ Status as of v0.1.0 (QA PASS round 3; live-only checks were not run, user chose 
 - Known limitations (v0.1.0):
   - Start pressed only in tab A and tab B finishes the phase first: no sound (notification still shows).
   - Browsers without Web Locks may play the chime twice with two tabs open.
-  - After a reload, a missed phase end shows notification and caption but no chime (audio needs a click first).
+  - After a reload, audio is re-armed by the first pointerdown, keydown or touchend anywhere on the page; until then, phase ends are silent (notification and caption still show). No UI hint tells the user (C).
   - The 90 s away margin is an estimate.
 
 ## Capabilities
@@ -56,7 +56,7 @@ Status as of v0.1.0 (QA PASS round 3; live-only checks were not run, user chose 
 | BR-12 | Two tabs sync on real writes (last write wins); saved data cleared from another tab is ignored: this tab keeps its running timer and cycle and re-saves on its next change; the phase-end alert fires once across tabs | Other tab clears site data → this tab keeps counting | C |
 | BR-13 | Fullscreen Focus Mode shows only ring, time, phase and controls; Esc or the Exit button leaves it and the timer is unaffected; where the Fullscreen API is unavailable an in-app overlay is used | iPhone Safari → in-app Focus view | C |
 | BR-14 | While running, the tab title shows remaining time and phase; idle shows `Pomodoro`; reduced-motion OS setting makes ring and transitions animate minimally | Title `24:59 · Focus — Pomodoro` | C |
-| BR-15 | Layout works at 360 px and 1280 px: no horizontal scroll, controls ≥ 44 px touch targets at 360 px; the progress ring shows elapsed / total and does not jump on Pause/Resume; blocked audio autoplay fails silently, sound is armed by the Start click | 6:15 elapsed of 25:00 → ring 25% | C; ring behaviour E (live R2) |
+| BR-15 | Layout works at 360 px and 1280 px: no horizontal scroll, controls ≥ 44 px touch targets at 360 px; the progress ring shows elapsed / total and does not jump on Pause/Resume; blocked audio autoplay fails silently, sound is armed by the Start click, or after a reload by the first click, key or touch | 6:15 elapsed of 25:00 → ring 25% | C; ring behaviour E (live R2) |
 
 ## Glossary
 | Term | Meaning |
@@ -73,4 +73,4 @@ Status as of v0.1.0 (QA PASS round 3; live-only checks were not run, user chose 
 | # | Opportunity | Option | Serves | Value | Size | Status |
 |---|---|---|---|---|---|---|
 | 1 | Close the live-verification gap: hidden-tab drift, audible chime, real notification, two real tabs, native fullscreen | Run the live checks in a real browser | G-1, G-3 | high (goals unverified live) | S | idea |
-| 2 | Chime missed after reload / in the other tab | Revisit audio arming for the known limitations | G-3 | low (edge cases) | M | idea |
+| 2 | Chime missed in the other tab / before the first gesture after reload | Revisit audio arming for the known limitations | G-3 | low (edge cases) | M | idea |

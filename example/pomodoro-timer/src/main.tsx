@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { startRuntime } from './app/runtime.ts'
 import { phaseEnded } from './services/alerts.ts'
+import { armOnGesture } from './services/chime.ts'
 import './index.css'
 import { useTimerStore } from './store/timerStore.ts'
 
@@ -13,6 +14,8 @@ if (!root) throw new Error('Root element #root not found')
 // the runtime then sets data-phase before the first render.
 useTimerStore.getState().restoreOnLoad()
 startRuntime({ onPhaseEnd: phaseEnded })
+// After a reload there is no Start click: the first interaction anywhere re-arms the chime.
+armOnGesture()
 
 createRoot(root).render(
   <StrictMode>
