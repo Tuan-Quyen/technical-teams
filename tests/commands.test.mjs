@@ -130,7 +130,7 @@ test('every specialist lists what it writes and ends with the same Rules + Hando
 test('run-kit covers roster, pipelines, brief, workspace and handoff only', () => {
   const kit = read('skills/run-kit/SKILL.md');
   const sections = [...kit.matchAll(/^## \d+\. (.+)$/gm)].map((m) => m[1]);
-  assert.deepEqual(sections, ['Roster', 'Pipeline workflow commands', 'Writing a brief', 'Workspace `.team/`', 'Handoff']);
+  assert.deepEqual(sections, ['Roster', 'Pipeline workflow commands', 'Writing a brief', 'Workspace `.team/`', 'Handoff', 'Workflow steps']);
   for (const a of AGENTS) assert.ok(kit.includes(`| \`${a}\` |`), `roster lists ${a}`);
   for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
@@ -293,16 +293,32 @@ test('every command that runs a workflow carries the shared opt-in sentence; run
   assert.match(read('templates/core/STATE.md'), /\| Workflows \|/, 'STATE row has a Workflows field');
 });
 
-test('commands call workflows by name; the file text is passed only in the fallback', () => {
+test('commands call workflows by name and point to run-kit §6; the shared workflow rules are not repeated in them', () => {
+  const kit = read('skills/run-kit/SKILL.md');
+  const sec = kit.slice(kit.indexOf('## 6. Workflow steps'));
+  assert.ok(sec.length > 0 && kit.includes('## 6. Workflow steps'), 'run-kit has §6');
+  assert.match(sec, /Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/<file>\.js`[^\n]*pass its text as `script`/, 'run-kit §6 has the fallback');
+  assert.match(sec, /tell the user it runs in the background/, 'run-kit §6 has the background rule');
+  for (const s of ['`stuck`', '`stopped`', '`done`', 'startAt', 'fromGroup', 'acceptDisputed', ...['blocked', 'needs-input', 'missing', 'no-verdict', 'disputed', 'unowned', 'unsafe-path'].map((x) => `\`${x}\``)]) assert.ok(sec.includes(s), `run-kit §6 covers ${s}`);
+  assert.match(kit, /^## 6\. Workflow steps$/m, 'run-kit has the §6 heading');
+  const row = (status) => {
+    const l = sec.split('\n').find((x) => x.startsWith(`| \`${status}\``) || x.startsWith(`| \`${status}\`, `) || x.includes(`\`, \`${status}\` |`));
+    assert.ok(l, `run-kit §6 has a row for ${status}`);
+    return l;
+  };
+  const pairs = { done: /next step.*disputed/, stuck: /ask the user/, stopped: /route every `needsUser`/, blocked: /§5 table/, 'needs-input': /§5 table/, missing: /re-spawn that agent once.*ask the user/, 'no-verdict': /blocked/, disputed: /acceptDisputed.*startAt: "qa"/, unowned: /who owns.*startAt: "review"/, 'unsafe-path': /who owns.*startAt: "review"/ };
+  for (const [st, re] of Object.entries(pairs)) assert.match(row(st), re, `run-kit §6: ${st} row routes correctly`);
+  let n = 0;
   for (const c of COMMANDS) {
     const text = read(`commands/${c}.md`);
     if (!text.includes('workflows/')) continue;
+    n++;
     assert.doesNotMatch(text, /the file text unchanged|Read it again|Read the file again/, `${c}: no pass-the-file-text instruction`);
-    const uses = text.match(/`script`/g) || [];
-    const fallbacks = text.match(/if the name is not found, Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/[\w-]+\.js` and pass its text as `script` with the same args/g) || [];
-    assert.equal(uses.length, fallbacks.length, `${c}: \`script\` only appears in the fallback`);
+    assert.doesNotMatch(text, /`script`|pass its text|runs in the background|task notification|if the name is not found/i, `${c}: shared workflow rules are not repeated`);
     assert.match(text, /name: 'technical-team:team-[\w-]+'/, `${c}: calls Workflow by name`);
+    assert.match(text, /per run-kit §6/, `${c}: routes the result per run-kit §6`);
   }
+  assert.equal(n, 6, 'six workflow commands');
 });
 
 test('plan-tickets checkTickets enforces the ticket rules in code', () => {
@@ -377,3 +393,14 @@ for (const target of [PLUGIN_DIR, '.claude-plugin/marketplace.json']) {
     assert.equal(r.status, 0, `${r.stdout}\n${r.stderr}`);
   });
 }
+
+test('--small is the user flag only: feature.md says so and needs one ticket; the lead only suggests it', () => {
+  const f = read('commands/feature.md');
+  assert.match(f, /`--small` is the user's flag only: it applies only when `\$ARGUMENTS` contains `--small`/, 'feature: --small is user-only');
+  assert.match(f, /never pick it yourself/, 'feature: the lead never picks --small');
+  assert.match(f, /suggest `--small` in one line at step 0 and wait for the user's yes/, 'feature: suggest and wait');
+  assert.match(f, /exactly one ticket \(one developer, `groups: \[\[one item\]\]`\), no parallel groups/, 'feature: --small is one ticket');
+  const row = read('agents/team-lead.md').split('\n').find((l) => l.includes('| `feature`'));
+  assert.match(row, /only suggest `--small` to the user; never choose it/, 'lead §2: suggests only');
+  assert.doesNotMatch(row, /`--small` if it fits/, 'lead §2 no longer picks --small');
+});
