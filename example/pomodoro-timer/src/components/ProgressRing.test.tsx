@@ -12,7 +12,7 @@ const offset = () => Number(screen.getByTestId('ring-progress').getAttribute('st
 
 // Real clock: the tween runs on Motion's frame loop.
 describe('ProgressRing', () => {
-  it('tweens strokeDashoffset towards elapsed / total while running (AC7)', async () => {
+  it('tweens strokeDashoffset towards elapsed / total while running (POMO-AC7)', async () => {
     const { rerender } = render(<ProgressRing timer={running} now={T0} />)
     expect(offset()).toBe(1)
     rerender(<ProgressRing timer={running} now={T0 + 5 * 60_000} />)
@@ -33,7 +33,7 @@ describe('ProgressRing', () => {
     expect(offset()).toBeCloseTo(24 / 25, 9)
   })
 
-  it('draws the restored value on first render, with no entry animation (AC19)', () => {
+  it('draws the restored value on first render, with no entry animation (POMO-AC19)', () => {
     render(<ProgressRing timer={running} now={T0 + 10 * 60_000} />)
     expect(offset()).toBeCloseTo(0.6, 9)
   })

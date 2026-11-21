@@ -13,7 +13,7 @@ function advance(ms: number) {
   })
 }
 
-// QA additions (M1): keyboard operation (AC24 base), E3 in the UI, 44 px target class (AC22).
+// QA additions (POMO-M1): keyboard operation (POMO-AC24 base), POMO-E3 in the UI, 44 px target class (POMO-AC22).
 describe('QA: App keyboard and rapid clicks', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
@@ -50,7 +50,7 @@ describe('QA: App keyboard and rapid clicks', () => {
     expect(screen.getByRole('timer')).toHaveTextContent('24:58')
   })
 
-  it('Space / R / S / F on the body trigger nothing (AC24)', async () => {
+  it('Space / R / S / F on the body trigger nothing (POMO-AC24)', async () => {
     const u = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await u.keyboard(' rsf')
@@ -58,7 +58,7 @@ describe('QA: App keyboard and rapid clicks', () => {
     expect(screen.getByRole('timer')).toHaveTextContent('25:00')
   })
 
-  it('double-click Start yields one start, the second click pauses (E3)', async () => {
+  it('double-click Start yields one start, the second click pauses (POMO-E3)', async () => {
     const u = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await u.dblClick(screen.getByRole('button', { name: 'Start' }))
@@ -67,7 +67,7 @@ describe('QA: App keyboard and rapid clicks', () => {
     expect(screen.getByRole('timer')).toHaveTextContent('25:00')
   })
 
-  it('primary button is at least 44 px by class (AC22)', () => {
+  it('primary button is at least 44 px by class (POMO-AC22)', () => {
     render(<App />)
     expect(screen.getByRole('button', { name: 'Start' }).className).toMatch(/min-h-1[2-9]/)
   })

@@ -53,7 +53,7 @@ describe('timerStore (in memory)', () => {
     expect(store.getState().lastEnd?.away).toBe(true)
   })
 
-  it('skip moves on, clears lastEnd and ignores a rapid second skip (E3)', () => {
+  it('skip moves on, clears lastEnd and ignores a rapid second skip (POMO-E3)', () => {
     const store = createTimerStore()
     store.setState({ lastEnd: { phaseId: 0, ended: 'long', next: 'focus', away: false } })
     store.getState().skip()

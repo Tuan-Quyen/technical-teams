@@ -66,7 +66,7 @@ describe('announcementFor', () => {
     )
   })
 
-  it('uses neutral copy for a phase adopted from another tab (R-15)', () => {
+  it('uses neutral copy for a phase adopted from another tab (POMO-R15)', () => {
     // Same lastTransitionAt: this tab did not make the transition.
     const idleNext = skip(idle.timer, { ...S, autoStart: false }, T0, 0).timer
     expect(announcementFor(idle, snap(idleNext))).toBe('Short Break is ready.')

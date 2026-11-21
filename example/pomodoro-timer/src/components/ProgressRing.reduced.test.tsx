@@ -7,7 +7,7 @@ import { ProgressRing } from './ProgressRing.tsx'
 const T0 = new Date('2026-01-01T10:00:00Z').getTime()
 
 // Own file: `motion` reads the media query once per module instance.
-describe('ProgressRing with prefers-reduced-motion (E11)', () => {
+describe('ProgressRing with prefers-reduced-motion (POMO-E11)', () => {
   beforeEach(() => {
     vi.stubGlobal(
       'matchMedia',

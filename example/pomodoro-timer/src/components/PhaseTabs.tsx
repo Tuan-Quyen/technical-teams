@@ -5,7 +5,7 @@ import type { Phase } from '../domain/types.ts'
 const PHASES: readonly Phase[] = ['focus', 'short', 'long']
 
 /**
- * Display only (BR-10, AC24): a plain list, not buttons or `role="tab"`, never focusable, and no
+ * Display only (BR-10, POMO-AC24): a plain list, not buttons or `role="tab"`, never focusable, and no
  * hover, pointer or focus styling. Skip is the only way to change phase.
  */
 export function PhaseTabs({ phase }: { phase: Phase }) {

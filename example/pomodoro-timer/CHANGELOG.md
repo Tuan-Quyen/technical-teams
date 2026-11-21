@@ -6,8 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
-- After a reload, the chime comes back on the first click, tap or key press anywhere on the page (R-01). Until then a phase end is still silent, with the notification.
-- Focus mode now leaves native fullscreen when its component unmounts (R-06).
+- After a reload, the chime comes back on the first click, tap or key press anywhere on the page (REVI-R1). Until then a phase end is still silent, with the notification.
+- Focus mode now leaves native fullscreen when its component unmounts (REVI-R6).
 
 ## [0.1.0] - 2026-11-19
 

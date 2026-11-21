@@ -35,7 +35,7 @@ afterEach(() => {
 })
 
 describe('useFullscreen', () => {
-  it('closed before the browser answers: leaves fullscreen again once it is granted (R-14)', async () => {
+  it('closed before the browser answers: leaves fullscreen again once it is granted (POMO-R14)', async () => {
     const exitFullscreen = vi.fn(() => {
       active = null
       return Promise.resolve()
@@ -78,7 +78,7 @@ describe('useFullscreen', () => {
     expect(result.current.open).toBe(false)
   })
 
-  it('unmounted while native: leaves fullscreen (R-06)', async () => {
+  it('unmounted while native: leaves fullscreen (REVI-R6)', async () => {
     const exitFullscreen = vi.fn(() => {
       active = null
       return Promise.resolve()
@@ -97,7 +97,7 @@ describe('useFullscreen', () => {
     expect(exitFullscreen).toHaveBeenCalledTimes(1)
   })
 
-  it('unmounted before the browser answers: leaves fullscreen once it is granted (R-06)', async () => {
+  it('unmounted before the browser answers: leaves fullscreen once it is granted (REVI-R6)', async () => {
     const exitFullscreen = vi.fn(() => {
       active = null
       return Promise.resolve()
@@ -116,7 +116,7 @@ describe('useFullscreen', () => {
     expect(exitFullscreen).toHaveBeenCalledTimes(1)
   })
 
-  it('StrictMode: enter, grant, then unmount exits exactly once (R-06)', async () => {
+  it('StrictMode: enter, grant, then unmount exits exactly once (REVI-R6)', async () => {
     const exitFullscreen = vi.fn(() => {
       active = null
       return Promise.resolve()
@@ -135,7 +135,7 @@ describe('useFullscreen', () => {
     expect(exitFullscreen).toHaveBeenCalledTimes(1)
   })
 
-  it('StrictMode double-mount does not exit anything (R-06)', () => {
+  it('StrictMode double-mount does not exit anything (REVI-R6)', () => {
     const exitFullscreen = vi.fn(() => {
       active = null
       return Promise.resolve()

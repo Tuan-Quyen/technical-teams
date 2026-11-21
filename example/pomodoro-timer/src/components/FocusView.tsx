@@ -19,7 +19,7 @@ const IDLE_MS = 3000
 
 /**
  * Phase, ring, digits and controls on `bg.base`. The same view serves native fullscreen and the
- * in-app overlay (E7). Initial focus goes to the primary control (`data-autofocus` in `TimerControls`). Esc is handled on this element by `useFocusTrap`, never on the document; in
+ * in-app overlay (POMO-E7). Initial focus goes to the primary control (`data-autofocus` in `TimerControls`). Esc is handled on this element by `useFocusTrap`, never on the document; in
  * native fullscreen the browser's own Esc leaves fullscreen and `useFullscreen` closes the view.
  */
 export function FocusView({ timer, lastEnd, now, onExit }: FocusViewProps) {

@@ -13,8 +13,8 @@ Status: shipped 0.1.0 (`CHANGELOG.md`); stack per ADR 0001 (accepted). Archived 
 ## Building blocks
 | Component | Responsibility | Tech | Code location |
 |---|---|---|---|
-| Timer engine | Pure functions: phase sequence (BR-2), start/pause/reset/skip/complete, `remaining(now)` from `endAt`, clamp 0..total (E1), `phaseId` guard; settings bounds; UI copy/format builders | TypeScript, no React | `src/domain/{types,timer,settings,format}.ts` |
-| Timer store | Single source of truth: settings, timer, `notifyAsked`; actions call the engine; persisted with validation (E2, E10) | Zustand + `persist` (ADR 0001) | `src/store/timerStore.ts`, `src/store/persistence.ts` |
+| Timer engine | Pure functions: phase sequence (BR-2), start/pause/reset/skip/complete, `remaining(now)` from `endAt`, clamp 0..total (POMO-E1), `phaseId` guard; settings bounds; UI copy/format builders | TypeScript, no React | `src/domain/{types,timer,settings,format}.ts` |
+| Timer store | Single source of truth: settings, timer, `notifyAsked`; actions call the engine; persisted with validation (POMO-E2, POMO-E10) | Zustand + `persist` (ADR 0001) | `src/store/timerStore.ts`, `src/store/persistence.ts` |
 | Runtime | One-shot timeout at `endAt`, resync on `visibilitychange`/`focus`, cross-tab rehydrate, `data-phase`, alert dispatch; started once outside React | TypeScript | `src/app/runtime.ts`, wired in `src/main.tsx:15` |
 | Services | Notification, Web Audio chime, alerts dedupe (Web Locks), Fullscreen; feature-detected, never throw | Browser APIs | `src/services/{notify,chime,alerts,fullscreen}.ts` |
 | Hooks | Display tick, document title, fullscreen state, focus trap | React | `src/hooks/{useNow,useDocumentTitle,useFullscreen,useFocusTrap}.ts` |
@@ -27,15 +27,15 @@ Status: shipped 0.1.0 (`CHANGELOG.md`); stack per ADR 0001 (accepted). Archived 
 ## Key flows
 - Start: click → `start()` sets `endAt = now + remainingMs`; same handler arms audio and, once ever (`notifyAsked`), requests notification permission.
 - Tick: `useNow` re-renders every 250 ms while running; remaining derived from `endAt`; ticks never write state (BR-3).
-- Phase end: runtime timeout or resync → `sync()` → engine `complete` (once per `phaseId`, E3/E4) → `lastEnd` → alerts; next phase auto-starts if `autoStart`, unless the end is > 90 s overdue (asleep → idle, BR-9).
-- Refresh: store hydrates synchronously before render → `restoreOnLoad()`: overdue → next phase idle + one alert (AC21); running → continue (AC19); paused → exact (AC20).
-- Other tab: `storage` event → `persist.rehydrate()` → `sync()`; last write wins (AC23).
+- Phase end: runtime timeout or resync → `sync()` → engine `complete` (once per `phaseId`, POMO-E3/POMO-E4) → `lastEnd` → alerts; next phase auto-starts if `autoStart`, unless the end is > 90 s overdue (asleep → idle, BR-9).
+- Refresh: store hydrates synchronously before render → `restoreOnLoad()`: overdue → next phase idle + one alert (POMO-AC21); running → continue (POMO-AC19); paused → exact (POMO-AC20).
+- Other tab: `storage` event → `persist.rehydrate()` → `sync()`; last write wins (POMO-AC23).
 
 ## Data
 - One `localStorage` key `pomodoro-timer`, Zustand `persist` JSON, `version: 1`; code `src/store/persistence.ts`.
 - Stored JSON: `{ "state": { "settings": {focusMin, shortMin, longMin, autoStart, soundOn}, "notifyAsked": bool, "timer": {phase, status, endAt, remainingMs, durationMs, completed, phaseId} }, "version": 1 }`.
 - Timer invariants: `running ⇔ endAt !== null`; `0 ≤ remainingMs ≤ durationMs ≤ 120 min`; `completed` 0..4; `phaseId` safe integer ≥ 0. Not persisted: `lastEnd`, `lastTransitionAt`, UI state.
-- Read through a safe storage wrapper (`storageAvailable` probe on key `pomodoro-timer:probe`) + validating `merge`: bad setting field → default (E10); any bad timer field → fresh timer (E2). `migrate` is identity; schema change → bump `version`.
+- Read through a safe storage wrapper (`storageAvailable` probe on key `pomodoro-timer:probe`) + validating `merge`: bad setting field → default (POMO-E10); any bad timer field → fresh timer (POMO-E2). `migrate` is identity; schema change → bump `version`.
 
 ## Operations
 - Node v24.13.1, npm 11.8.0 (checked by the lead); standalone package in `example/pomodoro-timer/`.
@@ -49,9 +49,9 @@ Status: shipped 0.1.0 (`CHANGELOG.md`); stack per ADR 0001 (accepted). Archived 
 - Remaining time is always derived from timestamps; never store or count ticks.
 - Domain logic and UI copy builders live in `src/domain/` as pure functions with unit tests; components stay presentational.
 - Every browser API call is wrapped in try/catch or feature-detected; failure is silent and never blocks the timer.
-- No `keydown` handlers on `document`; only Esc inside the settings sheet and focus view overlay (AC24).
+- No `keydown` handlers on `document`; only Esc inside the settings sheet and focus view overlay (POMO-AC24).
 - Tokens live in `src/index.css` `@theme`; components use `accent`, never a phase colour; `data-phase` on `<html>` swaps `--accent`.
-- Animations respect reduced motion (E11) and never drive timer state.
+- Animations respect reduced motion (POMO-E11) and never drive timer state.
 - No runtime dependencies beyond ADR 0001; assets (Inter font, OFL) are committed files.
 
 ## Decision index

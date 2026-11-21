@@ -7,10 +7,10 @@ Status: accepted · Date: 2026-11-19 · Item: pomodoro-timer
 
 ## Context
 - User fixed the core: React, TypeScript strict, Vite, Tailwind CSS, Zustand, Framer Motion, Lucide React, LocalStorage (`BRIEF.md:13`, `:17`).
-- Timer must be timestamp-based, survive background tabs and refresh (BR-3, AC18–AC21); no backend, Timer Core only (BR-6).
+- Timer must be timestamp-based, survive background tabs and refresh (BR-3, POMO-AC18–POMO-AC21); no backend, Timer Core only (BR-6).
 - Done needs `npm install`, `npm run build`, lint and tests green on Windows 11 (Node v24.13.1, npm 11.8.0), standalone `package.json` in `example/pomodoro-timer/`.
 - Seven open choices C1–C7 were put to the user; answer 2026-11-19: "All A (Recommended)".
-- At scaffold (T-1) the current `create-vite` `react-ts` template ships oxlint and TypeScript 7, not ESLint; typescript-eslint does not support TS 7 yet (developer T-1 handoff).
+- At scaffold (POMO-T1) the current `create-vite` `react-ts` template ships oxlint and TypeScript 7, not ESLint; typescript-eslint does not support TS 7 yet (developer POMO-T1 handoff).
 
 ## Decision
 - Scaffold `create-vite` `react-ts`, npm, current stable majors at install except TypeScript held at 6.x (6.0.3) for typescript-eslint; core stack as named by the user.
@@ -34,7 +34,7 @@ Status: accepted · Date: 2026-11-19 · Item: pomodoro-timer
 ## Consequences
 - Good: zero runtime deps beyond the user's list; pure `src/domain/` engine is unit-testable without a browser.
 - Good: Tailwind v4 needs no JS config; `persist` versioning covers schema changes.
-- Bad: no real-browser automation; qa checks AC7, AC14, AC17–AC23 live at 360 / 1280 px.
+- Bad: no real-browser automation; qa checks POMO-AC7, POMO-AC14, POMO-AC17–POMO-AC23 live at 360 / 1280 px.
 - Bad: C7 — in a hidden tab the end alert can fire late if the browser throttles timers (per browser, unverified); display is exact on return.
 - Bad: `createJSONStorage` does no runtime validation (Zustand persist docs), so the validating `merge` and a safe storage wrapper are mandatory.
 - Bad: `eslint.config.js` is ours to maintain, not template-tracked; TypeScript stays on 6.x until typescript-eslint supports 7 — revisit then.

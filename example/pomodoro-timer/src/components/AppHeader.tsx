@@ -2,9 +2,9 @@ import { Maximize2, Settings } from 'lucide-react'
 import { IconButton } from './ui/IconButton.tsx'
 
 interface AppHeaderProps {
-  /** Wired by the Settings sheet (T-7); without it the button renders `aria-disabled`. */
+  /** Wired by the Settings sheet (POMO-T7); without it the button renders `aria-disabled`. */
   onOpenSettings?: () => void
-  /** Wired by focus mode (T-9); without it the button renders `aria-disabled`. */
+  /** Wired by focus mode (POMO-T9); without it the button renders `aria-disabled`. */
   onEnterFocus?: () => void
 }
 

@@ -12,7 +12,7 @@ export interface FocusModeControl {
 /**
  * Focus mode state. `enter` opens the view at once as the in-app overlay and asks the browser for
  * native fullscreen in the same click; if that resolves, the mode becomes `native`, otherwise the
- * overlay stays (E7). Leaving native fullscreen from the browser (its own Esc) closes the view.
+ * overlay stays (POMO-E7). Leaving native fullscreen from the browser (its own Esc) closes the view.
  */
 export function useFullscreen(): FocusModeControl {
   const [open, setOpen] = useState(false)

@@ -260,7 +260,7 @@ interface NotificationStatusProps {
   onAllow: () => void
 }
 
-/** Notification hint N1-N5, the granted status G1 and the Allow button (AC15, AC25). */
+/** Notification hint N1-N5, the granted status G1 and the Allow button (POMO-AC15, POMO-AC25). */
 function NotificationStatus({ perm, asked, soundOn, asking, onAllow }: NotificationStatusProps) {
   if (perm === 'granted') {
     return (

@@ -38,7 +38,7 @@ let removeGestureListeners: (() => void) | null = null
 
 /**
  * After a reload there is no Start click, so the context would stay suspended and a phase end
- * would be silent (R-01). Arms on the first pointerdown, keydown or touchend anywhere in the
+ * would be silent (REVI-R1). Arms on the first pointerdown, keydown or touchend anywhere in the
  * document, and stops listening once the context is running. Safe to call more than once.
  */
 export function armOnGesture(): void {

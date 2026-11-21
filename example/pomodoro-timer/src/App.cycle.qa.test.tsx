@@ -15,7 +15,7 @@ function advance(ms: number) {
   })
 }
 
-// QA (M2): one full cycle through the real UI tick: AC8, AC9, AC10, AC13 end to end.
+// QA (POMO-M2): one full cycle through the real UI tick: POMO-AC8, POMO-AC9, POMO-AC10, POMO-AC13 end to end.
 describe('QA: full 4-session cycle through the UI', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
@@ -55,7 +55,7 @@ describe('QA: full 4-session cycle through the UI', () => {
     expect(useTimerStore.getState().timer.completed).toBe(0)
   })
 
-  it('a clock jump far past the end ends the phase once, not several times (E1, E3)', async () => {
+  it('a clock jump far past the end ends the phase once, not several times (POMO-E1, POMO-E3)', async () => {
     const u = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await u.click(screen.getByRole('button', { name: 'Start' }))

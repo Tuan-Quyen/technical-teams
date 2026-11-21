@@ -20,7 +20,7 @@ export interface TimerState {
   lastEnd: PhaseEnd | null
   /** Time of the last phase transition (ms); input of the Skip debounce. Not persisted. */
   lastTransitionAt: number
-  /** True once the notification permission was requested (E5); persisted. */
+  /** True once the notification permission was requested (POMO-E5); persisted. */
   notifyAsked: boolean
   start: () => void
   pause: () => void
@@ -29,7 +29,7 @@ export interface TimerState {
   sync: (mode: CompleteMode) => void
   /** On page load: an overdue running phase advances once, idle, with an away `lastEnd`. */
   restoreOnLoad: () => void
-  /** All-or-nothing: returns false and changes nothing if any field is invalid (AC12). */
+  /** All-or-nothing: returns false and changes nothing if any field is invalid (POMO-AC12). */
   saveSettings: (next: Settings) => boolean
   markNotifyAsked: () => void
 }
@@ -94,7 +94,7 @@ export function createTimerStore(storage: StateStorage = safeStorage) {
               soundOn: next.soundOn,
             }
             const { timer } = get()
-            // Idle reloads the current phase at its new length; a started phase keeps its own (AC11, AC13).
+            // Idle reloads the current phase at its new length; a started phase keeps its own (POMO-AC11, POMO-AC13).
             set({ settings, timer: timer.status === 'idle' ? reset(timer, settings).timer : timer })
             return true
           },

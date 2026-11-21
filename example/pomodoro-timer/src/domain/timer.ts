@@ -3,7 +3,7 @@ import type { CompleteMode, Phase, Settings, Timer, TimerResult } from './types.
 
 /** An end handled later than this (sleep, heavy throttling) leaves the next phase idle. */
 export const AWAY_MS = 90_000
-/** Minimum gap between Skip transitions (E3). */
+/** Minimum gap between Skip transitions (POMO-E3). */
 export const SKIP_DEBOUNCE_MS = 300
 
 export function clamp(value: number, min: number, max: number): number {
@@ -23,7 +23,7 @@ export function initialTimer(s: Settings): Timer {
   }
 }
 
-/** Idle at the full settings duration: Reset has nothing to do (E9). */
+/** Idle at the full settings duration: Reset has nothing to do (POMO-E9). */
 export function isFresh(t: Timer, s: Settings): boolean {
   return t.status === 'idle' && t.remainingMs === phaseDurationMs(t.phase, s)
 }

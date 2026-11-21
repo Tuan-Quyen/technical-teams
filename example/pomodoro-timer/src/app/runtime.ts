@@ -10,7 +10,7 @@ const MAX_TIMEOUT_MS = 2 ** 31 - 1
 export interface RuntimeOptions {
   store?: typeof useTimerStore
   /**
-   * Seam for alerts (sound, notification; T-8). Called once per natural phase end, including an
+   * Seam for alerts (sound, notification; POMO-T8). Called once per natural phase end, including an
    * end restored on page load. Never called for Skip or Reset.
    */
   onPhaseEnd?: (end: PhaseEnd) => void
@@ -88,7 +88,7 @@ export function startRuntime(options: RuntimeOptions = {}): () => void {
     if (event.key !== STORAGE_KEY) return
     // Key removed or storage cleared elsewhere: keep this tab's timer; it re-saves on its next change.
     if (event.newValue === null) return
-    // Last write wins (AC23): adopt the other tab's state, then settle any end it left behind.
+    // Last write wins (POMO-AC23): adopt the other tab's state, then settle any end it left behind.
     void Promise.resolve(store.persist.rehydrate()).then(sync)
   }
   document.addEventListener('visibilitychange', onVisibility)

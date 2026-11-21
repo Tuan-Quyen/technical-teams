@@ -133,7 +133,7 @@ describe('runtime', () => {
     })
   })
 
-  describe('resync (AC18, E4)', () => {
+  describe('resync (POMO-AC18, POMO-E4)', () => {
     it('visibilitychange at endAt completes once; the later timeout does nothing', () => {
       const s = setup()
       stop = s.stop
@@ -157,7 +157,7 @@ describe('runtime', () => {
       expect(s.store.getState().timer.phase).toBe('short')
     })
 
-    it('does nothing while a phase is paused or idle (E4)', () => {
+    it('does nothing while a phase is paused or idle (POMO-E4)', () => {
       const s = setup()
       stop = s.stop
       fireVisibility()
@@ -181,7 +181,7 @@ describe('runtime', () => {
     })
   })
 
-  describe('away rule (AC10, AC21)', () => {
+  describe('away rule (POMO-AC10, POMO-AC21)', () => {
     it('exactly AWAY_MS late still auto-starts from now', () => {
       const s = setup()
       stop = s.stop
@@ -222,7 +222,7 @@ describe('runtime', () => {
     })
   })
 
-  describe('storage event (AC23)', () => {
+  describe('storage event (POMO-AC23)', () => {
     it('rehydrates from the other tab and re-arms for its endAt', async () => {
       const storage = memory()
       const s = setup(storage)
@@ -254,7 +254,7 @@ describe('runtime', () => {
       expect(s.ends).toHaveLength(0)
     })
 
-    it('ignores the key being removed or cleared: this tab keeps its running timer (S-04)', async () => {
+    it('ignores the key being removed or cleared: this tab keeps its running timer (POMO-S4)', async () => {
       const storage = memory()
       const s = setup(storage)
       stop = s.stop
@@ -295,7 +295,7 @@ describe('runtime', () => {
     })
   })
 
-  describe('end timeout bounds (S-01, R-09)', () => {
+  describe('end timeout bounds (POMO-S1, POMO-R9)', () => {
     it('clamps the delay: an endAt beyond 2^31 ms neither fires at once nor loops', () => {
       const s = setup()
       stop = s.stop

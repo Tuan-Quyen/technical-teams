@@ -22,7 +22,7 @@ function resetStore() {
   })
 }
 
-describe('polish: title and live region (E12, AC24)', () => {
+describe('polish: title and live region (POMO-E12, POMO-AC24)', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
     vi.setSystemTime(T0)

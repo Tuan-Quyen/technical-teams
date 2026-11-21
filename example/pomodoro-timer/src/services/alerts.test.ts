@@ -92,7 +92,7 @@ describe('alerts', () => {
     setLocks(undefined)
   })
 
-  describe('one chime and one title-only notification (AC14, AC16)', () => {
+  describe('one chime and one title-only notification (POMO-AC14, POMO-AC16)', () => {
     it('plays the chime once and shows a title-only notification with the phase tag', async () => {
       chime.arm()
       await flush()
@@ -130,14 +130,14 @@ describe('alerts', () => {
       expect(shown).toHaveLength(2)
     })
 
-    it('an away end alerts too (AC21)', async () => {
+    it('an away end alerts too (POMO-AC21)', async () => {
       phaseEnded(end(1, { away: true }))
       await flush()
       expect(shown).toHaveLength(1)
     })
   })
 
-  describe('settings and failures (AC15, E6)', () => {
+  describe('settings and failures (POMO-AC15, POMO-E6)', () => {
     it('Sound off: no chime, the notification still shows', async () => {
       useTimerStore.setState({ settings: { ...DEFAULT_SETTINGS, soundOn: false } })
       chime.arm()
@@ -160,7 +160,7 @@ describe('alerts', () => {
       ['pointerdown', () => new PointerEvent('pointerdown')],
       ['keydown', () => new KeyboardEvent('keydown', { key: 'a' })],
       ['touchend', () => new Event('touchend')],
-    ])('after a reload, the first %s re-arms the chime (R-01)', async (_name, make) => {
+    ])('after a reload, the first %s re-arms the chime (REVI-R1)', async (_name, make) => {
       chime.armOnGesture()
       phaseEnded(end(1))
       await flush()
@@ -172,7 +172,7 @@ describe('alerts', () => {
       expect(plays()).toBe(1)
     })
 
-    it('resume stays suspended: listeners are kept and the next gesture retries (R-01)', async () => {
+    it('resume stays suspended: listeners are kept and the next gesture retries (FIX-R1)', async () => {
       let stuck = true
       class StuckContext extends FakeAudioContext {
         override resume() {
@@ -257,7 +257,7 @@ describe('alerts', () => {
     })
   })
 
-  describe('cross-tab claim (R-11, AC23, E4)', () => {
+  describe('cross-tab claim (POMO-R11, POMO-AC23, POMO-E4)', () => {
     it('of two tabs ending the same phase, only one chimes and notifies', async () => {
       setLocks(fakeLocks())
       chime.arm()

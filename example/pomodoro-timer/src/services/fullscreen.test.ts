@@ -20,7 +20,7 @@ afterEach(() => {
   Reflect.deleteProperty(document.documentElement, 'requestFullscreen')
 })
 
-describe('fullscreen service (E7)', () => {
+describe('fullscreen service (POMO-E7)', () => {
   it('is unsupported and resolves false when the API is absent (jsdom)', async () => {
     expect(fullscreen.isSupported()).toBe(false)
     await expect(fullscreen.enter()).resolves.toBe(false)

@@ -10,7 +10,7 @@ import {
   validateSettings,
 } from './settings.ts'
 
-describe('defaults and limits (AC1, AC12)', () => {
+describe('defaults and limits (POMO-AC1, POMO-AC12)', () => {
   it('has the agreed defaults and a fixed cycle of 4', () => {
     expect(DEFAULT_SETTINGS).toEqual({
       focusMin: 25,

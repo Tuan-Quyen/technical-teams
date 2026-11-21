@@ -42,8 +42,8 @@ function advance(ms: number) {
   })
 }
 
-// QA (M3): the real main.tsx wiring (restoreOnLoad + startRuntime(phaseEnded)) under the real App.
-describe('QA: alerts wired end to end (AC14, AC16, AC21, E4, E12)', () => {
+// QA (POMO-M3): the real main.tsx wiring (restoreOnLoad + startRuntime(phaseEnded)) under the real App.
+describe('QA: alerts wired end to end (POMO-AC14, POMO-AC16, POMO-AC21, POMO-E4, POMO-E12)', () => {
   let stop: (() => void) | undefined
   beforeEach(() => {
     vi.useFakeTimers({
@@ -79,7 +79,7 @@ describe('QA: alerts wired end to end (AC14, AC16, AC21, E4, E12)', () => {
     vi.useRealTimers()
   })
 
-  it('natural end: one chime, one notification, title and announcement follow; a visibility event at the end adds nothing (E4)', () => {
+  it('natural end: one chime, one notification, title and announcement follow; a visibility event at the end adds nothing (POMO-E4)', () => {
     stop = startRuntime({ onPhaseEnd: phaseEnded })
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Start' }))
@@ -110,7 +110,7 @@ describe('QA: alerts wired end to end (AC14, AC16, AC21, E4, E12)', () => {
     expect(audio.oscillators).toBe(0)
   })
 
-  it('reload with an overdue phase: one notification, caption, no chime, no auto-start (AC21)', () => {
+  it('reload with an overdue phase: one notification, caption, no chime, no auto-start (POMO-AC21)', () => {
     const s = useTimerStore.getState()
     useTimerStore.setState({
       timer: {
