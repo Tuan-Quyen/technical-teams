@@ -17,7 +17,7 @@ Follows: `frontend-design/DESIGN.md`
 ## Screens
 | Screen | Route | Primary action | Covers ACs |
 |---|---|---|---|
-| <name> | <route> | <action> | AC1 |
+| <name> | <route> | <action> | CART-AC1 |
 
 ## State matrix
 | Screen | Empty | Loading | Success | Validation error | System error | No permission |

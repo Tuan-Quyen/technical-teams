@@ -1,6 +1,6 @@
 // Workflow script for the ticket step of /technical-team:feature and :new: pm writes the tickets, this script checks them
 // in code, sends violations back to pm, up to maxRounds pm runs. Run with the Workflow tool: `script` = this file unchanged.
-// args: { slug, pmBrief: <run-kit §3 brief written by the lead>, maxRounds?: 2 (total pm runs), context?, root?: absolute repo path }
+// args: { key: the item key (CART: tickets are CART-T1, CART-T2 …), slug, pmBrief: <run-kit §3 brief written by the lead>, maxRounds?: 2 (total pm runs), context?, root?: absolute repo path }
 // pm still writes .team/TASKS.md itself; its structured output must mirror it. Returns
 // { status: 'done'|'stuck'|'stopped', rounds, tickets, groups: [[{ticket, role, files}]] (no ticket has a milestone) | milestones: [{milestone, groups}],
 // issues, handoff, needsUser }. stuck and stopped return groups: [] and milestones: []; tickets and issues stay for the user.
@@ -52,6 +52,7 @@ const ROLES = ['developer', 'dba', 'devops']
 const HOW = 'run /technical-team:feature (or new) instead'
 const a = parseArgs(args, 'plan-tickets', HOW) || {}
 if (!a.slug || !a.pmBrief) throw new Error(`plan-tickets: args needs slug and pmBrief — ${HOW}`)
+if (!/^[A-Z][A-Z0-9]{1,5}$/.test(a.key || '')) throw new Error(`plan-tickets: args.key "${clean(a.key, 20)}" is not an item key: 2-6 capitals or digits, first a capital (e.g. CART), from the item's STATE.md row — ${HOW}`)
 const maxRounds = a.maxRounds || 2
 const root = String(a.root || '').replace(/\\/g, '/').replace(/\/+$/, '')
 const safePath = (p) => {
@@ -71,6 +72,7 @@ const checkTickets = (tickets) => {
   if (!tickets.length) add('-', 'no-tickets', 'pm returned no tickets')
   const byId = new Map()
   for (const t of tickets) {
+    if (a.key && !new RegExp(`^${a.key}-T[1-9][0-9]*$`).test(t.id)) add(t.id, 'id-format', `ticket id must be ${a.key}-T<n> (e.g. ${a.key}-T1)`)
     if (byId.has(t.id)) add(t.id, 'unique-id', 'id used by more than one ticket')
     else byId.set(t.id, t)
   }

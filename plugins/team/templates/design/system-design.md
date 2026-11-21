@@ -32,6 +32,6 @@ Status: draft | approved
 ## Implementation plan
 | Step | What | Files | Depends on | ACs |
 |---|---|---|---|---|
-| 1 | <step> | <paths> | – | AC1 |
+| 1 | <step> | <paths> | – | CART-AC1 |
 
 <!-- team-pm turns these steps into tickets in .team/TASKS.md. -->

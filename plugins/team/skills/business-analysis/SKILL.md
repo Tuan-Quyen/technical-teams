@@ -1,6 +1,6 @@
 ---
 name: business-analysis
-description: The business analyst's working method, adapted from the BABOK Guide (strategy analysis, elicitation and collaboration, requirements analysis, requirements life cycle) — guided elicitation for users who do not yet know their own requirements (question rounds with options, consequences and a recommended default; playback of the understanding as concrete scenarios the user confirms), the three contexts (greenfield product, change to an operating system with as-is and impact analysis, discovery of what to build next), the big-picture product baseline in `.team/requirements/<slug>.md`, the ready-to-spec check, and the rule that business facts are confirmed, evidenced or marked as assumptions — never invented. ba loads it for a hard elicitation.
+description: The business analyst's working method, adapted from the BABOK Guide (strategy analysis, elicitation and collaboration, requirements analysis, requirements life cycle) — guided elicitation for users who do not yet know their own requirements (question rounds with options, consequences and a recommended default; playback of the understanding as concrete scenarios the user confirms), the three contexts (greenfield product, change to an operating system with as-is and impact analysis, discovery of what to build next), the big-picture product baseline in `.team/PRODUCT.md` and the per-item spec in `.team/requirements/<slug>.md`, the ready-to-spec check, and the rule that business facts are confirmed, evidenced or marked as assumptions — never invented. ba loads it for a hard elicitation.
 ---
 
 # business-analysis — guide the user to requirements they can confirm
@@ -43,7 +43,7 @@ You never talk to the user directly: a round is your handoff (status `needs-inpu
 | Sources before questions | never ask what the brief, a document, `.team/` or the code already answers; cite where you read it |
 | Guide, do not interrogate | every question: why it matters · 2–3 options with the consequence of each · your recommended default. No bare "what do you want?" |
 | Playback | each round starts with the understanding so far as scenarios with concrete values ("A cashier refunds order #12 of 150 000 đ after 31 days → refused, message …"), so the user corrects examples instead of abstract rules |
-| Round size | at most 7 questions, highest impact first, marked **blocking** (cannot spec without it) or **default-able** (proceeds on the default) |
+| Round size | at most 5 questions (team-ba's rule), highest impact first, marked **blocking** (cannot spec without it) or **default-able** (proceeds on the default) |
 | Facts are labelled | **C** confirmed (user's words + date) · **E** evidence (file:line, document section, URL) · **A** assumption (your default, not yet confirmed). Never present an A as a fact; every A is listed at the gate |
 | User may stop | "proceed" / "đủ rồi" → remaining defaults become assumptions; a blocking question that is still open stays visible in the gate report, never hidden |
 | Big picture | keep `.team/PRODUCT.md` current: a work item is always placed in the capability map and traced to a business goal |

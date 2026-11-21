@@ -16,12 +16,18 @@ Status: draft | confirmed
 ## Acceptance criteria
 | ID | Story | Given | When | Then |
 |---|---|---|---|---|
-| AC1 | S1 | <state, concrete values> | <action> | <observable result> |
+| CART-AC1 | S1 | <state, concrete values> | <action> | <observable result> |
 
 ## Edge cases
 | ID | Case | Expected behaviour |
 |---|---|---|
-| E1 | <case> | <behaviour> |
+| CART-E1 | <case> | <behaviour> |
+
+## As-is and impact
+<!-- Change to an existing system only (business-analysis contexts.md §2); otherwise "none". qa builds regression scope from it. -->
+| Area | Today (file:line) | Change | Regression risk |
+|---|---|---|---|
+| <flows / roles / data / integrations / rules / operations> | <what happens now> | <what is different> | <what must not change> |
 
 ## Facts and assumptions
 | Fact | Basis (C / E / A) | Source |

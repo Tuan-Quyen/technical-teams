@@ -32,7 +32,7 @@ const COMMANDS = [...PIPELINES, 'crew', 'run'].sort();
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
 const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
 const AGENTS = [...WORKERS, 'team-lead'].sort();
-const SKILLS = ['business-analysis', 'run-kit', 'test-process'];
+const SKILLS = ['business-analysis', 'development-process', 'run-kit', 'technical-planning', 'test-process'];
 const TEMPLATE_DIRS = ['adr', 'core', 'design', 'reports', 'requirements'];
 const DOCS = [...walk('commands'), ...walk('agents'), ...walk('skills'), ...walk('templates')];
 const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
@@ -42,7 +42,7 @@ const LAYOUT = [
   /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/CREW\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
-  /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
+  /^\.team\/reports\/<slug>\/((qa|review|security|debug|findings)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
 ];
 
 test('command, agent and skill sets are exactly the documented ones', () => {
@@ -134,7 +134,17 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   for (const a of AGENTS) assert.ok(kit.includes(`| \`${a}\` |`), `roster lists ${a}`);
   for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
-  assert.ok(!fs.existsSync(path.join(ROOT, 'skills/run-kit/references')), 'run-kit has no usage guide');
+  // The core stays short; detail lives in references the core names, each read only when its step comes up.
+  const refs = fs.readdirSync(path.join(ROOT, 'skills/run-kit/references')).sort();
+  assert.deepEqual(refs, ['qa-loop.md', 'workflow.md', 'workspace.md']);
+  for (const r of refs) assert.match(kit, new RegExp(`\\| \`${r.replace('.', '\\.')}\` \\(§`), `run-kit's map names ${r}`);
+});
+
+test('every skill file stays under 150 lines; longer content goes to a reference', () => {
+  for (const f of DOCS.filter((d) => d.startsWith('skills/') && d.endsWith('.md'))) {
+    const n = read(f).split('\n').length - (read(f).endsWith('\n') ? 1 : 0);
+    assert.ok(n < 150, `${f}: ${n} lines`);
+  }
 });
 
 test('STATE.md belongs to the orchestrating session, with or without the lead', () => {
@@ -263,6 +273,12 @@ test('the shared schema and contract blocks are identical across workflow script
       else assert.ok(w === 'release.js' && RELEASE_ONLY_MISSING.includes(name), `${w}: missing ${name}`);
     }
   }
+  // The QA-Fix state gate is the same code at every entry point that touches an item.
+  for (const name of ['ROUND_CAP', 'ORIGIN', 'STATUSES', 'LEAD_ONLY', 'NOT_STATE', 'checkState', 'WITNESS', 'RESOLVED_RANK', 'rowBlocked', 'witnessPrompt', 'witnessCheck']) {
+    const b = block(read('workflows/build-loop.js'), name);
+    assert.ok(b, `build-loop.js has ${name}`);
+    for (const w of ['review.js', 'release.js']) assert.equal(block(read(`workflows/${w}`), name), b, `${w}: ${name} drifted from build-loop.js`);
+  }
   for (const name of ['root', 'safePath']) assert.equal(block(read('workflows/plan-tickets.js'), name), block(read('workflows/build-loop.js'), name), `plan-tickets: ${name} drifted from build-loop.js`);
   // Skeptics get no agentType (they must not inherit "write the report"); agent text goes into a data block.
   assert.doesNotMatch(block(ref, 'verifyFindings'), /agentType/, 'skeptics run without an agentType');
@@ -295,8 +311,8 @@ test('every command that runs a workflow carries the shared opt-in sentence; run
 
 test('commands call workflows by name and point to run-kit §6; the shared workflow rules are not repeated in them', () => {
   const kit = read('skills/run-kit/SKILL.md');
-  const sec = kit.slice(kit.indexOf('## 6. Workflow steps'));
-  assert.ok(sec.length > 0 && kit.includes('## 6. Workflow steps'), 'run-kit has §6');
+  const sec = read('skills/run-kit/references/workflow.md');
+  assert.ok(kit.includes('`references/workflow.md`'), 'run-kit §6 points to its reference');
   assert.match(sec, /Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/<file>\.js`[^\n]*pass its text as `script`/, 'run-kit §6 has the fallback');
   assert.match(sec, /tell the user it runs in the background/, 'run-kit §6 has the background rule');
   for (const s of ['`stuck`', '`stopped`', '`done`', 'startAt', 'fromGroup', 'acceptDisputed', ...['blocked', 'needs-input', 'missing', 'no-verdict', 'disputed', 'unowned', 'unsafe-path'].map((x) => `\`${x}\``)]) assert.ok(sec.includes(s), `run-kit §6 covers ${s}`);
@@ -344,6 +360,11 @@ test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-9'] })]), ['unknown-dependency'], 'unknown dependsOn');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-1'] })]), ['self-dependency'], 'self dependency');
   assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-2', 3, ['b.js'])]), ['group-gap'], 'group gap');
+  // with the item key, ticket IDs must be <KEY>-T<n>
+  const keyed = new Function('a', `${code}; return checkTickets;`)({ key: 'CART' });
+  const keyedRules = (ts) => keyed(ts).map((i) => i.rule).sort();
+  assert.deepEqual(keyedRules([t('CART-T1', 1, ['a.js']), t('CART-T2', 2, ['b.js'], { dependsOn: ['CART-T1'] })]), [], 'keyed IDs pass');
+  assert.deepEqual(keyedRules([t('T-1', 1, ['a.js']), t('USER-T2', 1, ['b.js']), t('CART-T0', 1, ['c.js'])]), ['id-format', 'id-format', 'id-format'], 'old, foreign and zero IDs are sent back to pm');
   assert.deepEqual(rules([t('T-1', 1, ['../x.js'])]), ['unsafe-path'], 'unsafe path');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { acs: [] })]), ['acs'], 'missing AC');
   assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-1', 1, ['b.js'])]), ['unique-id'], 'duplicate id');

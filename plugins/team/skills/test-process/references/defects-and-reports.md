@@ -3,17 +3,17 @@
 ## Defect report (in `.team/reports/<slug>/qa.md` → Defects, and in the handoff)
 
 ```
-#### Q-03 — Create button stays enabled while saving; double click creates two projects
+#### CART-Q3 — Create button stays enabled while saving; double click creates two projects
 - Severity: major · Priority: P1 · Type: functional | ui-ux | a11y | compatibility | performance | reliability | data | security-suspect
-- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks AC1 / designed state) | pre-existing
+- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks CART-AC1 / designed state) | pre-existing
 - Found in: round 2 · build/commit <short sha or "working tree"> · Android emulator Pixel 6 API 34 (release build)
-- Source: AC1 · frontend design state "pending" · heuristic H1 (if UX)
+- Source: CART-AC1 · frontend design state "pending" · heuristic H1 (if UX)
 - User impact: a user who taps twice gets duplicate projects and has to delete one by hand
 - Steps:
   1. Open Projects → New project
   2. Type "Alpha"
   3. Double-tap "Create" quickly
-- Expected: button shows "Creating…" and is disabled; one project created (frontend design state matrix, AC1)
+- Expected: button shows "Creating…" and is disabled; one project created (frontend design state matrix, CART-AC1)
 - Actual: two "Alpha" rows; no pending state
 - Evidence: test-results/w-012-create-double.png · e2e/preview/w-012.yaml step 6 · backend log 2× POST /api/projects 201
 - Frequency: 5/5
@@ -68,7 +68,7 @@ stateDiagram-v2
   open --> deferred: user defers (minor/trivial only, reason + work item)
 ```
 
-Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope** blocker/critical/major can never be `deferred` while the work item gets a PASS; a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
+Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope blocking** finding (`SKILL.md` § Severity and blocking) can never be `deferred` while the work item gets a PASS; a known defect keeps its ID across rounds (`reopened`, never a new ID); a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
 
 ## Retest and regression per round
 

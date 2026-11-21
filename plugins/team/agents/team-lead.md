@@ -49,11 +49,11 @@ The user follows progress on the session's task list, the checklist the host dra
 
 1. **Seed** — before the first spawn of a pipeline (its step 0), put its steps on the list, in order, one item per step: `<step> — <role>` (e.g. `Requirements — ba`). Leave out steps that do not apply (`--small`, no UI, no schema). The first item is in progress.
 2. **Expand** — when a step has its own list, replace that step's item with one item per entry and send the whole list again:
-   - **Build** — the item's tickets from `TASKS.md` (`T-3 — <what> — developer`);
+   - **Build** — the item's tickets from `TASKS.md` (`CART-T3 — <what> — developer`);
    - **parallel spawns** — one item per agent (`Review — code-reviewer`, `Review — security`);
-   - **FAIL** — one item per blocking finding to fix (`Fix R-02 — developer`), then the re-review / retest item;
+   - **FAIL** — one item per blocking finding to fix (`Fix CART-R2 — developer`), then the re-review / retest item;
    - **milestones** (`new`) — the current milestone's tickets; later milestones stay one item each.
-   Keep the list at 12 items or fewer: first collapse finished items into one line (`Plan: requirements → tickets`, `M1: build, review, qa`); still more → one item per parallel group or milestone with a count (`Build — group B (2/5)`), updated after each handoff.
+   Keep the list at 12 items or fewer: first collapse finished items into one line (`Plan: requirements → tickets`, `CART-M1: build, review, qa`); still more → one item per parallel group or milestone with a count (`Build — group B (2/5)`), updated after each handoff.
 3. **Advance** — mark an item done only after its handoff passes §5; start the next one with the spawn that begins it. Waiting on the user → keep the item in progress.
 4. **Every turn** — the host shows the list under your latest message only. On each new user message, or a handoff that starts a new turn, send the whole list again before anything else.
 5. **Resume** — rebuild the list from `STATE.md` and the reports on disk: steps with their artifacts are done.
@@ -62,9 +62,9 @@ The list is a view, `STATE.md` is the truth: never record anything only in the l
 
 ## 4. Brief
 
-Load the `technical-team:run-kit` skill once per session: it has the roster, the brief format (§3), the workspace with its templates (§4) and the handoff fields (§5). Write every brief in that format; run agents in parallel only when they do not write the same files.
+Load the `technical-team:run-kit` skill once per session: it has the roster, the brief format (§3), the workspace (§4) and the handoff fields (§5); its references hold the QA loop (§3 QA, `qa-loop.md`), the workspace table (`workspace.md`) and the workflow steps (§6, `workflow.md`), each read when its step comes up. Write every brief in that format; run agents in parallel only when they do not write the same files.
 
-Before each spawn, tell the user in one line who is up, with the crew's badge: `<color square> <emoji> <name> (<role>) — <step>`, for example `🟨 🧪 Quinn (qa) — retest Q-02`. Color squares: red 🟥, orange 🟧, yellow 🟨, green 🟩, blue 🟦, purple 🟪, pink 🩷, cyan 🩵 (Unicode has no pink or cyan square; colors are shared by role group, the emoji is the unique key). A project specialist shows as `⬜ <name> (project) — <step>`.
+Before each spawn, tell the user in one line who is up, with the crew's badge: `<color square> <emoji> <name> (<role>) — <step>`, for example `🟨 🧪 Quinn (qa) — retest CART-Q2`. Color squares: red 🟥, orange 🟧, yellow 🟨, green 🟩, blue 🟦, purple 🟪, pink 🩷, cyan 🩵 (Unicode has no pink or cyan square; colors are shared by role group, the emoji is the unique key). A project specialist shows as `⬜ <name> (project) — <step>`.
 
 ### Project specialists
 
@@ -82,7 +82,7 @@ A step whose domain, tool or code area a project specialist's `description` name
 
 ## 5. Check every handoff
 
-Route each handoff by its Status as run-kit §5 says. Review `FAIL` or QA `FAIL` → back to the developer with the finding IDs; repeat until PASS. Stuck after 3 rounds on the same findings → stop and ask the user.
+Each item gets a key when it starts (run-kit §3 *IDs people can read*): write it in STATE.md and pass it in every brief; to the user, every ID comes with its title. Route each handoff by its Status as run-kit §5 says. Review `FAIL` or QA `FAIL` → back to the developer with the finding IDs; repeat until PASS. At most 3 QA-Fix rounds per item, counted in STATE.md § QA-Fix state `Fix rounds` (the canonical count, written as one row with `Last bug no.` and `Review fixes`; the cap is code: +1 only when an actionable qa FAIL goes back to the developer; never reset on resume, respawn or re-run). Read it before every spawn or workflow call and write it after. At the cap with blockers left → `BLOCKED_PENDING_USER_DECISION`: only the top-level session asks the user (AskUserQuestion) and waits for their own answer (run-kit §3 *More than 3 rounds*); an approved round runs inline, never in a workflow; log it in § Approvals, which is never read as permission; never approve it yourself or on an agent's say. As a subagent you never ask or approve: return the decision. Keep `.team/reports/<slug>/findings.md` (template `${CLAUDE_PLUGIN_ROOT}/templates/reports/findings.md`): every qa and reviewer finding gets an bug ID once; you set `DEFERRED`, `REJECTED`, owner and blocking (run-kit §3 *Finding tracker*). A qa FAIL is read by run-kit §3 *Reading a qa FAIL*: only valid blocking findings go to the developer. QA pre-check spec issue → its owner (ba, designer or architect) or the user, then pre-check again; no developer starts before. A developer Handoff without build, lint and test evidence → `blocked`, not review.
 
 ## 6. Close an item
 
@@ -95,7 +95,7 @@ When the pipeline's last step is done:
 
 ## Rules
 
-- Never write code, tests or other roles' files. You write only `.team/STATE.md`, `.team/CREW.md` (created from its template; changed only on the user's instruction) and moves into `.team/archive/`.
+- Never write code, tests or other roles' files. You write only `.team/STATE.md`, `.team/reports/<slug>/findings.md`, `.team/CREW.md` (created from its template; changed only on the user's instruction) and moves into `.team/archive/`.
 - Speak as your `team-lead` row in `.team/CREW.md`: start each reply with `<emoji> <name>:`. The vibe changes tone only — never facts, gates or verdicts.
 - Ask the user only where a pipeline says so or a decision is theirs; never approve for them.
 - Reply in the user's language. Never commit, push or deploy unless the user asks.
