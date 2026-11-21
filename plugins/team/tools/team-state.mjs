@@ -20,8 +20,9 @@ export const TIERS = ['T0', 'T1', 'T2'];
 export const ITEM_STATUSES = ['running', 'waiting-for-user', 'blocked', 'paused', 'done'];
 export const SEVERITIES = ['blocker', 'critical', 'major', 'minor'];
 export const BY = ['qa', 'code-reviewer', 'security', 'dba'];
-// open → fixed → verified, or fixed → reopened → fixed …; deferred / rejected only by the lead (with a decision).
-export const FINDING_STATUSES = ['open', 'fixed', 'verified', 'reopened', 'deferred', 'rejected'];
+// open → fixed → verified, or fixed → reopened → fixed …; open → challenged (the fixer's evidence, once) → rejected
+// (the finder concedes or the arbiter refutes) or back to open (upheld); deferred / rejected otherwise only by the lead.
+export const FINDING_STATUSES = ['open', 'fixed', 'verified', 'reopened', 'challenged', 'deferred', 'rejected'];
 export const CLOSED = ['verified', 'deferred', 'rejected'];
 export const LIMITS = { title: 60, titleWords: 8, next: 30, detail: 40, notes: 5, line: 300, specWords: 4000 };
 
@@ -63,6 +64,8 @@ export function validateItem(item, file = '') {
     req(!f.blocking || (str(f.test) && f.test.trim().length >= 3), `${at}: a blocking finding needs test (failing test path::name or a repro command)`);
     req(Number.isInteger(f.reopened ?? 0) && (f.reopened ?? 0) >= 0, `${at}: reopened a whole number`);
     req(f.detail == null || (str(f.detail) && words(f.detail) <= LIMITS.detail), `${at}: detail ≤${LIMITS.detail} words`);
+    req(f.challenge == null || (str(f.challenge) && words(f.challenge) <= LIMITS.detail), `${at}: challenge ≤${LIMITS.detail} words`);
+    req(f.status !== 'challenged' || (str(f.challenge) && f.challenge.trim().length > 0), `${at}: a challenged finding needs challenge (the fixer's evidence)`);
   }
   for (const k of ['verdicts', 'questions', 'decisions', 'notes', 'files']) {
     if (item[k] != null) req(k === 'verdicts' ? typeof item[k] === 'object' && !Array.isArray(item[k]) : Array.isArray(item[k]), `${k}: wrong type`);

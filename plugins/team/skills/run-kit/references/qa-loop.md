@@ -22,11 +22,18 @@ round + 1 · developer fixes the whole batch (one per ticket) · tests green
 reviewers re-check their findings · qa retests the listed ones + suite ──▶ back to the top
 ```
 
-- **IDs** — `F1`, `F2`… in the item, given once, never reused (next = highest + 1). Outside the item: `CART#F3`. Status: `open → fixed → verified`, or `reopened` (`reopened` +1) when a retest fails; `deferred`, `rejected` only by the lead, on the user's word, with a line in `decisions`.
+- **IDs** — `F1`, `F2`… in the item, given once, never reused (next = highest + 1). Outside the item: `CART#F3`. Status: `open → fixed → verified`, or `reopened` (`reopened` +1) when a retest fails; `challenged` (§ Challenges); otherwise `deferred`, `rejected` only by the lead, on the user's word, with a line in `decisions`.
 - **One counter** — `round` counts every fix batch, from a review or from qa. Cap 3, code in the workflow, never in the item.
 - **Not run is never PASS** — the qa verdict is `PASS · r1 · not-run: AC3`; a blocking finding left `fixed` that no gate re-checked stops the run (`retest-incomplete`).
 - **Findings are work items** — no fix tickets in `TASKS.md`, no report prose. T2 adds `reports/<slug>/qa.md` (test plan, RTM with one status column) and the reviewers' reports.
 - **Spec issues** from the pre-check go to their owner (ba, designer, architect) or the user; no developer starts before.
+
+## Challenges
+
+A fixer who can show a finding is wrong returns it `challenged` with evidence instead of coding around it; the finder's next gate run settles it, with no extra round.
+1. Accepted once per finding, with evidence (≥4 words in `detail`); otherwise it counts as fixed and is retested.
+2. The next run of the finder's gate answers it: `conceded` → `rejected`; `maintained` (or no answer) → one read-only arbiter, no agentType: `refuted` → `rejected`, `upheld` → `open` (fixed next round, no second challenge), `spec` → stop and route to the spec owner or the user.
+3. Each outcome is a line in `decisions` (`by`: the finder or `arbiter`). A gate FAIL whose blockers were all rejected this way passes.
 
 ## Past the cap
 

@@ -73,7 +73,7 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 | T1 | mặc định: hợp kiến trúc hiện có | ba (≤5 AC) → developer → code-reviewer (∥ security/dba khi diff chạm tới) → qa — tối đa 4, không pm |
 | T2 | screen flow/contract/module mới, auth, xử lý thanh toán, migration, xoá/ghi đè dữ liệu | ba → (designer) → architect (+dba) → pm → qa pre-check → developer → code-reviewer ∥ security → qa → writer |
 
-**Vòng QA-Fix:** finding = một test fail hoặc lệnh repro, tiêu đề ≤8 từ, ID `F1`, `F2`… trong `.team/items/<slug>.json` (ngoài item: `CART#F3`); chỉ chặn PASS khi vi phạm AC, regression hoặc rủi ro nghiêm trọng *và* có test. Mọi blocker của một vòng sửa một lô; một bộ đếm `round` cho cả review lẫn qa, tối đa 3; finding mở lại hai lần thì dừng hỏi bạn; hết vòng thì item `blocked`, chờ chính bạn trả lời — không bao giờ tự PASS. Dưới T2 không gate nào ghi file report. **Chất lượng chia ba lớp:** developer viết và chạy unit test; code-reviewer review diff; qa kiểm chứng độc lập (integration/E2E, live preview) và ra verdict. Ghi ADR: nói với lead "ghi quyết định …". Không lệnh nào tự commit, push hay deploy.
+**Vòng QA-Fix:** finding = một test fail hoặc lệnh repro, tiêu đề ≤8 từ, ID `F1`, `F2`… trong `.team/items/<slug>.json` (ngoài item: `CART#F3`); chỉ chặn PASS khi vi phạm AC, regression hoặc rủi ro nghiêm trọng *và* có test. Mọi blocker của một vòng sửa một lô; một bộ đếm `round` cho cả review lẫn qa, tối đa 3; finding mở lại hai lần thì dừng hỏi bạn; hết vòng thì item `blocked`, chờ chính bạn trả lời — không bao giờ tự PASS. **Phản biện:** developer có thể `challenged` một finding sai (kèm bằng chứng: dòng AC/spec, lệnh + output), mỗi finding một lần; bên tìm ra concede → `rejected`, giữ ý → một trọng tài read-only phân xử (upheld / refuted / spec → hỏi owner). Mọi role khác phản biện input sai bằng `needs-input` + dòng `Challenge:`. Dưới T2 không gate nào ghi file report. **Chất lượng chia ba lớp:** developer viết và chạy unit test; code-reviewer review diff; qa kiểm chứng độc lập (integration/E2E, live preview) và ra verdict. Ghi ADR: nói với lead "ghi quyết định …". Không lệnh nào tự commit, push hay deploy.
 
 `review`, `release` và vòng (qa pre-check →) build → review → qa của `feature`/`fix`/`infra`/`new` (`workflows/build-loop.js`, có vòng sửa tối đa 3 lượt) và bước tạo ticket của `feature`/`new` (`workflows/plan-tickets.js`, code kiểm tra ticket rồi trả lỗi cho pm) chạy bằng Workflow tool, gọi theo tên (`technical-team:team-review`, `team-release`, `team-build-loop`, `team-plan-tickets`; không tìm thấy tên thì đọc file và truyền làm `script`) của Claude Code (script trong `plugins/team/workflows/`, chạy nền, một thẻ tiến độ); không có Workflow tool thì chạy inline như cũ.
 
@@ -222,7 +222,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 
 | Test | Kiểm |
 |---|---|
-| `tests/build-loop.test.mjs` | chạy thật `build-loop.js` với agent giả: lô sửa, một bộ đếm, stall, cap, câu brief giống hệt `run-kit` `qa-lines.md` |
+| `tests/build-loop.test.mjs` | chạy thật `build-loop.js` với agent giả: lô sửa, một bộ đếm, stall, cap, challenge (concede / trọng tài), câu brief giống hệt `run-kit` `qa-lines.md` |
 | `tests/team-state.test.mjs` | schema item JSON, view `STATE.md`, luật spec, `migrate` từ 0.32 |
 | `tests/hooks.test.mjs` | chặn commit/push của specialist, Handoff bắt buộc, ghi `.team/` |
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |

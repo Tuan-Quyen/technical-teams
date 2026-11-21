@@ -66,7 +66,7 @@ Anything else is recorded apart and never blocks: `pre-existing` (a new work ite
 
 A finding is a failing test (`path::name`) or a one-line repro command, a title ≤ 8 words, the AC it breaks and ≤ 40 words of detail — no report prose. A blocking finding without a test does not block. No speculative findings: no reproduction, no finding. Subjective preference is never a defect. Unsure between two levels → the lower one, with the reason.
 
-**Lifecycle** — findings live in `.team/items/<slug>.json` as `F1`, `F2`… (elsewhere `CART#F3`), given once, kept when title, file or line change: `open → fixed → verified`, or `reopened` when a retest fails; `deferred`, `rejected` only by the lead on the user's word. A finding reopened twice stalls the loop for the user. Re-check a known finding by its ID (verified / failing); never report it again as new.
+**Lifecycle** — findings live in `.team/items/<slug>.json` as `F1`, `F2`… (elsewhere `CART#F3`), given once, kept when title, file or line change: `open → fixed → verified`, or `reopened` when a retest fails; `challenged` once by the fixer with evidence, then `rejected` (you concede, or the arbiter refutes) or back to `open` (upheld); otherwise `deferred`, `rejected` only by the lead on the user's word. A finding reopened twice stalls the loop for the user. Re-check a known finding by its ID (verified / failing); never report it again as new.
 
 ## Binding rules
 

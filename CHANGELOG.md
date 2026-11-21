@@ -2,7 +2,15 @@
 
 Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migration** when they apply. Public names and paths are pinned in `tests/contract.json`.
 
-## 0.35.0 — 2026-11-21 (redesign P4: cleanup, migration, docs)
+## 0.36.0 — 2026-11-22 (challenges: agents push back with evidence)
+
+- **Challenge in the QA-Fix loop** (`build-loop.js`, run-kit `qa-loop.md` § Challenges): a developer who can show a finding is wrong (its test asserts what no AC or spec says, out of scope, conflicts with the spec) returns it `challenged` with evidence instead of coding around it. Once per finding; without evidence it counts as fixed. The finder's next gate run concedes (→ `rejected`) or maintains; only a maintained one starts a read-only arbiter (`upheld` → `open`, `refuted` → `rejected`, `spec` → stop for the spec owner). No extra round; each outcome is a line in `decisions`.
+- New finding status `challenged` and field `challenge` (≤40 words) in the item schema (`team-state.mjs`).
+- `specialist-rules`: every role may challenge its input (finding, AC, design, ticket) with evidence — `needs-input` + a `Challenge:` line outside the loop; concede when the other side's evidence holds.
+- Anti-gaming: the fix step says "fix the cause, never special-case a test, its data or its input"; developer's Never list and code-reviewer's test check carry the same rule (blocking in a fix round).
+- Cost (measured on 157 local specialist calls; cost-equivalent tokens): a fix round ≈ 414k (developer ~60k, reviewer re-check 224k, qa retest ~130k). Fixed overhead of the new brief lines ≈ +1.2% per item; a conceded challenge ≈ +1.5%, an arbitrated one ≈ +6%, against ≈ +122% for a 3-round ping-pong it prevents.
+
+ (redesign P4: cleanup, migration, docs)
 
 - **Migration in code:** `node tools/team-state.mjs migrate .team` (dry run; `--write`) moves a 0.31/0.32 workspace — hand-written `STATE.md` with § QA-Fix state and `reports/<slug>/findings.md` — to `.team/items/*.json` (`CART-B3` → `F3`, round, statuses, reopen count); the old files go to `archive/`.
 - Spec rules now ride in `specialist-rules` (every specialist sees them before writing; the hook still checks). The obsolete "count Budget lines" rule is gone.

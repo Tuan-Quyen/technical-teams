@@ -213,7 +213,121 @@ test('reviewers and qa write no report file below T2; titles are capped at 8 wor
 
 test('inline runs use the same brief lines: each is verbatim in run-kit qa-lines.md', () => {
   const doc = read('skills/run-kit/references/qa-lines.md');
-  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT']) assert.ok(doc.includes(constant(n)), `qa-lines.md carries ${n} verbatim`);
+  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT', 'FIX_RULE', 'CHALLENGE_REPLY']) assert.ok(doc.includes(constant(n)), `qa-lines.md carries ${n} verbatim`);
   assert.match(SRC, /^const ROUND_CAP = 3$/m);
   assert.equal(ROUND_CAP, 3, 'team-state.mjs and build-loop.js share the cap');
+});
+
+// ---- challenges: the fixer disputes a finding with evidence; the finder concedes, or one arbiter rules ----
+const EVIDENCE = 'AC2 says discount applies before tax; the test asserts after tax';
+const challengeF1 = (c) => (c.label.startsWith('fix:') ? { ...ok(c.label), findings: [bug({ id: 'F1', result: 'challenged', detail: EVIDENCE })] } : undefined);
+const qaFirstFails = (c, n) => (c.label === 'qa' && n === 1 ? { ...ok('qa'), verdict: 'FAIL', findings: [bug()] } : undefined);
+
+test('challenge conceded: the finder rejects its own finding, no arbiter, no extra round, a decision line', async () => {
+  let qaRuns = 0;
+  const { result, labels, calls } = await run(baseArgs(), (c) => {
+    if (c.label === 'qa') qaRuns++;
+    if (c.label === 'qa' && qaRuns === 2) return { ...ok('qa'), verdict: 'FAIL', findings: [bug({ id: 'F1', result: 'conceded', blocking: false })] };
+    return qaFirstFails(c, qaRuns) || challengeF1(c);
+  });
+  assert.equal(result.status, 'done');
+  assert.deepEqual(labels, ['developer:CART-T1', 'review:code-reviewer', 'qa', 'fix:CART-T1:r1', 'review:code-reviewer', 'qa']);
+  assert.equal(result.item.round, 1);
+  const f = result.item.findings[0];
+  assert.deepEqual([f.status, f.challenge], ['rejected', EVIDENCE]);
+  assert.match(result.item.decisions[0].text, /^F1 rejected: qa conceded/);
+  assert.match(result.item.verdicts.qa, /^PASS/, 'a FAIL resting only on the conceded finding passes');
+  const fix = calls.find((c) => c.label.startsWith('fix:')).prompt;
+  assert.ok(fix.includes(constant('FIX_RULE')));
+  const retest = calls.filter((c) => c.label === 'qa')[1].prompt;
+  assert.ok(retest.includes(constant('CHALLENGE_REPLY')));
+  assert.match(retest, /^F1 challenged major blocking .* · challenge: AC2 says/m);
+  assert.ok(!calls[2].prompt.includes(constant('CHALLENGE_REPLY')), 'no reply line without a challenge');
+  assert.deepEqual(validateItem(result.item), []);
+});
+
+test('challenge maintained: one read-only arbiter; refuted → rejected', async () => {
+  let qaRuns = 0;
+  const { result, labels, calls } = await run(baseArgs(), (c) => {
+    if (c.label === 'qa') qaRuns++;
+    if (c.label === 'qa' && qaRuns === 2) return { ...ok('qa'), verdict: 'FAIL', findings: [bug({ id: 'F1', result: 'maintained', detail: 'AC5 overrides AC2 for coupons' })] };
+    if (c.label === 'arbiter:F1') return { ruling: 'refuted', reason: 'AC5 is about vouchers, not coupons' };
+    return qaFirstFails(c, qaRuns) || challengeF1(c);
+  });
+  assert.equal(result.status, 'done');
+  assert.deepEqual(labels.slice(-2), ['qa', 'arbiter:F1']);
+  const arb = calls.find((c) => c.label === 'arbiter:F1');
+  assert.equal(arb.agentType, undefined, 'the arbiter inherits no role');
+  assert.match(arb.prompt, /counter: AC5 overrides AC2/);
+  assert.equal(result.item.findings[0].status, 'rejected');
+  assert.equal(result.item.decisions.at(-1).by, 'arbiter');
+  assert.deepEqual(validateItem(result.item), []);
+});
+
+test('challenge upheld: back to open, fixed next round, a second challenge is ignored', async () => {
+  let qaRuns = 0;
+  let fixes = 0;
+  const { result, labels, calls, logs } = await run(baseArgs(), (c) => {
+    if (c.label.startsWith('fix:')) return { ...ok(c.label), findings: [bug({ id: 'F1', result: 'challenged', detail: `${EVIDENCE} ${++fixes}` })] };
+    if (c.label === 'arbiter:F1') return { ruling: 'upheld', reason: 'AC2 is about vouchers' };
+    if (c.label === 'qa') qaRuns++;
+    if (c.label === 'qa' && qaRuns === 2) return { ...ok('qa'), verdict: 'FAIL', findings: [bug({ id: 'F1', result: 'maintained', detail: '' })] };
+    return qaFirstFails(c, qaRuns);
+  });
+  assert.equal(result.status, 'done');
+  assert.equal(labels.filter((l) => l.startsWith('fix:')).length, 2);
+  assert.equal(result.item.round, 2);
+  assert.match(calls.filter((c) => c.label.startsWith('fix:'))[1].prompt, /· challenged before/);
+  assert.ok(logs.some((l) => /challenge on F1 ignored \(challenged before\)/.test(l)));
+  assert.equal(result.item.findings[0].status, 'verified');
+  assert.match(result.item.decisions[0].text, /^F1 upheld/);
+});
+
+test('a challenge without evidence counts as fixed and is retested', async () => {
+  let qaRuns = 0;
+  const { result, logs } = await run(baseArgs(), (c) => {
+    if (c.label.startsWith('fix:')) return { ...ok(c.label), findings: [bug({ id: 'F1', result: 'challenged', detail: 'wrong' })] };
+    if (c.label === 'qa') qaRuns++;
+    return qaFirstFails(c, qaRuns);
+  });
+  assert.equal(result.status, 'done');
+  assert.equal(result.item.findings[0].status, 'verified');
+  assert.equal(result.item.findings[0].challenge, undefined);
+  assert.ok(logs.some((l) => /ignored \(no evidence\)/.test(l)));
+});
+
+test('a reviewer finding is settled in review: the reviewer concedes and its FAIL passes; qa cannot concede it', async () => {
+  let reviews = 0;
+  const { result, labels } = await run(baseArgs(), (c) => {
+    if (c.label === 'review:code-reviewer' && ++reviews === 1) return { ...ok(c.label), verdict: 'FAIL', findings: [bug({ title: 'Discount after tax', test: 'node -e x' })] };
+    if (c.label === 'review:code-reviewer') return { ...ok(c.label), verdict: 'FAIL', findings: [bug({ id: 'F1', result: 'conceded', blocking: false })] };
+    return challengeF1(c);
+  });
+  assert.equal(result.status, 'done');
+  assert.ok(!labels.some((l) => l.startsWith('arbiter')));
+  assert.equal(result.item.findings[0].status, 'rejected');
+  assert.match(result.item.verdicts.review, /^PASS/);
+  const item = baseItem({ round: 1, findings: [{ id: 'F1', title: 'Discount after tax', by: 'code-reviewer', severity: 'major', blocking: true, status: 'challenged', test: 't::1', challenge: EVIDENCE }] });
+  const b = await run(baseArgs({ item, startAt: 'qa' }), (c) => {
+    if (c.label === 'qa') return { ...ok('qa'), findings: [bug({ id: 'F1', result: 'conceded', blocking: false })] };
+    if (c.label === 'arbiter:F1') return { ruling: 'upheld', reason: 'the AC is clear' };
+    return undefined;
+  });
+  assert.deepEqual(b.labels.slice(0, 2), ['qa', 'arbiter:F1']);
+  assert.notEqual(b.result.item.findings[0].status, 'rejected');
+});
+
+test('an arbiter spec ruling stops for the spec owner, the finding left challenged', async () => {
+  let qaRuns = 0;
+  const { result } = await run(baseArgs(), (c) => {
+    if (c.label === 'qa') qaRuns++;
+    if (c.label === 'qa' && qaRuns === 2) return { ...ok('qa'), verdict: 'FAIL', findings: [bug({ id: 'F1', result: 'maintained', detail: 'AC2 is ambiguous' })] };
+    if (c.label === 'arbiter:F1') return { ruling: 'spec', reason: 'AC2 and AC5 conflict' };
+    return qaFirstFails(c, qaRuns) || challengeF1(c);
+  });
+  assert.equal(result.status, 'stopped');
+  assert.deepEqual([result.needsUser[0].status, result.needsUser[0].findings], ['spec-issue', ['F1']]);
+  assert.equal(result.item.findings[0].status, 'challenged');
+  assert.match(result.item.next, /spec owner/);
+  assert.deepEqual(validateItem(result.item), []);
 });

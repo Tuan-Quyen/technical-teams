@@ -50,6 +50,9 @@ stateDiagram-v2
   reopened --> fixed
   open --> deferred: lead, on the user's word (minor, or past the cap)
   open --> rejected: lead, on the user's word (not a defect)
+  open --> challenged: fixer, once, with evidence
+  challenged --> rejected: finder concedes, or arbiter refutes
+  challenged --> open: arbiter upholds
 ```
 
 Only the gate that raised a finding moves it to `verified` or `reopened`, and only after a retest. An in-scope blocking finding is never `deferred` silently: the user's words go in the item's `decisions`. A known defect keeps its ID (`reopened`, never a new one); reopened twice → the loop stalls for the user. A spec question is a blocking finding with test `spec: <what conflicts>`, routed to ba, designer or architect.

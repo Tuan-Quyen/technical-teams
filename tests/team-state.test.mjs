@@ -24,9 +24,12 @@ test('a minimal item is valid; every limit is enforced', () => {
     'id F<n>': [item({ findings: [f1({ id: 'CART-B1' })] })],
     'needs test': [item({ findings: [f1({ blocking: true, test: '' })] })],
     'detail ≤40': [item({ findings: [f1({ severity: 'minor', detail: 'w '.repeat(41) })] })],
+    'needs challenge': [item({ findings: [f1({ status: 'challenged' })] })],
+    'challenge ≤40': [item({ findings: [f1({ status: 'challenged', challenge: 'w '.repeat(41) })] })],
     'history: not part': [item({ history: [] })],
     'notes: ≤5': [item({ notes: ['a', 'b', 'c', 'd', 'e', 'f'] })],
   };
+  assert.deepEqual(ts.validateItem(item({ findings: [f1({ status: 'challenged', challenge: 'AC2 says before tax' })] })), [], 'a challenged finding with its evidence');
   for (const [msg, [it, file]] of Object.entries(bad)) assert.ok(ts.validateItem(it, file).some((e) => e.includes(msg)), `rejects: ${msg}`);
 });
 
