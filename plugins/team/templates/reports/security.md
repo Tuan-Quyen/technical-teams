@@ -1,23 +1,18 @@
-Verdict: PASS | FAIL · Round <n>
+Verdict: PASS | FAIL · r<round>
 
 # <slug> — security
 
-> Owner: **team-security**. PASS = no `open` blocking finding. Findings are cumulative: an ID (`S-01`…) is never reused; status open → fixed → verified (or dropped, with the reason). Never write secret values.
-> **Budget:** ≤ 80 lines. Cells ≤ 25 words. **Round detail** ≤ 8 lines, replaced each round; verified/dropped findings collapse to one `Closed:` line of IDs.
+> **T2 only.** Below T2 security writes no file: verdict and findings go in its structured output. Owner: **team-security**. PASS = no open blocking finding. Never write secret values.
+> Findings live in `.team/items/<slug>.json` (`F1`, `F2`…), each a failing test or repro with a title ≤ 8 words: reference them by ID, never renumber. Current truth only: rewrite in place.
+> **Budget:** ≤ 60 lines, every line ≤ 300 characters, cells ≤ 25 words.
 
 ## Scope
 - In scope: <diff range / paths / whole repo>
-- Trust boundaries: <where untrusted input enters, privileges change, sensitive data is stored or leaves>
+- Trust boundaries: <where untrusted input enters, privileges change, sensitive data rests or leaves>
 - Scanners: <command → result, or "not available: …">
 - Skipped: <what and why, or "none">
 
 ## Findings
-| ID | Severity | Where | Class | Attack scenario | Fix direction | Found | Status |
-|---|---|---|---|---|---|---|---|
-| S-01 | blocking / should-fix / suggestion | `<path:line>` | <injection / authz / secrets …> | <how it is exploited> | <direction> | R1 | open |
-
-Closed: <IDs verified or dropped, or "none">
-
-## Round detail (latest round only)
-- Round: R<n> · <YYYY-MM-DD> · <full review or delta since R<n-1>>
-- Open blocking: <n>
+| ID | Severity | Where | Class | Test or repro of the attack | Fix direction | Status |
+|---|---|---|---|---|---|---|
+| F1 | blocker / critical / major / minor | `<path:line>` | <injection / authz / secrets …> | <tests/…::name or command> | <direction> | open / fixed / verified |

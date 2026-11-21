@@ -28,14 +28,14 @@ Exploratory variation heuristics: **CRUD** every object; **follow the data** (cr
 
 | Technique | Use when |
 |---|---|
-| Statement / branch coverage | check the project's coverage report on the changed files; uncovered branches in changed code = missing tests (add them or explain) |
+| Statement / branch coverage | check the project's coverage report on the changed files; uncovered branches in changed code = missing unit tests → a finding for developer |
 | Path through error handling | every `catch` / error branch in the diff has a test that reaches it |
 
 ## Test levels
 
 | Level | Covers | Owner here |
 |---|---|---|
-| Unit / component | functions, components in isolation | existing tests + what the developer ran; qa adds what the ACs need |
+| Unit / component | functions, components in isolation | existing tests + what the developer ran; missing ones → a finding for developer, never written by qa |
 | Integration | modules together, API ↔ DB, client ↔ API contract | qa |
 | System / end-to-end | the whole running product through its real interface (live preview) | qa |
 | Acceptance | does it meet the user's need — ACs + UX validation; UAT is the user's at plan approval, each milestone and the release check | qa prepares the evidence; the user accepts |

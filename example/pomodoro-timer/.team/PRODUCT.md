@@ -18,7 +18,7 @@ Status as of v0.1.0 (QA PASS round 3; live-only checks were not run, user chose 
 
 | ID | Goal | Measure | Basis | Status |
 |---|---|---|---|---|
-| G-1 | Timer is accurate | Displayed remaining time drifts < 1 s from wall clock after 25 min, including a hidden tab | C (threshold accepted by the user) | Timestamp logic covered by automated tests; hidden-tab drift **not verified in a real browser** (AC18) |
+| G-1 | Timer is accurate | Displayed remaining time drifts < 1 s from wall clock after 25 min, including a hidden tab | C (threshold accepted by the user) | Timestamp logic covered by automated tests; hidden-tab drift **not verified in a real browser** (POMO-AC18) |
 | G-2 | No lost session | After refresh the phase, remaining time, running/paused state, cycle counter and settings are restored | C | Met: automated tests and live preview (running and paused refresh) |
 | G-3 | User notices phase end even without looking | Sound and/or browser notification fires at phase end | C | Automated tests only; audible chime and real notification **not verified live** |
 | G-4 | Smooth, fast UI | Usable at 360 px and 1280 px width; animations do not block the timer | A (measure is ours) | Main screen verified live at 360 and 1536 px; Focus view at 360 / 1280 not verified |

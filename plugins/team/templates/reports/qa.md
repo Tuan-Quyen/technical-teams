@@ -1,33 +1,29 @@
-Verdict: PENDING | PASS | FAIL | PASS pending design decision · Round <n>
+Verdict: PENDING | PASS | FAIL · r<round> · not-run: <ACs or checks, or "none">
 
 # <slug> — QA
 
-> Owner: **team-qa**. Findings are cumulative: an ID (`Q-01`…) is never reused; status open → fixed → verified (or dropped, with the reason). **Round detail** holds the latest round only: replace it every round.
-> **Budget:** ≤ 120 lines. Cells ≤ 25 words; RTM keeps the last 2 round columns. **Round detail** ≤ 12 lines, replaced each round; verified/dropped findings collapse to one `Closed:` line of IDs.
+> **T2 only.** Below T2 qa writes no file: verdict and findings go in its structured output. Owner: **team-qa**. The pre-check writes the plan and RTM; later runs reuse them and update only the RTM status.
+> Findings live in `.team/items/<slug>.json` (`F1`, `F2`…): reference them by ID here, never copy their detail. Current truth only: rewrite in place, no per-run history.
+> **Budget:** ≤ 120 lines, every line ≤ 300 characters, cells ≤ 25 words.
 
-## Test plan
-- Scope in / out: <…>
-- Risks → depth: <risk — high/medium/low — techniques>
-- Levels: <unit / integration / e2e / live preview>
-- Platforms × form factors: <web 375 / 1280 · Android small phone · CLI …>
-- Data, environment, drivers: <seeds, test users, runner — missing: …>
-- Exit criteria: every AC passes · no open in-scope blocker/critical/major · live preview clean · no skipped or weakened test
+## Scope and plan
+- Tier: T2 — <one line: the risk that sets it>
+- Planning: approved | blocked: <finding IDs with test `spec: …` → owner>
+- ACs: <CART-AC1…> · scope out: <…> · platforms: <web 375 / 1280 · …>
+- Environments, data, tools: <…>
+- Exit: every AC checked · no open blocking finding · suite green · no skipped or weakened test
 
-## Traceability (RTM)
-| Condition | Source | Ticket | Test (file:name / preview step) | R1 | R2 |
+## RTM
+| Condition | Source | Ticket | Level · owner | Test (file::name / preview step) | Status |
 |---|---|---|---|---|---|
-| <condition> | AC1 / E1 / state | T-1 | <tests/…::name> | pass / fail (Q-01) | |
+| <condition> | CART-AC1 / edge / state | CART-T1 | e2e · qa | <tests/…::name> | pass / fail (F1) / not run |
 
-## Findings
-| ID | Title | Severity | Owner | Found | Status |
-|---|---|---|---|---|---|
-| Q-01 | <title> | blocker / critical / major / minor | developer | R1 | open |
+## Non-blocking and separate
+- Pre-existing (not this item): <one line each, or "none">
+- Enhancements / out of scope (backlog, not defects): <one line each, or "none">
 
-Closed: <IDs verified or dropped, or "none">
+## Residual risk
+- <untested area or risk, or "none">
 
-## Round detail (latest round only)
-- Round: R<n> · <YYYY-MM-DD> · build <commit or "working tree">
-- Suite: <command → summary line>
-- Live preview: <targets × form factors → ok / issues, errors 0/n>
-- New or reopened findings: <per ID: steps, expected (with source), actual, evidence>
-- Open in-scope blocker + critical + major: <n>
+## Decision log
+- <YYYY-MM-DD · decision (e.g. scope change and who agreed) · why>, or "none"

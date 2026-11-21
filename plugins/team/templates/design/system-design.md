@@ -2,7 +2,7 @@
 
 Status: draft | approved
 
-> **Budget:** ≤ 200 lines per item. Decisions and contracts, not code walk-throughs — cite `file:line`. Big work → one file per milestone (`<slug>-m2.md`); a revision replaces the section, it is never appended.
+> **Budget:** ≤ 200 lines per item. Contracts, not code walk-throughs — cite `file:symbol`, never copy constants. Big work → one file per milestone (`<slug>-m2.md`). Change → rewrite the section.
 
 ## Approach
 <how the change fits the system, in a few sentences>
@@ -32,6 +32,7 @@ Status: draft | approved
 ## Implementation plan
 | Step | What | Files | Depends on | ACs |
 |---|---|---|---|---|
-| 1 | <step> | <paths> | – | AC1 |
+| 1 | <step> | <paths> | – | CART-AC1 |
 
-<!-- team-pm turns these steps into tickets in .team/TASKS.md. -->
+## Decision log
+- <YYYY-MM-DD · decision · why>

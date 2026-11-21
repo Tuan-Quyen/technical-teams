@@ -45,7 +45,7 @@ describe('persisted store', () => {
   })
 
   describe('reload over the same storage', () => {
-    it('running: continues with the same endAt (AC19)', () => {
+    it('running: continues with the same endAt (POMO-AC19)', () => {
       const storage = memory()
       const a = createTimerStore(storage)
       a.getState().start()
@@ -60,7 +60,7 @@ describe('persisted store', () => {
       expect(b.getState().lastEnd).toBeNull()
     })
 
-    it('paused: exact remaining, still paused (AC20)', () => {
+    it('paused: exact remaining, still paused (POMO-AC20)', () => {
       const storage = memory()
       const a = createTimerStore(storage)
       a.getState().start()
@@ -76,7 +76,7 @@ describe('persisted store', () => {
       })
     })
 
-    it('overdue: next phase idle at full duration, away lastEnd, no auto-start (AC21)', () => {
+    it('overdue: next phase idle at full duration, away lastEnd, no auto-start (POMO-AC21)', () => {
       const storage = memory()
       const a = createTimerStore(storage)
       a.getState().start()
@@ -148,7 +148,7 @@ describe('persisted store', () => {
     })
   })
 
-  describe('bad stored data (E2, E10)', () => {
+  describe('bad stored data (POMO-E2, POMO-E10)', () => {
     it('corrupt JSON starts fresh with defaults', () => {
       const s = createTimerStore(createSafeStorage(() => stringStorage('{not json'))).getState()
       expect(s.settings).toEqual(DEFAULT_SETTINGS)
@@ -219,7 +219,7 @@ describe('persisted store', () => {
     })
   })
 
-  describe('saveSettings (AC11, AC12, AC13)', () => {
+  describe('saveSettings (POMO-AC11, POMO-AC12, POMO-AC13)', () => {
     const valid: Settings = {
       focusMin: 30,
       shortMin: 10,
@@ -253,7 +253,7 @@ describe('persisted store', () => {
       expect(storage.data.get(STORAGE_KEY)).toBe(before)
     })
 
-    it('idle: reloads the current phase at the new length (AC11)', () => {
+    it('idle: reloads the current phase at the new length (POMO-AC11)', () => {
       const store = createTimerStore(memory())
       store.getState().saveSettings(valid)
       expect(store.getState().timer).toMatchObject({
@@ -263,7 +263,7 @@ describe('persisted store', () => {
       })
     })
 
-    it('running: the started phase is untouched, the next one uses the new length (AC13)', () => {
+    it('running: the started phase is untouched, the next one uses the new length (POMO-AC13)', () => {
       const store = createTimerStore(memory())
       store.getState().start()
       const running = store.getState().timer
@@ -288,7 +288,7 @@ describe('persisted store', () => {
   describe('lastEnd caption lifecycle', () => {
     const end = { phaseId: 0, ended: 'focus', next: 'short', away: false } as const
 
-    it('Reset clears lastEnd even when the timer is a no-op on a fresh idle phase (R-04)', () => {
+    it('Reset clears lastEnd even when the timer is a no-op on a fresh idle phase (POMO-R4)', () => {
       const store = createTimerStore(memory())
       store.setState({ lastEnd: end })
       const timer = store.getState().timer

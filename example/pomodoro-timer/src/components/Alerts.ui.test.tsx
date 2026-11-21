@@ -65,7 +65,7 @@ async function openSettings(u: ReturnType<typeof user>) {
   await u.click(button('Open settings'))
 }
 
-describe('Start and notification permission (E5, AC15)', () => {
+describe('Start and notification permission (POMO-E5, POMO-AC15)', () => {
   beforeEach(() => {
     resetStore()
     stubNotification('default')
@@ -119,7 +119,7 @@ describe('Start and notification permission (E5, AC15)', () => {
   )
 })
 
-describe('Settings notification status (AC15, AC25)', () => {
+describe('Settings notification status (POMO-AC15, POMO-AC25)', () => {
   beforeEach(() => {
     resetStore()
   })
@@ -289,7 +289,7 @@ describe('Settings notification status (AC15, AC25)', () => {
   })
 })
 
-describe('phase-end caption (AC10, AC21)', () => {
+describe('phase-end caption (POMO-AC10, POMO-AC21)', () => {
   const timer = initialTimer(DEFAULT_SETTINGS)
   const end = { phaseId: 0, ended: 'focus', next: 'short', away: false } as const
 

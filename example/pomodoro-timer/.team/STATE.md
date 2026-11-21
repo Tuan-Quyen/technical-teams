@@ -6,8 +6,8 @@
 
 ## Active work
 
-| Slug | Pipeline | Step | Agent | Ticket | Files in use | Status | Workflows | Next step |
-|---|---|---|---|---|---|---|---|---|
+| Slug | Key | Pipeline | Step | Agent | Ticket | Files in use | Status | Workflows | Next step |
+|---|---|---|---|---|---|---|---|---|---|
 
 ## Waiting on the user
 

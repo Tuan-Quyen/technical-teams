@@ -35,7 +35,7 @@ describe('clamp', () => {
   })
 })
 
-describe('initialTimer / isFresh (AC1)', () => {
+describe('initialTimer / isFresh (POMO-AC1)', () => {
   it('starts idle in Focus 25:00, 0 of 4', () => {
     expect(fresh).toEqual({
       phase: 'focus',
@@ -54,7 +54,7 @@ describe('initialTimer / isFresh (AC1)', () => {
   })
 })
 
-describe('remaining / progress (E1)', () => {
+describe('remaining / progress (POMO-E1)', () => {
   it('derives remaining from endAt', () => {
     const t = running()
     expect(remaining(t, T0 + 10_000)).toBe(25 * MIN - 10_000)
@@ -89,7 +89,7 @@ describe('nextPhase', () => {
   })
 })
 
-describe('start (AC2, AC4, E3)', () => {
+describe('start (POMO-AC2, POMO-AC4, POMO-E3)', () => {
   it('idle -> running with endAt = now + remainingMs', () => {
     const t = start(fresh, T0).timer
     expect(t.status).toBe('running')
@@ -105,7 +105,7 @@ describe('start (AC2, AC4, E3)', () => {
   })
 })
 
-describe('pause (AC3)', () => {
+describe('pause (POMO-AC3)', () => {
   it('running -> paused, freezes remaining, clears endAt', () => {
     const t = pause(running(), T0 + 10_000).timer
     expect(t).toMatchObject({ status: 'paused', endAt: null, remainingMs: 25 * MIN - 10_000 })
@@ -120,7 +120,7 @@ describe('pause (AC3)', () => {
   })
 })
 
-describe('reset (AC5, E9)', () => {
+describe('reset (POMO-AC5, POMO-E9)', () => {
   it.each(['running', 'paused'] as const)(
     '%s -> idle at full duration, completed kept',
     (status) => {
@@ -151,7 +151,7 @@ describe('reset (AC5, E9)', () => {
   })
 })
 
-describe('skip (AC6, E3, E8, E9)', () => {
+describe('skip (POMO-AC6, POMO-E3, POMO-E8, POMO-E9)', () => {
   const long = T0 - 10_000
   it('Focus -> Short, not counted, running with Auto-start', () => {
     const out = skip(running({ completed: 1 }), s, T0 + 5_000, long).timer
@@ -177,11 +177,11 @@ describe('skip (AC6, E3, E8, E9)', () => {
     const t = { ...running({ phase: 'short', completed: 2, durationMs: 5 * MIN }) }
     expect(skip(t, s, T0, long).timer).toMatchObject({ phase: 'focus', completed: 2 })
   })
-  it('Long -> Focus, completed resets to 0 (E8)', () => {
+  it('Long -> Focus, completed resets to 0 (POMO-E8)', () => {
     const t = running({ phase: 'long', completed: 4, durationMs: 15 * MIN })
     expect(skip(t, s, T0, long).timer).toMatchObject({ phase: 'focus', completed: 0 })
   })
-  it('works while idle and while paused (E9)', () => {
+  it('works while idle and while paused (POMO-E9)', () => {
     expect(skip(fresh, s, T0, long).timer.phase).toBe('short')
     const paused: Timer = { ...fresh, status: 'paused', remainingMs: 1_000 }
     expect(skip(paused, s, T0, long).timer.phase).toBe('short')
@@ -189,7 +189,7 @@ describe('skip (AC6, E3, E8, E9)', () => {
   it('emits no PhaseEnd', () => {
     expect(skip(running(), s, T0, long).end).toBeUndefined()
   })
-  it('is ignored inside the debounce window, allowed at its edge (E3)', () => {
+  it('is ignored inside the debounce window, allowed at its edge (POMO-E3)', () => {
     const t = running()
     expect(skip(t, s, T0 + SKIP_DEBOUNCE_MS - 1, T0).timer).toBe(t)
     expect(skip(t, s, T0 + SKIP_DEBOUNCE_MS, T0).timer.phase).toBe('short')
@@ -199,14 +199,14 @@ describe('skip (AC6, E3, E8, E9)', () => {
   })
 })
 
-describe('complete (AC8-AC10, AC21, E3)', () => {
+describe('complete (POMO-AC8-POMO-AC10, POMO-AC21, POMO-E3)', () => {
   const t = running()
   const endAt = T0 + 25 * MIN
 
   it('is a no-op before endAt', () => {
     expect(complete(t, s, endAt - 1, 'live').timer).toBe(t)
   })
-  it.each(['idle', 'paused'] as const)('is a no-op when %s (E4)', (status) => {
+  it.each(['idle', 'paused'] as const)('is a no-op when %s (POMO-E4)', (status) => {
     const x: Timer = { ...fresh, status }
     const out = complete(x, s, endAt + MIN, 'live')
     expect(out.timer).toBe(x)
@@ -248,7 +248,7 @@ describe('complete (AC8-AC10, AC21, E3)', () => {
       completed: 2,
     })
   })
-  it('away boundary: exactly AWAY_MS late still auto-starts, +1 ms goes idle (AC10)', () => {
+  it('away boundary: exactly AWAY_MS late still auto-starts, +1 ms goes idle (POMO-AC10)', () => {
     expect(AWAY_MS).toBe(90_000)
     const ok = complete(t, s, endAt + AWAY_MS, 'live')
     expect(ok.timer.status).toBe('running')
@@ -258,7 +258,7 @@ describe('complete (AC8-AC10, AC21, E3)', () => {
     expect(late.timer).toMatchObject({ status: 'idle', endAt: null, remainingMs: 5 * MIN })
     expect(late.end?.away).toBe(true)
   })
-  it('load mode is always idle with away, even on time (AC21)', () => {
+  it('load mode is always idle with away, even on time (POMO-AC21)', () => {
     const out = complete(t, s, endAt + 1_000, 'load')
     expect(out.timer.status).toBe('idle')
     expect(out.end?.away).toBe(true)
@@ -267,7 +267,7 @@ describe('complete (AC8-AC10, AC21, E3)', () => {
     const out = complete(t, s, endAt + 10 * MIN, 'load')
     expect(out.timer).toMatchObject({ phase: 'short', phaseId: 1, completed: 1 })
   })
-  it('is not applied twice to the same phase (E3)', () => {
+  it('is not applied twice to the same phase (POMO-E3)', () => {
     const first = complete(t, { ...s, autoStart: false }, endAt, 'live')
     const second = complete(first.timer, s, endAt, 'live')
     expect(second.timer).toBe(first.timer)
@@ -275,7 +275,7 @@ describe('complete (AC8-AC10, AC21, E3)', () => {
   })
 })
 
-describe('durationMs snapshot (AC13)', () => {
+describe('durationMs snapshot (POMO-AC13)', () => {
   it('a settings change does not alter a started phase', () => {
     const t = running()
     const changed = { ...s, focusMin: 30 }

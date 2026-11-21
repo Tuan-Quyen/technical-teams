@@ -13,7 +13,7 @@ export const STORAGE_KEY = 'pomodoro-timer'
 export const STORAGE_VERSION = 1
 /** Longest legal phase; a stored `durationMs` above it cannot come from the app. */
 export const MAX_DURATION_MS = LIMITS.focusMin.max * MS_PER_MINUTE
-/** Tolerance for a clock moved backwards between save and load (E1). */
+/** Tolerance for a clock moved backwards between save and load (POMO-E1). */
 const END_SLACK_MS = 60_000
 const PROBE_KEY = `${STORAGE_KEY}:probe`
 
@@ -37,7 +37,7 @@ const defaultBacking: Backing = () => {
 
 /**
  * Storage that never throws: unreadable or non-JSON data reads as "nothing stored",
- * failed writes (quota, security) are dropped and the app keeps running in memory (E2).
+ * failed writes (quota, security) are dropped and the app keeps running in memory (POMO-E2).
  */
 export function createSafeStorage(backing: Backing = defaultBacking): StateStorage {
   return {
@@ -83,7 +83,7 @@ export function probeStorage(backing: Backing = defaultBacking): boolean {
   }
 }
 
-/** Probed once at module load; static for the session (AC26). */
+/** Probed once at module load; static for the session (POMO-AC26). */
 export const storageAvailable = probeStorage()
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -97,7 +97,7 @@ function isFiniteNumber(value: unknown): value is number {
 const PHASES: readonly unknown[] = ['focus', 'short', 'long'] satisfies Phase[]
 const STATUSES: readonly unknown[] = ['idle', 'running', 'paused'] satisfies Status[]
 
-/** Each field is kept only when it has the right type and is in range, else its default (E10). */
+/** Each field is kept only when it has the right type and is in range, else its default (POMO-E10). */
 export function parseSettings(value: unknown, fallback: Settings = DEFAULT_SETTINGS): Settings {
   const raw = isRecord(value) ? value : {}
   return {
@@ -137,7 +137,7 @@ export function parseTimer(value: unknown, now: number = Date.now()): Timer | nu
   }
 }
 
-/** Anything unreadable falls back field by field; a bad timer resets to a fresh Focus (E2). */
+/** Anything unreadable falls back field by field; a bad timer resets to a fresh Focus (POMO-E2). */
 export function parsePersisted(
   value: unknown,
   fallback: Settings = DEFAULT_SETTINGS,

@@ -1,19 +1,17 @@
-Verdict: PASS | FAIL · Round <n>
+Verdict: PASS | FAIL · r<round>
 
 # <slug> — code review
 
-> Owner: **team-code-reviewer**. PASS = no `open` blocking finding. Findings are cumulative: an ID (`R-01`…) is never reused; status open → fixed → verified (or dropped, with the reason). **Round detail** holds the latest round only.
-> **Budget:** ≤ 80 lines. Cells ≤ 25 words. **Round detail** ≤ 8 lines, replaced each round; verified/dropped findings collapse to one `Closed:` line of IDs.
+> **T2 only.** Below T2 the reviewer writes no file: verdict and findings go in its structured output. Owner: **team-code-reviewer**. PASS = no open blocking finding.
+> Findings live in `.team/items/<slug>.json` (`F1`, `F2`…), each a failing test or repro with a title ≤ 8 words: reference them by ID, never renumber. Current truth only: rewrite in place.
+> **Budget:** ≤ 60 lines, every line ≤ 300 characters, cells ≤ 25 words.
 
 ## Findings
-| ID | Severity | Where | What is wrong | Fix direction | Found | Status |
+| ID | Severity | Blocking | Where | Test or repro | Fix direction | Status |
 |---|---|---|---|---|---|---|
-| R-01 | blocking / should-fix / suggestion | `<path:line>` | <problem and why it matters> | <direction> | R1 | open |
+| F1 | blocker / critical / major / minor | yes / no | `<path:line>` | <tests/…::name or command> | <direction> | open / fixed / verified |
 
-Closed: <IDs verified or dropped, or "none">
-
-## Round detail (latest round only)
-- Round: R<n> · <YYYY-MM-DD> · diff: <range or "working tree"> · files: <n>
-- Checked: does what was asked · correctness · contracts · tests · design fit · readability · UI states
-- Open blocking: <n>
+## Checked
+- Diff: <range or "working tree"> · files: <n>
+- Covered: does what was asked · correctness · contracts · tests · design fit · readability · UI states
 - Needs security review: <yes — why / no>

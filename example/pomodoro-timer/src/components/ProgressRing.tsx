@@ -22,7 +22,7 @@ const SIZE = {
 const TICK = { duration: 0.25, ease: 'linear' } as const
 
 /**
- * Unfilled share of the ring from timestamps (AC7): 1 draws nothing, 0 draws all. With
+ * Unfilled share of the ring from timestamps (POMO-AC7): 1 draws nothing, 0 draws all. With
  * `stepPerSecond` it follows the digits, which change once per second.
  */
 function offsetFor(timer: Timer, now: number, stepPerSecond: boolean): number {
@@ -36,7 +36,7 @@ function offsetFor(timer: Timer, now: number, stepPerSecond: boolean): number {
  * Animates `strokeDashoffset` only. Running: a short linear tween per tick. Paused or idle: set
  * outright, so Pause freezes on the exact value and Resume continues from it. Phase change:
  * 320 ms ease. `MotionConfig reducedMotion` does not cover stroke offsets, so the ring reads
- * `useReducedMotion()` itself: no tween, and it steps once per second (E11).
+ * `useReducedMotion()` itself: no tween, and it steps once per second (POMO-E11).
  */
 export function ProgressRing({ timer, now, size = 'main', children }: ProgressRingProps) {
   const reduced = useReducedMotion() === true

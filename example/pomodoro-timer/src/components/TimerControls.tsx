@@ -15,7 +15,7 @@ const PRIMARY = {
 
 const ICON = { size: 20, strokeWidth: 1.75, 'aria-hidden': true } as const
 
-/** Reset · Start / Pause / Resume · Skip. Every click acts on the state at that moment (E3). */
+/** Reset · Start / Pause / Resume · Skip. Every click acts on the state at that moment (POMO-E3). */
 export function TimerControls() {
   const timer = useTimerStore((s) => s.timer)
   const settings = useTimerStore((s) => s.settings)
@@ -28,7 +28,7 @@ export function TimerControls() {
 
   const { label, Icon } = PRIMARY[timer.status]
   const running = timer.status === 'running'
-  // Reset on a fresh phase is a no-op in the engine (E9); aria-disabled keeps it focusable.
+  // Reset on a fresh phase is a no-op in the engine (POMO-E9); aria-disabled keeps it focusable.
   const resetIdle = isFresh(timer, settings)
 
   // Start / Resume click: the timer starts first and never waits for anything below. The same

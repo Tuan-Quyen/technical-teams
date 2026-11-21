@@ -15,7 +15,7 @@ export function isActive(): boolean {
 
 /**
  * Asks the browser for fullscreen. Call it synchronously from the click handler (user activation).
- * Resolves `false` when unsupported or refused, so the caller falls back to the overlay (E7).
+ * Resolves `false` when unsupported or refused, so the caller falls back to the overlay (POMO-E7).
  */
 export async function enter(): Promise<boolean> {
   if (!isSupported()) return false

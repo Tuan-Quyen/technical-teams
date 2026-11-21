@@ -47,7 +47,7 @@ async function setField(u: ReturnType<typeof user>, name: string, text: string) 
   if (text) await u.type(field(name), text)
 }
 
-describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
+describe('SettingsSheet (POMO-AC11-POMO-AC13, POMO-AC24, POMO-AC26)', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
     vi.setSystemTime(T0)
@@ -72,7 +72,7 @@ describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
     expect(screen.getByText('1–120 min')).toBeInTheDocument()
   })
 
-  it('Save applies valid values to an idle phase, closes and returns focus (AC11)', async () => {
+  it('Save applies valid values to an idle phase, closes and returns focus (POMO-AC11)', async () => {
     const u = user()
     render(<App />)
     await open(u)
@@ -201,7 +201,7 @@ describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
     expect(useTimerStore.getState().settings.longMin).toBe(20)
   })
 
-  it('a running phase keeps its length; the next phase uses the new one (AC13)', async () => {
+  it('a running phase keeps its length; the next phase uses the new one (POMO-AC13)', async () => {
     const u = user()
     render(<App />)
     await u.click(button('Start'))
@@ -229,7 +229,7 @@ describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
     expect(screen.queryByText(/current phase keeps its length/)).not.toBeInTheDocument()
   })
 
-  it('Tab order follows the spec and wraps inside the dialog (AC24)', async () => {
+  it('Tab order follows the spec and wraps inside the dialog (POMO-AC24)', async () => {
     const u = user()
     render(<App />)
     await open(u)
@@ -269,7 +269,7 @@ describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
     expect(sw('Auto-start next phase')).toBeChecked()
   })
 
-  it('registers no keydown listener on the document (AC24)', async () => {
+  it('registers no keydown listener on the document (POMO-AC24)', async () => {
     const u = user()
     const spy = vi.spyOn(document, 'addEventListener')
     render(<App />)
@@ -278,7 +278,7 @@ describe('SettingsSheet (AC11-AC13, AC24, AC26)', () => {
     spy.mockRestore()
   })
 
-  describe('storage hint (AC26)', () => {
+  describe('storage hint (POMO-AC26)', () => {
     it('is hidden when storage works', async () => {
       const u = user()
       render(<App />)

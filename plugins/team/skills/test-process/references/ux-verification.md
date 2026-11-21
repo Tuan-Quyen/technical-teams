@@ -66,4 +66,4 @@ No frontend design for this work item (small mode, legacy screen) → conform to
 | Minor | inconsistency with tokens/components, unclear copy, small misalignment, missing shortcut |
 | Trivial | polish that does not affect use |
 
-Blocker/critical/major → FAIL (or design escalation if the design caused it). Minor/trivial → listed for the main session.
+Blocking follows `SKILL.md` § Severity and blocking: blocker/critical → FAIL; major → FAIL only when it breaks the frontend design or an AC with user impact (or design escalation if the design caused it). Minor/trivial → listed for the main session; a taste preference is not a defect.

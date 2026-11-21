@@ -15,7 +15,7 @@ const inertRoots = () => document.querySelectorAll('[inert]')
 type Focus = (this: HTMLElement, options?: FocusOptions) => void
 const realFocus = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'focus')?.value as Focus
 
-describe('page is inert while a dialog is open (R-13)', () => {
+describe('page is inert while a dialog is open (POMO-R13)', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
     vi.setSystemTime(new Date('2026-01-01T10:00:00Z').getTime())

@@ -18,7 +18,7 @@ describe('formatClock', () => {
   })
 })
 
-describe('titleFor (E12)', () => {
+describe('titleFor (POMO-E12)', () => {
   const idle = initialTimer(DEFAULT_SETTINGS)
   it('is "Pomodoro" when idle', () => {
     expect(titleFor(idle, idle.remainingMs)).toBe('Pomodoro')
@@ -44,7 +44,7 @@ describe('captionFor', () => {
     expect(captionFor(idle, { ...end, ended: 'short', next: 'focus' })).toBe('Short Break finished')
     expect(captionFor(idle, { ...end, ended: 'long', next: 'focus' })).toBe('Long Break finished')
   })
-  it('adds the away suffix for a missed end (AC21)', () => {
+  it('adds the away suffix for a missed end (POMO-AC21)', () => {
     expect(captionFor(idle, { ...end, away: true })).toBe('Focus finished while you were away')
   })
   it('is empty when idle with no end, and while running', () => {
@@ -53,7 +53,7 @@ describe('captionFor', () => {
   })
 })
 
-describe('notificationTitleFor (AC14)', () => {
+describe('notificationTitleFor (POMO-AC14)', () => {
   it.each([
     ['focus', 'short', 'Focus finished — Short Break next'],
     ['focus', 'long', 'Focus finished — Long Break next'],

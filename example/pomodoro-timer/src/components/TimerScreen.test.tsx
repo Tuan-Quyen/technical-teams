@@ -29,7 +29,7 @@ const phaseList = () => screen.getByRole('list', { name: 'Phase' })
 const ringOffset = () =>
   Number(screen.getByTestId('ring-progress').getAttribute('stroke-dashoffset'))
 
-describe('timer screen (M2)', () => {
+describe('timer screen (POMO-M2)', () => {
   beforeEach(() => {
     // setTimeout stays real: the Testing Library async wrapper waits on it.
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
@@ -40,7 +40,7 @@ describe('timer screen (M2)', () => {
     vi.useRealTimers()
   })
 
-  describe('phase tabs (AC24, BR-10)', () => {
+  describe('phase tabs (POMO-AC24, BR-10)', () => {
     it('is a plain list, with no buttons, tab roles or tab stops inside', () => {
       render(<App />)
       const list = phaseList()
@@ -75,7 +75,7 @@ describe('timer screen (M2)', () => {
       expect(useTimerStore.getState().timer.phase).toBe('focus')
     })
 
-    it('registers no keydown listener on the document (AC24)', () => {
+    it('registers no keydown listener on the document (POMO-AC24)', () => {
       const spy = vi.spyOn(document, 'addEventListener')
       render(<App />)
       expect(spy.mock.calls.filter(([type]) => type === 'keydown')).toHaveLength(0)
@@ -83,7 +83,7 @@ describe('timer screen (M2)', () => {
     })
   })
 
-  describe('cycle dots (AC8, AC9)', () => {
+  describe('cycle dots (POMO-AC8, POMO-AC9)', () => {
     it.each([0, 1, 2, 3, 4])('shows %i of 4 completed', (n) => {
       setTimer({ completed: n, phase: n === 4 ? 'long' : 'focus' })
       render(<App />)
@@ -94,7 +94,7 @@ describe('timer screen (M2)', () => {
     })
   })
 
-  describe('Skip and Reset (AC5, AC6)', () => {
+  describe('Skip and Reset (POMO-AC5, POMO-AC6)', () => {
     it('Skip on Focus goes to Short Break without counting a session', async () => {
       const u = user()
       render(<App />)
@@ -137,7 +137,7 @@ describe('timer screen (M2)', () => {
     })
   })
 
-  describe('progress ring (AC7)', () => {
+  describe('progress ring (POMO-AC7)', () => {
     it('is hidden from screen readers and animates strokeDashoffset only', () => {
       render(<App />)
       const ring = screen.getByTestId('ring-progress')

@@ -32,14 +32,14 @@ const COMMANDS = [...PIPELINES, 'crew', 'run'].sort();
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
 const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
 const AGENTS = [...WORKERS, 'team-lead'].sort();
-const SKILLS = ['business-analysis', 'run-kit', 'test-process'];
+const SKILLS = ['business-analysis', 'development-process', 'run-kit', 'specialist-rules', 'technical-planning', 'test-process'];
 const TEMPLATE_DIRS = ['adr', 'core', 'design', 'reports', 'requirements'];
 const DOCS = [...walk('commands'), ...walk('agents'), ...walk('skills'), ...walk('templates')];
 const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
 
 // The .team/ layout documented in the README; `<slug>` and `NNNN-<…>` are placeholders.
 const LAYOUT = [
-  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/CREW\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
+  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/CREW\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
   /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
@@ -109,22 +109,23 @@ test('every agent has a color; persona defaults live only in the CREW template',
     assert.ok(emoji !== '–' && name !== '–' && vibe !== '–', `${a}: CREW row has emoji, name and vibe`);
     assert.equal(rowColor, color, `${a}: CREW default color matches frontmatter`);
   }
-  for (const a of WORKERS) assert.match(read(`agents/${a}.md`), /\.team\/CREW\.md/, `${a}: reads CREW.md`);
+  assert.match(read('skills/specialist-rules/SKILL.md'), /\.team\/CREW\.md/, 'specialists read CREW.md (shared rules)');
   assert.match(read('agents/team-lead.md'), /Missing → create it from `\$\{CLAUDE_PLUGIN_ROOT\}\/templates\/core\/CREW\.md`/, 'lead creates CREW.md');
 });
 
-test('every specialist lists what it writes and ends with the same Rules + Handoff block', () => {
-  const block = (a) => {
+test('every specialist lists what it writes and preloads the one shared rules skill', () => {
+  const rules = read('skills/specialist-rules/SKILL.md');
+  assert.match(rules, /### Handoff/, 'shared rules hold the handoff');
+  assert.match(rules, /Never commit or push/, 'shared rules forbid commit and push');
+  for (const a of WORKERS) {
     const s = read(`agents/${a}.md`);
+    const fm = frontmatter(`agents/${a}.md`);
     assert.match(s, /\n\*\*Writes\*\*\n/, `${a}: has a Writes list`);
-    assert.doesNotMatch(frontmatter(`agents/${a}.md`), /run-kit/, `${a}: does not preload run-kit`);
-    const i = s.indexOf('\n## Rules\n');
-    assert.ok(i >= 0, `${a}: has a ## Rules section`);
-    return s.slice(i);
-  };
-  const first = block(WORKERS[0]);
-  assert.match(first, /### Handoff/, 'block has the handoff');
-  for (const a of WORKERS) assert.equal(block(a), first, `${a}: Rules block differs from ${WORKERS[0]}`);
+    assert.doesNotMatch(fm, /run-kit/, `${a}: does not preload run-kit`);
+    assert.match(fm, /^skills: \["technical-team:specialist-rules"\]$/m, `${a}: preloads specialist-rules`);
+    assert.doesNotMatch(s, /### Handoff/, `${a}: no copy of the handoff block (it lives in specialist-rules)`);
+  }
+  assert.doesNotMatch(frontmatter('agents/team-lead.md'), /specialist-rules/, 'the lead does not preload specialist rules');
 });
 
 test('run-kit covers roster, pipelines, brief, workspace and handoff only', () => {
@@ -134,15 +135,27 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   for (const a of AGENTS) assert.ok(kit.includes(`| \`${a}\` |`), `roster lists ${a}`);
   for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
-  assert.ok(!fs.existsSync(path.join(ROOT, 'skills/run-kit/references')), 'run-kit has no usage guide');
+  // The core stays short; detail lives in references the core names, each read only when its step comes up.
+  const refs = fs.readdirSync(path.join(ROOT, 'skills/run-kit/references')).sort();
+  assert.deepEqual(refs, ['qa-lines.md', 'qa-loop.md', 'roles.md', 'workflow.md', 'workspace.md']);
+  for (const r of refs) assert.match(kit, new RegExp(`\\| \`${r.replace('.', '\\.')}\` \\(§`), `run-kit's map names ${r}`);
 });
 
-test('STATE.md belongs to the orchestrating session, with or without the lead', () => {
+test('every skill file stays under 150 lines; longer content goes to a reference', () => {
+  for (const f of DOCS.filter((d) => d.startsWith('skills/') && d.endsWith('.md'))) {
+    const n = read(f).split('\n').length - (read(f).endsWith('\n') ? 1 : 0);
+    assert.ok(n < 150, `${f}: ${n} lines`);
+  }
+});
+
+test('item state belongs to the orchestrating session, with or without the lead; STATE.md is generated', () => {
   const kit = read('skills/run-kit/SKILL.md');
   assert.match(kit, /^### Orchestrating without the lead$/m, 'run-kit covers direct orchestration');
   assert.match(frontmatter('skills/run-kit/SKILL.md'), /spawning team agents yourself/, 'run-kit loads for direct orchestration');
-  assert.match(read('templates/core/STATE.md'), /Orchestrating without the lead/, 'STATE template points to the rule');
-  for (const a of WORKERS) assert.doesNotMatch(read(`agents/${a}.md`), /STATE\.md` and `\.team\/archive\/` are the lead's/, `${a}: STATE is not lead-only`);
+  assert.match(kit, /Spawned agents never write item state \(a hook refuses them\)/);
+  assert.match(read('agents/team-lead.md'), /You write only `\.team\/items\/`/, 'the lead writes the item JSON');
+  assert.match(read('skills/run-kit/references/workspace.md'), /\| `STATE\.md` — open items, resume point \| view, generated from `items\/` \| nobody writes it \|/);
+  for (const a of WORKERS) assert.doesNotMatch(read(`agents/${a}.md`), /write[^\n]*`?\.team\/(STATE\.md|items)/i, `${a}: never writes item state`);
 });
 
 test('TASKS.md belongs to pm alone', () => {
@@ -251,18 +264,16 @@ test('the shared schema and contract blocks are identical across workflow script
     return lines.slice(i, end + 1).join('\n');
   };
   const ref = read('workflows/review.js');
-  const SHARED = ['FINDING', 'RESULT', 'SKEPTIC', 'CONTRACT', 'clean', 'dataBlock', 'parseArgs', 'skepticPrompt', 'verifyFindings', 'dedupe'];
-  const PLAN_SHARED = ['clean', 'dataBlock', 'parseArgs'];
-  const RELEASE_ONLY_MISSING = ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe'];
-  for (const name of SHARED) assert.ok(block(ref, name), `review.js has ${name}`);
-  for (const w of WORKFLOWS) {
-    const src = read(`workflows/${w}`);
-    for (const name of w === 'plan-tickets.js' ? PLAN_SHARED : SHARED) {
-      const b = block(src, name);
-      if (b) assert.equal(b, block(ref, name), `${w}: ${name} drifted from review.js`);
-      else assert.ok(w === 'release.js' && RELEASE_ONLY_MISSING.includes(name), `${w}: missing ${name}`);
-    }
+  // review.js and release.js gate a diff or a release: same result shape, same item check.
+  for (const name of ['FINDING', 'RESULT', 'CONTRACT', 'clean', 'dataBlock', 'parseArgs', 'ROUND_CAP', 'CLOSED', 'itemStatus']) {
+    assert.ok(block(ref, name), `review.js has ${name}`);
+    assert.equal(block(read('workflows/release.js'), name), block(ref, name), `release.js: ${name} drifted from review.js`);
   }
+  for (const name of ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe']) assert.ok(block(ref, name), `review.js has ${name}`);
+  // Every script parses args, cleans agent text and wraps it in a data block the same way.
+  for (const w of WORKFLOWS) for (const name of ['clean', 'dataBlock', 'parseArgs']) assert.equal(block(read(`workflows/${w}`), name), block(ref, name), `${w}: ${name} drifted from review.js`);
+  // The cap is the same constant wherever an item is judged.
+  for (const w of ['build-loop.js', 'review.js', 'release.js']) assert.equal(block(read(`workflows/${w}`), 'ROUND_CAP'), 'const ROUND_CAP = 3', `${w}: cap`);
   for (const name of ['root', 'safePath']) assert.equal(block(read('workflows/plan-tickets.js'), name), block(read('workflows/build-loop.js'), name), `plan-tickets: ${name} drifted from build-loop.js`);
   // Skeptics get no agentType (they must not inherit "write the report"); agent text goes into a data block.
   assert.doesNotMatch(block(ref, 'verifyFindings'), /agentType/, 'skeptics run without an agentType');
@@ -289,24 +300,23 @@ test('every command that runs a workflow carries the shared opt-in sentence; run
   assert.deepEqual(users, ['feature', 'fix', 'infra', 'new', 'release', 'review'], 'commands that run workflows');
   for (const c of users) assert.ok(read(`commands/${c}.md`).includes(sentence), `${c}: has the Workflow opt-in sentence`);
   assert.match(read('commands/run.md'), /Typing `\/technical-team:run` is your opt-in for the workflows/, 'run.md states the opt-in');
-  assert.match(read('agents/team-lead.md'), /`workflows: yes\|no`/, 'the lead records workflows: yes|no in the STATE row');
-  assert.match(read('templates/core/STATE.md'), /\| Workflows \|/, 'STATE row has a Workflows field');
+  assert.match(read('agents/team-lead.md'), /`workflows: yes\|no` → `"workflows": true\|false`/, 'the lead records the opt-in in the item');
 });
 
 test('commands call workflows by name and point to run-kit §6; the shared workflow rules are not repeated in them', () => {
   const kit = read('skills/run-kit/SKILL.md');
-  const sec = kit.slice(kit.indexOf('## 6. Workflow steps'));
-  assert.ok(sec.length > 0 && kit.includes('## 6. Workflow steps'), 'run-kit has §6');
+  const sec = read('skills/run-kit/references/workflow.md');
+  assert.ok(kit.includes('`references/workflow.md`'), 'run-kit §6 points to its reference');
   assert.match(sec, /Read `\$\{CLAUDE_PLUGIN_ROOT\}\/workflows\/<file>\.js`[^\n]*pass its text as `script`/, 'run-kit §6 has the fallback');
   assert.match(sec, /tell the user it runs in the background/, 'run-kit §6 has the background rule');
-  for (const s of ['`stuck`', '`stopped`', '`done`', 'startAt', 'fromGroup', 'acceptDisputed', ...['blocked', 'needs-input', 'missing', 'no-verdict', 'disputed', 'unowned', 'unsafe-path'].map((x) => `\`${x}\``)]) assert.ok(sec.includes(s), `run-kit §6 covers ${s}`);
+  for (const s of ['`stuck`', '`stopped`', '`done`', 'startAt', 'fromGroup', ...['blocked', 'needs-input', 'missing', 'no-verdict', 'disputed', 'unowned', 'stalled', 'spec-issues', 'retest-incomplete', 'fail-without-blocker', 'qa-pending'].map((x) => `\`${x}\``)]) assert.ok(sec.includes(s), `run-kit §6 covers ${s}`);
   assert.match(kit, /^## 6\. Workflow steps$/m, 'run-kit has the §6 heading');
   const row = (status) => {
     const l = sec.split('\n').find((x) => x.startsWith(`| \`${status}\``) || x.startsWith(`| \`${status}\`, `) || x.includes(`\`, \`${status}\` |`));
     assert.ok(l, `run-kit §6 has a row for ${status}`);
     return l;
   };
-  const pairs = { done: /next step.*disputed/, stuck: /ask the user/, stopped: /route every `needsUser`/, blocked: /§5 table/, 'needs-input': /§5 table/, missing: /re-spawn that agent once.*ask the user/, 'no-verdict': /blocked/, disputed: /acceptDisputed.*startAt: "qa"/, unowned: /who owns.*startAt: "review"/, 'unsafe-path': /who owns.*startAt: "review"/ };
+  const pairs = { done: /next step/, stuck: /decide with the user/, stopped: /route every `needsUser`/, blocked: /Past the cap/, 'needs-input': /§5 table/, missing: /re-spawn that agent once.*ask the user/, 'no-verdict': /blocked/, disputed: /the user decides/, unowned: /who owns.*startAt: "review"/, stalled: /ask the user/, 'retest-incomplete': /nothing counts as fixed/ };
   for (const [st, re] of Object.entries(pairs)) assert.match(row(st), re, `run-kit §6: ${st} row routes correctly`);
   let n = 0;
   for (const c of COMMANDS) {
@@ -344,6 +354,11 @@ test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-9'] })]), ['unknown-dependency'], 'unknown dependsOn');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { dependsOn: ['T-1'] })]), ['self-dependency'], 'self dependency');
   assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-2', 3, ['b.js'])]), ['group-gap'], 'group gap');
+  // with the item key, ticket IDs must be <KEY>-T<n>
+  const keyed = new Function('a', `${code}; return checkTickets;`)({ key: 'CART' });
+  const keyedRules = (ts) => keyed(ts).map((i) => i.rule).sort();
+  assert.deepEqual(keyedRules([t('CART-T1', 1, ['a.js']), t('CART-T2', 2, ['b.js'], { dependsOn: ['CART-T1'] })]), [], 'keyed IDs pass');
+  assert.deepEqual(keyedRules([t('T-1', 1, ['a.js']), t('USER-T2', 1, ['b.js']), t('CART-T0', 1, ['c.js'])]), ['id-format', 'id-format', 'id-format'], 'old, foreign and zero IDs are sent back to pm');
   assert.deepEqual(rules([t('T-1', 1, ['../x.js'])]), ['unsafe-path'], 'unsafe path');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { acs: [] })]), ['acs'], 'missing AC');
   assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-1', 1, ['b.js'])]), ['unique-id'], 'duplicate id');

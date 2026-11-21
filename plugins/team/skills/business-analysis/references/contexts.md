@@ -12,7 +12,7 @@
 | Context | other systems, data that already exists elsewhere, constraints (legal, deadline, budget, platforms, scale) | `.team/PRODUCT.md` → Context |
 | Capability map | story map of the whole product; mark the MVP slice | `.team/PRODUCT.md` → Capability map |
 | Glossary and rules | the business words and the rules behind them, with examples | `.team/PRODUCT.md` → Glossary, Business rules |
-| MVP spec | stories, ACs, edge cases, quality targets for the MVP slice only | `.team/requirements/<slug>.md` |
+| MVP spec | stories, ACs, edge cases for the MVP slice only (quality targets as ACs with concrete values) | `.team/requirements/<slug>.md` |
 
 Benchmark comparable products (web) for conventions users will expect; cite the URLs. The MVP is the smallest slice that reaches one goal end to end, not a list of the user's first ideas.
 
@@ -20,10 +20,10 @@ Benchmark comparable products (web) for conventions users will expect; cite the 
 
 | Step | Do | Output in `.team/requirements/<slug>.md` |
 |---|---|---|
-| As-is | read the code and docs for the flow being changed: what happens today, which rules are enforced where (file:line), who can do it | **As-is** |
-| To-be and gap | what must be different; what stays exactly as it is | **Problem / goal**, **Out of scope** |
-| Impact | every place the change is felt (table below) | **Impact** |
-| Existing users and data | records created under the old rule, saved settings, habits, links, exports | **Impact** → data / users rows |
+| As-is | read the code and docs for the flow being changed: what happens today, which rules are enforced where (file:line), who can do it | **As-is and impact** (Today column) |
+| To-be and gap | what must be different; what stays exactly as it is | **Goal**, **Out of scope** |
+| Impact | every place the change is felt (table below) | **As-is and impact** (Change, Regression risk) |
+| Existing users and data | records created under the old rule, saved settings, habits, links, exports | **As-is and impact** → Data / Roles rows |
 | Elicit only the gap | questions about the new behaviour and about each impact you cannot decide | rounds |
 
 | Impact area | Look for |

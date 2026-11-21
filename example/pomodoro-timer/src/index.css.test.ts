@@ -6,7 +6,7 @@ import { join } from 'node:path'
 const css = readFileSync(join(import.meta.dirname, 'index.css'), 'utf8')
 
 // jsdom does not run CSS transitions; these pin the rules that implement them.
-describe('index.css motion rules (E11)', () => {
+describe('index.css motion rules (POMO-E11)', () => {
   it('registers --accent and crossfades it over 600 ms', () => {
     expect(css).toMatch(/@property --accent\s*{[^}]*syntax:\s*'<color>'/)
     expect(css).toMatch(/transition:\s*--accent 600ms/)

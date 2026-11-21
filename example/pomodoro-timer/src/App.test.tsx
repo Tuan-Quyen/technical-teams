@@ -39,7 +39,7 @@ function activePhase() {
 
 const user = () => userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
-describe('App timer slice (AC1-AC4)', () => {
+describe('App timer slice (POMO-AC1-POMO-AC4)', () => {
   beforeEach(() => {
     useFakeClock()
     resetStore()
@@ -48,14 +48,14 @@ describe('App timer slice (AC1-AC4)', () => {
     vi.useRealTimers()
   })
 
-  it('shows Focus 25:00 idle with a Start button on load (AC1)', () => {
+  it('shows Focus 25:00 idle with a Start button on load (POMO-AC1)', () => {
     render(<App />)
     expect(screen.getByRole('timer')).toHaveTextContent('25:00')
     expect(activePhase()).toBe('Focus')
     expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument()
   })
 
-  it('Start counts down, Pause freezes, Resume continues (AC2-AC4)', async () => {
+  it('Start counts down, Pause freezes, Resume continues (POMO-AC2-POMO-AC4)', async () => {
     const u = user()
     render(<App />)
     await u.click(screen.getByRole('button', { name: 'Start' }))
@@ -77,7 +77,7 @@ describe('App timer slice (AC1-AC4)', () => {
     expect(screen.queryByText('Paused')).not.toBeInTheDocument()
   })
 
-  it('flips digits on time when the start is not tick-aligned (R-01)', async () => {
+  it('flips digits on time when the start is not tick-aligned (POMO-R1)', async () => {
     vi.setSystemTime(T0 + 17)
     const u = user()
     render(<App />)
@@ -110,7 +110,7 @@ describe('App timer slice (AC1-AC4)', () => {
   })
 })
 
-describe('phase end through the tick (AC8-AC10)', () => {
+describe('phase end through the tick (POMO-AC8-POMO-AC10)', () => {
   beforeEach(() => {
     useFakeClock()
   })

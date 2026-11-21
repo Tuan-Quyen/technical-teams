@@ -1,5 +1,5 @@
 // Workflow script for /technical-team:release. Run with the Workflow tool: `script` = this file unchanged.
-// args: { slug, briefs: { qa, security, devops, dba?, writer: <run-kit §3 brief> }, context?: <string> }
+// args: { slug, briefs: { qa, security, devops, dba?, writer: <run-kit §3 brief> }, items: [.team/items/<slug>.json objects], context?: <string> }
 // The lead writes the briefs; this script only appends round context, the gates' verdicts and the output contract.
 export const meta = {
   name: 'team-release',
@@ -42,6 +42,18 @@ const parseArgs = (raw, who, how) => {
     throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
+
+// ---- open items in scope: their .team/items/<slug>.json as the lead passed them (the same rule as build-loop) ----
+// This run never moves an item: it fixes nothing, writes no state, and its verdict is not an item's PASS.
+const ROUND_CAP = 3
+const CLOSED = ['verified', 'deferred', 'rejected']
+const itemStatus = (it) => {
+  const slug = clean(it && it.slug, 60)
+  if (!it || it.v !== 1 || !slug || !Array.isArray(it.findings) || !Number.isInteger(it.round)) return { slug: slug || '?', status: 'invalid', note: 'not an item JSON (run-kit workspace § Item state)' }
+  const open = it.findings.filter((f) => f && f.blocking && !CLOSED.includes(f.status)).map((f) => clean(f.id, 10))
+  const status = it.round >= ROUND_CAP && open.length ? 'BLOCKED_PENDING_USER_DECISION' : open.length ? 'open-blockers' : 'clear'
+  return { slug, status, round: it.round, open }
+}
 const GATE_CONTRACT = ' For a gate, verdict is PASS (ready to release) or FAIL (not ready); never "none".'
 
 const HOW = 'run /technical-team:release instead'
@@ -54,6 +66,9 @@ const extra = (r, list) => [
   list.length > 1 ? `Constraints: parallel with: ${list.filter((x) => x !== r).join(', ')}` : '',
   A.context ? `Round context: ${A.context}` : '',
 ].filter(Boolean)
+
+const failA = (m) => { throw new Error(`release: ${m} — ${HOW}`) }
+if (!Array.isArray(A.items)) failA('args.items is required: the .team/items/*.json of every open item in scope (all of them); [] when none')
 
 phase('Gates')
 const results = await parallel(gateRoles.map((role) => () =>
@@ -81,6 +96,9 @@ const notes = await agent(
 if (!notes) needsUser.push({ role: 'writer', status: 'missing', note: 'agent died or was skipped; no notes' })
 else if (notes.status !== 'done') needsUser.push({ role: 'writer', status: notes.status, handoff: notes.handoff })
 
-const goNoGo = gateRoles.every((r) => gates[r].status === 'done' && gates[r].verdict === 'PASS') ? 'GO' : 'NO-GO'
+// Fail closed: an item that is blocked or has open blockers is NO-GO whatever the gates say.
+const itemResults = A.items.map(itemStatus)
+for (const it of itemResults) if (it.status !== 'clear') needsUser.push({ role: 'state', ...it })
+const goNoGo = gateRoles.every((r) => gates[r].status === 'done' && gates[r].verdict === 'PASS') && itemResults.every((it) => it.status === 'clear') ? 'GO' : 'NO-GO'
 log(`${A.slug || "release"} ${goNoGo}: ${lines.join('; ')}`)
-return { gates, notes, needsUser, goNoGo }
+return { gates, notes, needsUser, goNoGo, items: itemResults }

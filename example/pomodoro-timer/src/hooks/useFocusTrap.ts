@@ -7,7 +7,7 @@ const FOCUSABLE =
  * While `container` is mounted: moves focus inside (to `[data-autofocus]`, else the first
  * focusable), wraps Tab / Shift+Tab at the ends, calls `onEscape` on Esc, and puts focus back on
  * the element that had it before. The key handler sits on the container, never on the document
- * (AC24).
+ * (POMO-AC24).
  */
 export function useFocusTrap(container: RefObject<HTMLElement | null>, onEscape: () => void) {
   // Latest callback without re-running the trap effect, which would move focus again.

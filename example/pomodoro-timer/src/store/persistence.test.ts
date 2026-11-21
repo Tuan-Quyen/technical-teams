@@ -57,7 +57,7 @@ function memoryStorage(initial: Record<string, string> = {}): Storage {
   }
 }
 
-describe('createSafeStorage (E2)', () => {
+describe('createSafeStorage (POMO-E2)', () => {
   it('reads valid JSON back as the stored string', () => {
     const s = createSafeStorage(() => memoryStorage({ k: '{"a":1}' }))
     expect(s.getItem('k')).toBe('{"a":1}')
@@ -95,7 +95,7 @@ describe('createSafeStorage (E2)', () => {
   })
 })
 
-describe('probeStorage (AC26)', () => {
+describe('probeStorage (POMO-AC26)', () => {
   it('is true for working storage and leaves no probe key behind', () => {
     const backing = memoryStorage()
     expect(probeStorage(() => backing)).toBe(true)
@@ -112,7 +112,7 @@ describe('probeStorage (AC26)', () => {
   })
 })
 
-describe('parseSettings (E10)', () => {
+describe('parseSettings (POMO-E10)', () => {
   it('keeps valid values', () => {
     const s = { focusMin: 30, shortMin: 10, longMin: 20, autoStart: false, soundOn: false }
     expect(parseSettings(s)).toEqual(s)
@@ -167,7 +167,7 @@ describe('parseTimer', () => {
   })
 })
 
-describe('parseTimer bounds (S-01, S-02, S-03)', () => {
+describe('parseTimer bounds (POMO-S1, POMO-S2, POMO-S3)', () => {
   const NOW = 5_000_000
   const running = { ...fresh.timer, status: 'running' as const, endAt: NOW + 25 * MIN }
 
@@ -193,7 +193,7 @@ describe('parseTimer bounds (S-01, S-02, S-03)', () => {
     expect(parseTimer(at(MAX_DURATION_MS + 1), NOW)).toBeNull()
     expect(parseTimer(at(1e305), NOW)).toBeNull()
   })
-  it('a huge idle duration cannot reach the clock: it becomes a fresh Focus (S-02)', () => {
+  it('a huge idle duration cannot reach the clock: it becomes a fresh Focus (POMO-S2)', () => {
     const out = parsePersisted(
       { timer: { ...fresh.timer, durationMs: 1e305, remainingMs: 1e305 } },
       DEFAULT_SETTINGS,

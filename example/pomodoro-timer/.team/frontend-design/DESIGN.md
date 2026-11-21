@@ -47,24 +47,24 @@
 
 | Component | Source (library / path) | Variants | Notes |
 |---|---|---|---|
-| ProgressRing | new `ProgressRing.tsx` (SVG + `motion.circle` from `motion/react`) | default, focusView (larger) | Size `min(78vw, 56vh, 320px)` mobile, 380 px ≥ lg; stroke 8 / 10 px, round cap, starts 12 o'clock, fills clockwise; progress = elapsed / total from timestamps (AC7); animates `strokeDashoffset` only; Pause freezes exactly, Resume continues from same value; `aria-hidden`, the digits carry meaning |
+| ProgressRing | new `ProgressRing.tsx` (SVG + `motion.circle` from `motion/react`) | default, focusView (larger) | Size `min(78vw, 56vh, 320px)` mobile, 380 px ≥ lg; stroke 8 / 10 px, round cap, starts 12 o'clock, fills clockwise; progress = elapsed / total from timestamps (POMO-AC7); animates `strokeDashoffset` only; Pause freezes exactly, Resume continues from same value; `aria-hidden`, the digits carry meaning |
 | TimerDisplay | new `TimerDisplay.tsx` | default, focusView | `MM:SS` (≥ 60 min → `MMM:SS` e.g. `120:00`); centred inside ring; phase eyebrow above, state caption below ("Paused"); `role="timer"`, `aria-live="off"` |
 | Button | new `ui/Button.tsx` | primary, secondary, ghost | Height 48 px (min 44), radius md, label 14/500 + optional leading icon; primary = filled `--accent`, `text.onAccent`; secondary = `bg.elevated` + `border.subtle`; ghost = text only; press scale 0.97; disabled 40 % opacity, `aria-disabled` |
 | IconButton | new `ui/IconButton.tsx` | secondary, ghost | 48 × 48 px circle, icon 20 px; required `aria-label`; tooltip via `title` on desktop only |
 | TimerControls | new `TimerControls.tsx` | main, focusView | Groups Reset · Primary control · Skip in one row (two rows below); shared by main screen and FocusView |
 | Primary control (Start/Pause/Resume) | Button primary, xl, in `TimerControls.tsx` | idle → `Play` "Start"; running → `Pause` "Pause"; paused → `Play` "Resume" | 56 px tall, min-width 160 px; one per screen; label swap crossfades 120 ms, width fixed to avoid layout shift |
-| Reset / Skip | IconButton secondary, in `TimerControls.tsx` | `RotateCcw` "Reset timer", `SkipForward` "Skip to next phase" | Flank the primary control; debounce-safe (E3) |
-| PhaseTabs | new `PhaseTabs.tsx` | Focus, Short Break, Long Break | Segmented pill, height 40 px; active = `accent.soft` pill (shared `layoutId` slide) + `text.primary`; inactive `text.secondary`; **display only** (Q-D1, BR-10): `<ol aria-label="Phase">` of `<li>`, active `aria-current="step"`; not buttons, not `role="tab"`, not focusable, no hover / pointer / focus styling, `cursor: default` |
+| Reset / Skip | IconButton secondary, in `TimerControls.tsx` | `RotateCcw` "Reset timer", `SkipForward` "Skip to next phase" | Flank the primary control; debounce-safe (POMO-E3) |
+| PhaseTabs | new `PhaseTabs.tsx` | Focus, Short Break, Long Break | Segmented pill, height 40 px; active = `accent.soft` pill (shared `layoutId` slide) + `text.primary`; inactive `text.secondary`; **display only** (POMO-D1, BR-10): `<ol aria-label="Phase">` of `<li>`, active `aria-current="step"`; not buttons, not `role="tab"`, not focusable, no hover / pointer / focus styling, `cursor: default` |
 | CycleDots | new `CycleDots.tsx` | 0–4 filled | 4 dots 10 px, gap 8 px; done = filled `--accent`; current Focus = 2 px `--accent` outline; pending = `border.strong` outline; visible text "2/4" beside; `aria-label="2 of 4 focus sessions completed"` |
 | SettingsSheet | new `SettingsSheet.tsx` (`AnimatePresence` from `motion/react`) | bottom sheet < 640 px, centred dialog ≥ 640 px (max-w 420) | `role="dialog"`, `aria-modal`, title "Settings"; focus trap, Esc / scrim = Cancel, focus returns to `Settings` icon button; footer: Cancel (secondary) + Save (primary); sheet has drag handle, max-height 90 dvh, scrolls inside |
 | NumberField | new `ui/NumberField.tsx` | Focus 1–120, Short 1–30, Long 1–60 | Label + `Minus` / `Plus` 44 px steppers + `input inputmode="numeric"` 64 px wide + unit "min"; hint "1–120 min" `text.muted`; error replaces hint, `aria-invalid`, `aria-describedby` |
 | Toggle | new `ui/Toggle.tsx` | Auto-start, Sound | `role="switch"`, `aria-checked`; track 44 × 24, thumb 20; on = `--accent` track, off = `bg.elevated` + `border.strong`; whole row (label + switch) is the 44 px hit area; icons `Volume2` / `VolumeX` for Sound |
-| InlineHint | new `ui/InlineHint.tsx` | info (`Info`), warn (`BellOff`) | Row inside Settings, `bg.elevated`, radius md, 12/14 px text; used for "notifications blocked" (AC15) |
-| FocusView | new `FocusView.tsx` | native fullscreen of `<html>`, in-app overlay fallback (E7) | Only phase eyebrow, ring, digits, primary + Reset/Skip; `bg.base`; exit `Minimize2` IconButton top-right "Exit focus mode", 60 % opacity after 3 s idle (keeps ≥ 3:1, WCAG 1.4.11), 100 % on pointer move / focus; Esc exits |
+| InlineHint | new `ui/InlineHint.tsx` | info (`Info`), warn (`BellOff`) | Row inside Settings, `bg.elevated`, radius md, 12/14 px text; used for "notifications blocked" (POMO-AC15) |
+| FocusView | new `FocusView.tsx` | native fullscreen of `<html>`, in-app overlay fallback (POMO-E7) | Only phase eyebrow, ring, digits, primary + Reset/Skip; `bg.base`; exit `Minimize2` IconButton top-right "Exit focus mode", 60 % opacity after 3 s idle (keeps ≥ 3:1, WCAG 1.4.11), 100 % on pointer move / focus; Esc exits |
 | AppHeader | new `AppHeader.tsx` | – | App name left (16/600), right: `Maximize2` "Enter focus mode", `Settings` "Open settings" IconButtons |
 
 ## Layout
-- Form factors: 360 px (min, AC22), 768 px, 1280 px; Tailwind v4 default breakpoints `sm 40rem`, `md 48rem`, `lg 64rem`, `xl 80rem` (640 / 768 / 1024 / 1280 px); extra `short:` custom variant (Foundations) for landscape phones.
+- Form factors: 360 px (min, POMO-AC22), 768 px, 1280 px; Tailwind v4 default breakpoints `sm 40rem`, `md 48rem`, `lg 64rem`, `xl 80rem` (640 / 768 / 1024 / 1280 px); extra `short:` custom variant (Foundations) for landscape phones.
 - Single screen, one column, centred, max content width 560 px; side gutter 16 px (< sm), 24 px (≥ sm).
 - Vertical order: AppHeader → PhaseTabs → ProgressRing with TimerDisplay → CycleDots → controls row (Reset · Primary · Skip).
 - Mobile: controls row sits in the lower third (thumb zone), `padding-bottom: env(safe-area-inset-bottom)`; uses `100dvh`, no horizontal scroll.
@@ -75,17 +75,17 @@
 ## Patterns
 | Pattern | Rule |
 |---|---|
-| Empty / first load | Never empty: defaults Focus 25:00, idle, 0/4, ring track only (AC1) |
+| Empty / first load | Never empty: defaults Focus 25:00, idle, 0/4, ring track only (POMO-AC1) |
 | Loading | No spinner; state restores synchronously from LocalStorage before first paint; font swap must not shift digits (tabular, fixed box) |
 | Idle / running / paused | Idle: full ring track, primary "Start". Running: progress glows. Paused: ring + digits at 60 % opacity, caption "Paused", primary "Resume" |
 | Phase change | `--accent` crossfades over `motion.phase`; tabs pill slides; ring resets to 0 with 320 ms ease; no toast component — alert = sound + notification + live-region announcement + TimerDisplay caption |
-| Form validation | Validate on blur and on Save; invalid field shows error, Save does not close the sheet, invalid field keeps the previous saved value (AC12); focus moves to first invalid field |
-| Error (storage / audio / notification failure) | Silent fallback, no error UI (E2, E6, AC15); only persistent hints, both in Settings: notification status (AC15) and storage unavailable (S1, AC26) |
-| No permission (notifications) | InlineHint warn in Settings: "Notifications are blocked in your browser settings. Sound alerts still work." Asked on first Start (E5) or via the Settings "Allow notifications" button while permission is `default` (AC25) |
-| Unsupported (fullscreen) | `Maximize2` opens in-app FocusView overlay instead; button never hidden silently (E7) |
-| Document title | Running/paused: `12:34 · Focus — Pomodoro`; idle: `Pomodoro` (E12) |
+| Form validation | Validate on blur and on Save; invalid field shows error, Save does not close the sheet, invalid field keeps the previous saved value (POMO-AC12); focus moves to first invalid field |
+| Error (storage / audio / notification failure) | Silent fallback, no error UI (POMO-E2, POMO-E6, POMO-AC15); only persistent hints, both in Settings: notification status (POMO-AC15) and storage unavailable (S1, POMO-AC26) |
+| No permission (notifications) | InlineHint warn in Settings: "Notifications are blocked in your browser settings. Sound alerts still work." Asked on first Start (POMO-E5) or via the Settings "Allow notifications" button while permission is `default` (POMO-AC25) |
+| Unsupported (fullscreen) | `Maximize2` opens in-app FocusView overlay instead; button never hidden silently (POMO-E7) |
+| Document title | Running/paused: `12:34 · Focus — Pomodoro`; idle: `Pomodoro` (POMO-E12) |
 | Motion | Animate only `transform`, `opacity`, `stroke-dashoffset`, colour; no layout animation in the timer path; ring tween never blocks the timestamp clock (G-4) |
-| Reduced motion | `MotionConfig reducedMotion="user"` + `prefers-reduced-motion`: ring steps once per second without easing, no glow pulse, no scale on press, sheet fades 120 ms instead of slide, tab pill jumps, phase colour swaps instantly (E11) |
+| Reduced motion | `MotionConfig reducedMotion="user"` + `prefers-reduced-motion`: ring steps once per second without easing, no glow pulse, no scale on press, sheet fades 120 ms instead of slide, tab pill jumps, phase colour swaps instantly (POMO-E11) |
 
 ## Copy and accessibility
 - Voice: short, calm, English, sentence case; verbs on buttons: Start, Pause, Resume, Reset, Skip, Save, Cancel.
@@ -93,7 +93,7 @@
 - Errors say the fix: "Enter a whole number from 1 to 120."
 - WCAG 2.2 AA: text ≥ 4.5:1, UI parts and focus ring ≥ 3:1 (tokens above meet it); phase also shown as text, never colour alone.
 - Targets ≥ 44 × 44 px (2.5.8 exceeds 24 px minimum); 8 px min gap between adjacent targets.
-- Keyboard: logical Tab order = visual order; all controls native `<button>` / `<input>`; Enter/Space activate the focused control (native); Esc closes sheet and exits FocusView; no keyboard trap outside the open dialog; no global shortcuts (Q-D2, AC24).
+- Keyboard: logical Tab order = visual order; all controls native `<button>` / `<input>`; Enter/Space activate the focused control (native); Esc closes sheet and exits FocusView; no keyboard trap outside the open dialog; no global shortcuts (POMO-D2, POMO-AC24).
 - Screen readers: digits not announced each second; one hidden `role="status"` polite region in `App.tsx` (no LiveAnnouncer component) announces state and phase changes ("Focus started", "Paused", "Short Break, 5 minutes").
 - Text resizes to 200 % without loss; timer uses `rem` / `clamp`, never fixed px.
-- Resolved (user 2026-11-19, BR-10): Q-D1 phase tabs display only, Skip is the only manual phase change; Q-D2 no keyboard shortcuts.
+- Resolved (user 2026-11-19, BR-10): POMO-D1 phase tabs display only, Skip is the only manual phase change; POMO-D2 no keyboard shortcuts.

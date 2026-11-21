@@ -39,4 +39,4 @@
 
 ## Notes
 
-- Color sets the badge the lead shows before each spawn (`🟨 🧪 qa — retest Q-02`). The agent's label color in the Claude Code UI comes from the plugin's own `color:` and cannot be changed per project.
+- Color sets the badge the lead shows before each spawn (`🟨 🧪 qa — retest POMO-B2`). The agent's label color in the Claude Code UI comes from the plugin's own `color:` and cannot be changed per project.

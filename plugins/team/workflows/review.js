@@ -1,5 +1,5 @@
 // Workflow script for /technical-team:review. Run with the Workflow tool: `script` = this file unchanged.
-// args: { slug, briefs: { 'code-reviewer': <run-kit §3 brief>, security: <brief>, dba?: <brief> }, context?: <string> }
+// args: { slug, briefs: { 'code-reviewer': <run-kit §3 brief>, security: <brief>, dba?: <brief> }, items: [.team/items/<slug>.json objects], context?: <string> }
 // The lead writes the briefs; this script only appends round context and the output contract.
 export const meta = {
   name: 'team-review',
@@ -47,7 +47,17 @@ const parseArgs = (raw, who, how) => {
     throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
-
+// ---- open items in scope: their .team/items/<slug>.json as the lead passed them (the same rule as build-loop) ----
+// This run never moves an item: it fixes nothing, writes no state, and its verdict is not an item's PASS.
+const ROUND_CAP = 3
+const CLOSED = ['verified', 'deferred', 'rejected']
+const itemStatus = (it) => {
+  const slug = clean(it && it.slug, 60)
+  if (!it || it.v !== 1 || !slug || !Array.isArray(it.findings) || !Number.isInteger(it.round)) return { slug: slug || '?', status: 'invalid', note: 'not an item JSON (run-kit workspace § Item state)' }
+  const open = it.findings.filter((f) => f && f.blocking && !CLOSED.includes(f.status)).map((f) => clean(f.id, 10))
+  const status = it.round >= ROUND_CAP && open.length ? 'BLOCKED_PENDING_USER_DECISION' : open.length ? 'open-blockers' : 'clear'
+  return { slug, status, round: it.round, open }
+}
 const HOW = 'run /technical-team:review instead'
 const A = parseArgs(args, 'review', HOW) || {}
 const briefs = A.briefs || {}
@@ -104,6 +114,9 @@ const dedupe = (items) => {
   return [...merged.values()]
 }
 
+const failA = (m) => { throw new Error(`review: ${m} — ${HOW}`) }
+if (!Array.isArray(A.items)) failA('args.items is required: the .team/items/*.json of every open item in scope; [] when none')
+
 const reviewed = await pipeline(
   roles,
   (role) => agent(briefFor(role), { label: role, phase: 'Review', agentType: agentType(role), schema: RESULT }),
@@ -126,4 +139,6 @@ const disputed = all.filter((f) => f.disputed)
 const allPass = roles.every((r, i) => reviewed[i] && reviewed[i].res && reviewed[i].res.status === 'done' && reviewed[i].res.verdict === 'PASS')
 const verdict = allPass && !findings.some((f) => f.blocking) ? 'PASS' : 'FAIL'
 log(`${A.slug || "review"} verdict ${verdict}: ${findings.length} finding(s), ${disputed.length} disputed, ${needsUser.length} need the lead`)
-return { verdict, findings, disputed, handoffs, needsUser }
+const itemResults = A.items.map(itemStatus)
+for (const it of itemResults) if (it.status !== 'clear') needsUser.push({ role: 'state', ...it })
+return { verdict, findings, disputed, handoffs, needsUser, items: itemResults }

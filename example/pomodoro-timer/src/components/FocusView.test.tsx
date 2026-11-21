@@ -31,7 +31,7 @@ function stubNative(request: () => Promise<void>) {
   return requestFullscreen
 }
 
-describe('Focus mode (AC17, E7, AC24)', () => {
+describe('Focus mode (POMO-AC17, POMO-E7, POMO-AC24)', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
     vi.setSystemTime(T0)
@@ -162,7 +162,7 @@ describe('Focus mode (AC17, E7, AC24)', () => {
       })
     })
 
-    it('a refused request keeps the overlay open (E7)', async () => {
+    it('a refused request keeps the overlay open (POMO-E7)', async () => {
       stubNative(() => Promise.reject(new TypeError('denied')))
       const u = user()
       render(<App />)

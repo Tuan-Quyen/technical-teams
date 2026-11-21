@@ -1,64 +1,67 @@
 ---
 name: run-kit
-description: Reference for running the technical team — the roster (who does what, writes what), the pipeline workflow commands, how to write a brief, the .team/ workspace with its templates, and the handoff every agent returns. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does. Also load it before spawning team agents yourself, without a pipeline command, for work with more than one step or that may pause and be resumed.
+description: Reference for running the technical team — roster, commands, brief format, .team/ workspace, handoff. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does; also before spawning team agents yourself, without a pipeline command, for work with more than one step or that may pause and be resumed.
 ---
 
 # technical-team run kit
+
+The core is this file. Read a reference (`${CLAUDE_PLUGIN_ROOT}/skills/run-kit/references/`) only when its step comes up:
+
+| Reference | Holds | Read it when |
+|---|---|---|
+| `qa-loop.md` (§3 QA) | the QA-Fix loop, finding IDs, past the cap | reading a gate result; a round or approval question |
+| `qa-lines.md` (§3 QA) | the verbatim qa and reviewer brief lines | writing an inline qa, reviewer or fix brief |
+| `workspace.md` (§4) | every `.team/` file, its owner and template; the item JSON; spec rules; compaction | creating or checking a `.team/` file or the item |
+| `roles.md` (§2) | who owns which quality check: developer, code-reviewer, qa | a gap or a duplicate check between those three |
+| `workflow.md` (§6) | running a step through the Workflow tool, routing every `status` / `needsUser`, re-runs | a command says "workflow run" or "per run-kit §6" |
 
 ## 1. Roster
 
 | Agent (`technical-team:…`) | Does | Writes |
 |---|---|---|
-| `team-lead` | classifies a request, runs the pipeline, keeps the resume point | `STATE.md`, moves into `archive/` |
+| `team-lead` | classifies a request, runs the pipeline, keeps the item state | `items/<slug>.json`, moves into `archive/` |
 | `team-ba` | requirements: stories, Given/When/Then ACs, edge cases, open questions | `requirements/<slug>.md`, `PRODUCT.md` |
 | `team-designer` | design system, flows, screens, every state, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` |
 | `team-architect` | solution + implementation plan, architecture overview, ADRs | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` |
 | `team-pm` | tickets, dependencies, parallel groups, milestones, ticket status | `TASKS.md` |
-| `team-developer` | code changes per ticket or debug report, self-check | source code, config |
-| `team-debugger` | reproduce, root cause with evidence, fix direction | `reports/<slug>/debug.md` |
-| `team-code-reviewer` | review the diff, PASS / FAIL | `reports/<slug>/review.md` |
-| `team-qa` | test plan, RTM, tests, live preview, PASS / FAIL | test files, `reports/<slug>/qa.md` |
-| `team-security` | vulnerability review of a diff or the repo, PASS / FAIL | `reports/<slug>/security.md` |
+| `team-developer` | code changes per ticket or debug report, unit/component tests, self-check with evidence | source code, config, unit/component tests |
+| `team-debugger` | reproduce, root cause with evidence, fix direction | handoff; `reports/<slug>/debug.md` at T2 |
+| `team-code-reviewer` | review the diff, PASS / FAIL | findings in its result; `reports/<slug>/review.md` at T2 |
+| `team-qa` | pre-check before build (checks, regression test, spec issues); execution after review (integration/E2E/acceptance, live preview, UX, regression, PASS / FAIL) | integration/E2E/acceptance tests; `reports/<slug>/qa.md` at T2 |
+| `team-security` | vulnerability review of a diff or the repo, PASS / FAIL | findings in its result; `reports/<slug>/security.md` at T2 |
 | `team-dba` | zero-downtime migrations, local/test databases only | migrations, "Data and migrations" in `system-design/<slug>.md` |
 | `team-devops` | CI/CD, Docker, manifests, local verification, remote steps for the user | infra files |
 | `team-writer` | README, API docs, CHANGELOG, runbooks | product docs, `docs/**` |
 
-Paths are under `.team/`. Only the agent in the Writes column writes a file; everyone reads. Emoji, name, vibe and badge color live in `.team/CREW.md` (created from `core/CREW.md` with the defaults; edit it by hand or with `/technical-team:crew`).
+Paths are under `.team/`. Only the agent in the Writes column writes a file; everyone reads. Emoji, name, vibe and color: `.team/CREW.md` (from `core/CREW.md`; `/technical-team:crew` edits it).
 
-**Project specialists** — agents the project defines in `.claude/agents/*.md` (e.g. `prisma-expert`, `payments-reviewer`). The lead lists them at start, matches a step to one by its `description`, and either lets it **replace** the team agent for that step or **consults** it first (`team-lead.md` § Project specialists). They may declare `mcpServers`, `hooks` and `permissionMode`, which plugin agents cannot; that is the reason to write one instead of a project skill.
+**Project specialists** — the project's own agents in `.claude/agents/*.md`; the lead routes a step to one by its `description` (`team-lead.md` § Project specialists).
 
 ## 2. Pipeline workflow commands
 
-All commands are `/technical-team:<command>`. Two are not pipelines:
+`/technical-team:<command>`; each command file has its steps and tiers (`→` sequential, `∥` parallel).
 
-| Command | Does |
+| Command | Pipeline |
 |---|---|
-| `run <request>` | the entry point: the lead classifies the request and picks one pipeline below; empty = resume from `STATE.md` |
-| `crew [show · <agent> key=value · reset]` | shows or edits `CREW.md`; spawns no agent |
+| `run <request>` | the lead classifies and picks one below; empty = resume from `STATE.md` |
+| `crew [show · <agent> key=value · reset]` | shows or edits `CREW.md`; no agent |
+| `feature` | T1: ba → developer → code-reviewer (∥ security, dba) → qa · T2: ba → (designer) → architect → pm → qa pre-check → developer → review → qa → writer |
+| `feature --small` | T0, the user's flag: developer → code-reviewer |
+| `fix` | T1: debugger → developer → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
+| `review` | code-reviewer ∥ security (∥ dba); no code changes |
+| `test` | qa writes missing tests |
+| `infra` | devops proposal → devops → code-reviewer ∥ security → writer |
+| `release` | qa ∥ security ∥ devops (∥ dba) → writer: GO / NO-GO |
+| `new` | ba → architect ∥ designer → architect → pm → per milestone: build loop → compact → release |
 
-The pipelines (`→` sequential, `∥` parallel). Each command file lists its steps; this is the map.
-
-| Command | For | Pipeline | Stops for the user at |
-|---|---|---|---|
-| `feature` | a new capability or behaviour change | ba → designer (UI) → architect (+dba) → pm → developer → code-reviewer ∥ security → qa → writer | ba questions, design OK |
-| `feature --small` | a change that fits existing patterns | developer → code-reviewer (∥ security) → qa (→ writer) | — |
-| `fix` | a bug, error, failing test | debugger → developer → code-reviewer (∥ security) → qa | risky fix options |
-| `review` | a diff, branch or range; no code changes | code-reviewer ∥ security (∥ dba) | — |
-| `test` | missing tests for a scope | qa | — |
-| `infra` | CI/CD, Docker, deploy | devops (proposal) → devops → code-reviewer ∥ security → writer | proposal OK |
-| `release` | release readiness, GO / NO-GO | qa ∥ security ∥ devops (∥ dba) → writer | — |
-| `new` | a product from an idea or PRD | ba → architect ∥ designer → architect → pm → per milestone: developer → review → qa → devops → writer → release | ba questions, stack, milestones |
-
-**Workflow-backed steps** — a command may run its parallel steps through the Workflow tool (`review`, `release`, the build loop of `feature`, `fix`, `infra` and `new` in `build-loop.js`, and the ticket check of `feature` and `new` in `plan-tickets.js`; scripts in `${CLAUDE_PLUGIN_ROOT}/workflows/`): the lead writes every §3 brief, the script spawns the agents and returns `needsUser` entries for the lead to route. Call, fallback, STATE row, routing and re-run rules are in §6. Workflows run only when the tool is available AND the user typed a slash command of this plugin for the item (`/technical-team:run` counts); otherwise the command's inline steps run, and the STATE row records `workflows: yes|no` so a resumed item keeps its choice.
-
-Loops: review or QA `FAIL` → back to the developer with the finding IDs, then review again. Unclear failure → debugger. Design looks wrong → architect. Same findings after 3 rounds → ask the user.
+Who owns which quality check (developer, code-reviewer, qa): `references/roles.md`.
 
 ## 3. Writing a brief
 
 Every agent starts cold and sees only the brief. Give it:
 
 ```
-Item: <slug> · Pipeline: <name> · Step: <n — name> · Ticket: <T-n or –>
+Item: <slug> · Key: <KEY> · Pipeline: <name> · Step: <n — name> · Ticket: <<KEY>-T<n> or –>
 Goal: <what this step must produce>
 Read: <the .team/ files and code paths it needs>
 Write: <the files it owns for this step>
@@ -75,52 +78,26 @@ Reply: open with `<emoji> <name>:` · end with `### Handoff · <emoji> <name>` (
 **Briefing a project specialist** — it has none of the team's Rules, so the brief carries them. Use the format above, then add:
 
 ```
-Rules: write only the files under Write (none = advise only). Never write .team/STATE.md, never commit or push.
+Rules: write only the files under Write (none = advise only). Never write .team/items/ or STATE.md, never commit or push.
        Use the Tools line. Reading MCP is free; an outside change only if Constraints says the user allowed it.
 Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
 ```
 
+### IDs people can read
+
+Item **key**: 2–6 capitals or digits from the slug (`cart-checkout` → `CART`), in the item and its TASKS.md heading; it never changes. Tickets `CART-T1`, milestones `CART-M1` (pm); ACs `CART-AC1`, edge cases `CART-E1`, decisions `CART-D1` (ba, designer, architect); findings `F1` in the item (`CART#F1` elsewhere); `BR-1`, `G-1` in PRODUCT.md. To the user, an ID comes with its short title once per line: `F3 (save fails on second click)`. Old IDs (`T-1`, `AC1`…): `node ${CLAUDE_PLUGIN_ROOT}/tools/migrate-ids.mjs <project>`.
+
 ## 4. Workspace `.team/`
 
-| File | Owner | Template (`${CLAUDE_PLUGIN_ROOT}/templates/…`) |
-|---|---|---|
-| `STATE.md` — who works on what, files in use, next step (resume point) | the orchestrating session: lead, or whoever spawns agents directly | `core/STATE.md` |
-| `TASKS.md` — tickets and status | pm | `core/TASKS.md` |
-| `PRODUCT.md` — current truth of the product | ba | `core/PRODUCT.md` |
-| `ARCHITECTURE.md` — overview, ~200 lines max, points to ADRs | architect | `core/ARCHITECTURE.md` |
-| `requirements/<slug>.md` | ba | `requirements/requirements.md` |
-| `system-design/<slug>.md` — design + implementation plan | architect (dba: Data and migrations) | `design/system-design.md` |
-| `frontend-design/DESIGN.md` — design system | designer | `design/DESIGN.md` |
-| `frontend-design/<slug>.md` | designer | `design/frontend-design.md` |
-| `adr/NNNN-<decision>.md` — NNNN given by the lead | architect | `adr/adr.md` |
-| `reports/<slug>/qa.md` — plan → RTM → findings → latest round → verdict | qa | `reports/qa.md` |
-| `reports/<slug>/review.md` | code-reviewer | `reports/review.md` |
-| `reports/<slug>/security.md` | security | `reports/security.md` |
-| `reports/<slug>/debug.md` | debugger | `reports/debug.md` |
-| `CREW.md` — emoji, names, vibes, badge colors | lead creates it; the user customizes it | `core/CREW.md` |
-| `docs/**` | writer | — |
-| `archive/<slug>/` — every file of a closed item | lead | — |
-
-Reports keep a cumulative findings table with fixed IDs (`Q-01`, `R-01`, `S-01`) and only the latest round in detail; line 1 is the verdict.
-
-**Writing style (every `.team/` file)** — each file is read by a human skimming and by every agent that starts cold, so length costs tokens on every spawn:
-- Bullets and table cells, not paragraphs; one fact per bullet (~20 words); outcome first.
-- Point, do not explain: `file:line`, commit, test name, finding or ticket ID, ADR number.
-- Current truth only: overwrite stale lines; history lives in git, not in the file.
-- One home per fact; elsewhere, link it.
-- Each template has a **Budget** line. Count every line, blank ones too: the last line number of a `Read`, or `wc -l` / `(Get-Content f).Count` (not `Measure-Object -Line`, which skips blank lines). Over it → cut, collapse closed rows into an ID line, or split by milestone. When a handoff leaves a file over budget, send it back to its owner before you move on.
+One owner per file (§1 Writes; `items/<slug>.json` is the orchestrating session's, `STATE.md` is generated from it); templates under `${CLAUDE_PLUGIN_ROOT}/templates/`. Item schema, spec rules, compaction: `references/workspace.md`.
 
 ### Orchestrating without the lead
 
 Spawning team agents yourself, without a pipeline command, makes you the orchestrating session: the lead's bookkeeping for that work is yours.
 
-- One step that finishes in one handoff → no `STATE.md` row.
-- Two or more steps, or work someone may resume later → before the first spawn, add a row from `core/STATE.md` (Pipeline: `direct`). After each handoff, overwrite it.
-- An open row already covers the item → update that row; never add a second one.
-- Item finished → remove its row and move its files to `archive/<slug>/`, as the lead's close step does.
-- Same rules as the lead: `Next step` ≤ 30 words, overwrite, never append, whole file within its Budget.
-- A lead subagent's returned plan → take over its `STATE.md` row and continue from it.
-- Spawned agents never write `STATE.md`.
+- One step that finishes in one handoff → no item. Two or more steps, or work someone may resume later → before the first spawn, write `.team/items/<slug>.json` (pipeline `direct`), or update the open item that covers the work (never a second one); update it after each handoff.
+- Finished → move its files to `archive/<slug>/` and delete the item JSON, as the lead's close step does. A lead subagent's returned plan → take over its item and continue from it.
+- Spawned agents never write item state (a hook refuses them).
 
 ## 5. Handoff
 
@@ -142,29 +119,4 @@ Every agent opens its reply with `<emoji> <name>:` and ends it with:
 
 ## 6. Workflow steps
 
-How every command runs a step through the Workflow tool. The command gives the opt-in, the workflow name, the `args` and any command-specific routing; the rest is here.
-
-- **Run** — write every agent's §3 brief yourself, then set the item's STATE row (step `<n> (workflow)`, status `running`) and call `Workflow` with `name: 'technical-team:team-…'` and the command's `args`. Only if the name is not found: Read `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` (the file the command names) and pass its text as `script` with the same args.
-- **Task list** — one item per workflow phase in place of the items for the steps it covers (build-loop: `Build`, `Review`, `Test`, `Docs`); the command's own items otherwise.
-- **While it runs** — tell the user it runs in the background and the result arrives as a task notification. The workflow cannot ask the user; the lead does.
-- **Result** — update STATE and the task list, then route by `status`:
-
-| Status | Do |
-|---|---|
-| `done` | next step of the command; report `review.disputed` findings for their owners to decide |
-| `stuck` | findings still failing after `maxRounds` → ask the user (lead §5); plan-tickets: show `tickets` and `issues` (`groups` / `milestones` empty) and decide with the user |
-| `stopped` | route every `needsUser` entry below (`stoppedAt` names the stage); review and release have no `status`: route their `needsUser` the same way |
-
-| `needsUser` status | Do |
-|---|---|
-| `blocked`, `needs-input` | the §5 table |
-| `missing` | agent died or was skipped, no result → re-spawn that agent once; still missing → ask the user |
-| `no-verdict` | reviewer or qa returned no PASS/FAIL → treat as `blocked`, with its handoff |
-| `disputed` | every blocking finding of a failing reviewer was refuted: show them and `remaining` (not auto-fixed); the user decides. Accepted → re-run with `acceptDisputed: [finding IDs]` and `startAt: "qa"` (`"review"` if other findings remain) |
-| `unowned`, `unsafe-path` | no fixer was spawned, nothing fixed: findings whose file matches no ticket's `files`, or with an absolute, `..`, `.git/` or `.claude/` path. Show them, ask who owns them; never widen a ticket's `files` or add a ticket without the answer. Re-run with `startAt: "review"` and the updated `groups` |
-
-- **Re-run (build-loop)** — call again with the **full** `groups` (fix routing needs them) and the user's answer verbatim in `context`; resume from `stoppedAt`:
-  - `Build`, round 0 → `startAt: "build"`, `fromGroup` = index (from 0) of the group holding the stopped ticket named in `needsUser`; that group re-runs whole, earlier groups are not rebuilt.
-  - `Build`, round ≥ 1 (a fix stopped) or `Review` → `startAt: "review"`.
-  - `Test` → `startAt: "qa"`. `Docs` → `startAt: "qa"` with no `qaBrief` (the writer runs again).
-  - A re-run restarts the round count.
+Running a step through the Workflow tool and routing its result (`status`, then each `needsUser`): `references/workflow.md`. Write `item` back before anything else.
