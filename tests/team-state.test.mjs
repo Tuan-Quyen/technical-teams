@@ -100,3 +100,18 @@ test('migrate: a 0.32 workspace (STATE.md § QA-Fix state + findings.md) becomes
   assert.match(fs.readFileSync(path.join(team, 'STATE.md'), 'utf8'), /Generated from[\s\S]*\| cart-checkout \| CART \| feature · T1 \|/);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('compact: a file still over the word budget after a cut is not done; a split under budget is', async () => {
+  const body = read('workflows/compact.js').replace(/^export const meta/m, 'const meta');
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  const runCompact = (verdict) => {
+    const agent = async (_p, o) => (o.label.startsWith('rewrite:') ? { status: 'done', files: ['.team/spec.md'], handoff: 'h' } : verdict);
+    const fn = new AsyncFunction('agent', 'parallel', 'pipeline', 'phase', 'log', 'args', body);
+    return fn(agent, (fs) => Promise.all(fs.map((f) => f())), null, () => {}, () => {}, { files: [{ path: '.team/spec.md', owner: 'ba' }] });
+  };
+  const v = (o) => ({ wordsBefore: 5000, wordsAfter: 4500, maxFileWords: 4500, maxLine: 80, revisionHeadings: 0, lost: [], ...o });
+  const over = await runCompact(v());
+  assert.equal(over.status, 'stopped');
+  assert.match(over.results[0].problems.join(' '), /a file of 4500 words \(max 4000\)/);
+  assert.equal((await runCompact(v({ maxFileWords: 3000 }))).status, 'done', 'split parts may total more than the budget');
+});

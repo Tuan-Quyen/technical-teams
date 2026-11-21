@@ -38,4 +38,4 @@ In `specialist-rules` (preloaded into every specialist) and checked by a hook on
 
 ## Compaction
 
-At a milestone close, and to migrate a `.team/` over budget: workflow `technical-team:team-compact` (`${CLAUDE_PLUGIN_ROOT}/workflows/compact.js`), args `{ files: [{ path, owner }] }`. The owner rewrites each file to its current truth; an independent verifier compares it with the git version and the code; code checks words after ≤ before, lines ≤300, no revision headings, ≤3 rounds. Inline: the same three steps by hand.
+At a milestone close, and to migrate a `.team/` over budget: workflow `technical-team:team-compact` (`${CLAUDE_PLUGIN_ROOT}/workflows/compact.js`), args `{ files: [{ path, owner }] }`. The owner rewrites each file to its current truth; an independent verifier compares it with the git version and the code; code checks words after ≤ before, each file ≤4,000 words, lines ≤300, no revision headings, ≤3 rounds. Inline: the same three steps by hand.
