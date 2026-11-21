@@ -2,6 +2,22 @@
 
 Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migration** when they apply. Public names and paths are pinned in `tests/contract.json`.
 
+## 0.35.0 — 2026-11-21 (redesign P4: cleanup, migration, docs)
+
+- **Migration in code:** `node tools/team-state.mjs migrate .team` (dry run; `--write`) moves a 0.31/0.32 workspace — hand-written `STATE.md` with § QA-Fix state and `reports/<slug>/findings.md` — to `.team/items/*.json` (`CART-B3` → `F3`, round, statuses, reopen count); the old files go to `archive/`.
+- Spec rules now ride in `specialist-rules` (every specialist sees them before writing; the hook still checks). The obsolete "count Budget lines" rule is gone.
+- `run-kit` reference `qa-lines.md`: the verbatim brief lines, read only for inline steps (a workflow appends them itself). Lead context for one `feature` run: 4,849 words (v0.31: 9,508).
+- README rewritten for lanes, tiers and the item model.
+- **Removed the eval harness** (`plugins/team/evals/`, `scripts/eval-run.mjs`, `scripts/eval-summary.mjs`, the `eval:*` npm scripts): it cost real tokens per run. The numbers it produced stay in this changelog; `scripts/measure.mjs` (static, no tokens) stays.
+- PLUGIN-REPORT (0.22 Pomodoro) issues: 1, 2, 3, 4, 7, 9, 10, 11, 12 fixed; 5, 6 obsolete (line budgets are checked by hook, no agent counts lines); 8 partly (the Handoff block is enforced by hook, the reply's opening emoji is not).
+
+### Migration guide (0.31 / 0.32 → 0.35)
+
+1. Update the plugin, then in the project: `node <plugin>/tools/team-state.mjs migrate .team` and read the dry run.
+2. `--write` — one item per open STATE.md row; `STATE.md` is regenerated; the old one is `archive/STATE-0.32.md`.
+3. Old ticket/AC IDs (`T-1`, `AC1`): `node <plugin>/tools/migrate-ids.mjs <project>` as before.
+4. A `.team/` spec over 4,000 words: run compaction at the next milestone (`run-kit` `workspace.md` § Compaction).
+
 ## 0.34.0 — 2026-11-21 (redesign P3b: lanes by tier)
 
 - **Lanes by tier** in `feature` and `fix`: T0 (`--small`, the user's flag) developer → code-reviewer; T1 ba or debugger → developer → code-reviewer (∥ security / dba when the diff touches them) → qa, at most 4 spawns; T2 the full pipeline with designer, architect, pm and the qa pre-check. `--tier T0|T1|T2` forces one; the lead may raise a tier, lowering one is noted in the item.

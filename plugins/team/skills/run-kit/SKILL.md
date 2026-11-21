@@ -9,7 +9,8 @@ The core is this file. Read a reference (`${CLAUDE_PLUGIN_ROOT}/skills/run-kit/r
 
 | Reference | Holds | Read it when |
 |---|---|---|
-| `qa-loop.md` (§3 QA) | the verbatim qa and reviewer brief lines, the QA-Fix loop, finding IDs, past the cap | writing a qa, reviewer or fix brief; reading a gate result; a round or approval question |
+| `qa-loop.md` (§3 QA) | the QA-Fix loop, finding IDs, past the cap | reading a gate result; a round or approval question |
+| `qa-lines.md` (§3 QA) | the verbatim qa and reviewer brief lines | writing an inline qa, reviewer or fix brief |
 | `workspace.md` (§4) | every `.team/` file, its owner and template; the item JSON; spec rules; compaction | creating or checking a `.team/` file or the item |
 | `roles.md` (§2) | who owns which quality check: developer, code-reviewer, qa | a gap or a duplicate check between those three |
 | `workflow.md` (§6) | running a step through the Workflow tool, routing every `status` / `needsUser`, re-runs | a command says "workflow run" or "per run-kit §6" |

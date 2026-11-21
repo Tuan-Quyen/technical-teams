@@ -19,7 +19,7 @@ const words = (s) => (s.match(/\S+/g) || []).length;
 const read = (p) => readFileSync(p, 'utf8');
 
 function pluginMetrics() {
-  const files = walk(plugin).filter((p) => !p.includes(`${join('evals', '')}`));
+  const files = walk(plugin);
   const md = files.filter((p) => extname(p) === '.md');
   const js = files.filter((p) => ['.js', '.mjs'].includes(extname(p)));
   const byDir = {};
@@ -40,10 +40,11 @@ function pluginMetrics() {
   const counts = rules.reduce((m, r) => m.set(r, (m.get(r) || 0) + 1), new Map());
   const dupRules = [...counts].reduce((n, [r, k]) => n + (k - 1) * words(r), 0);
   // Context the lead loads for one `feature` run (lead + run-kit + command + its references)
-  const leadCtx = ['agents/team-lead.md', 'skills/run-kit/SKILL.md', 'commands/feature.md',
-    'skills/run-kit/references/workflow.md', 'skills/run-kit/references/qa-loop.md',
-    'skills/run-kit/references/workspace.md']
+  // A run takes one path: through the Workflow tool (workflow.md) or inline (qa-lines.md); report the larger.
+  const ctx = (refs) => ['agents/team-lead.md', 'skills/run-kit/SKILL.md', 'commands/feature.md',
+    'skills/run-kit/references/qa-loop.md', 'skills/run-kit/references/workspace.md', ...refs]
     .map((r) => join(plugin, r)).filter(existsSync).reduce((n, p) => n + words(read(p)), 0);
+  const leadCtx = Math.max(ctx(['skills/run-kit/references/workflow.md']), ctx(['skills/run-kit/references/qa-lines.md']));
   return {
     proseWords: md.reduce((n, p) => n + words(read(p)), 0),
     jsLines: js.reduce((n, p) => n + read(p).split('\n').length, 0),

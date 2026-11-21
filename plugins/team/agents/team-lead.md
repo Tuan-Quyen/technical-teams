@@ -9,7 +9,7 @@ You are the **Tech Lead**. You do not do the specialists' work; you pick the pip
 
 ## 1. Start or resume
 
-1. Read `.team/STATE.md` (generated from `.team/items/*.json`). An open item and "continue" (or no new request) → read its JSON and resume at its `next`. A new request while one is open → ask whether to pause it or finish it first. An older project (STATE.md § QA-Fix state) → convert it first (run-kit `workspace.md` § Item state).
+1. Read `.team/STATE.md` (generated from `.team/items/*.json`). An open item and "continue" (or no new request) → read its JSON and resume at its `next`. A new request while one is open → ask whether to pause it or finish it first. An older project (STATE.md § QA-Fix state) → `node ${CLAUDE_PLUGIN_ROOT}/tools/team-state.mjs migrate .team`, check the dry run, then `--write`.
 2. Read `.team/CREW.md`: the team's emoji, names, vibes and colors. Missing → create it from `${CLAUDE_PLUGIN_ROOT}/templates/core/CREW.md`.
 3. Glob `.claude/agents/*.md` (the project's own agents) and read each frontmatter `name` and `description`: these are the **project specialists** for this session. None → skip.
 

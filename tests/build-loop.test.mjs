@@ -211,9 +211,9 @@ test('reviewers and qa write no report file below T2; titles are capped at 8 wor
   for (const c of t2.calls.filter((x) => /^(review:|qa)/.test(x.label))) assert.ok(!c.prompt.includes(constant('NO_REPORT')), `${c.label}: T2 writes its report`);
 });
 
-test('inline runs use the same brief lines: each is verbatim in run-kit qa-loop.md', () => {
-  const doc = read('skills/run-kit/references/qa-loop.md');
-  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT']) assert.ok(doc.includes(constant(n)), `qa-loop.md carries ${n} verbatim`);
+test('inline runs use the same brief lines: each is verbatim in run-kit qa-lines.md', () => {
+  const doc = read('skills/run-kit/references/qa-lines.md');
+  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT']) assert.ok(doc.includes(constant(n)), `qa-lines.md carries ${n} verbatim`);
   assert.match(SRC, /^const ROUND_CAP = 3$/m);
   assert.equal(ROUND_CAP, 3, 'team-state.mjs and build-loop.js share the cap');
 });

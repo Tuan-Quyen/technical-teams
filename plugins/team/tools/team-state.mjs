@@ -5,8 +5,9 @@
 //   node tools/team-state.mjs check <item.json>       → exit 1 with the errors
 //   node tools/team-state.mjs render [<.team dir>]    → rewrite STATE.md from items/*.json
 //   node tools/team-state.mjs words <file...>         → word count, longest line, revision headings
+//   node tools/team-state.mjs migrate [<.team dir>] [--write] → move a 0.31/0.32 STATE.md + findings.md to items/ (dry run by default)
 // The workflows embed the same limits (they cannot import); tests/team-state.test.mjs keeps them in step.
-import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync, renameSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -128,6 +129,76 @@ export function stats(text) {
   return { words: words(text), maxLine: Math.max(0, ...lines.map((l) => l.length)), revisionHeadings: lines.filter((l) => /^#{1,6}\s.*\b(revision|revised|round\s*\d+)\b/i.test(l)).length };
 }
 
+// ---- one-time move of a 0.31/0.32 workspace (hand-written STATE.md + reports/<slug>/findings.md) to items/ ----
+const tables = (md) => {
+  const out = [];
+  let cur = null;
+  for (const l of String(md).replace(/\r\n/g, '\n').split('\n')) {
+    if (!/^\s*\|/.test(l)) { cur = null; continue; }
+    const cells = l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+    if (cells.every((c) => /^:?-+:?$/.test(c))) continue;
+    if (!cur) { cur = { head: cells.map((c) => c.toLowerCase()), rows: [] }; out.push(cur); } else cur.rows.push(Object.fromEntries(cur.head.map((h, i) => [h, cells[i] ?? ''])));
+  }
+  return out;
+};
+const cut = (s, n) => String(s || '').replace(/`/g, '').trim().split(/\s+/).filter(Boolean).slice(0, n).join(' ');
+const OLD_BY = { QA: 'qa', CODE_REVIEW: 'code-reviewer', SECURITY: 'security', DBA: 'dba' };
+const OLD_STATUS = { OPEN: 'open', IN_PROGRESS: 'open', FIXED_PENDING_RETEST: 'fixed', VERIFIED: 'verified', REOPENED: 'reopened', DEFERRED: 'deferred', REJECTED: 'rejected' };
+
+export function migrateTeam(teamDir, { write = false } = {}) {
+  const statePath = join(teamDir, 'STATE.md');
+  if (!existsSync(statePath)) return { items: [], notes: ['no STATE.md'] };
+  const md = readFileSync(statePath, 'utf8');
+  const ts = tables(md);
+  const active = ts.find((t) => t.head.includes('slug') && t.head.includes('next step'));
+  const qafix = ts.find((t) => t.head.includes('slug') && t.head.includes('fix rounds'));
+  const slugs = [...new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.slug).filter((s) => SLUG_RE.test(s || '')))];
+  const items = [];
+  const notes = [];
+  for (const slug of slugs) {
+    const a = active?.rows.find((r) => r.slug === slug) || {};
+    const q = qafix?.rows.find((r) => r.slug === slug) || {};
+    const fPath = join(teamDir, 'reports', slug, 'findings.md');
+    let tracker = [];
+    if (existsSync(fPath)) {
+      const m = readFileSync(fPath, 'utf8').match(/```json\s*\n([\s\S]*?)\n```/);
+      try { tracker = m ? JSON.parse(m[1]) : []; } catch { notes.push(`${slug}: findings.md tracker JSON unreadable; findings not moved`); }
+    }
+    const findings = tracker.map((e) => {
+      const blocking = e.leadBlocking === false ? false : !!(e.blocking || e.leadBlocking === true);
+      const reopened = (e.history || []).filter((h) => h.event === 'reopened').length;
+      return { id: `F${Number(String(e.id).split('-B')[1]) || 0}`, title: cut(e.title, LIMITS.titleWords).slice(0, LIMITS.title) || 'Migrated finding',
+        by: OLD_BY[e.origin] || 'qa', severity: SEVERITIES.includes(e.severity) ? e.severity : e.severity === 'trivial' ? 'minor' : 'major', blocking,
+        status: OLD_STATUS[e.status] || 'open', test: cut(e.test || e.evidence, 25) || `re-check ${e.sourceId || e.id}`, file: e.file || '', reopened, detail: cut(`was ${e.id}${e.requirement ? ` · ${e.requirement}` : ''}`, LIMITS.detail) };
+    }).filter((f) => f.id !== 'F0');
+    const pipeline = PIPELINES.includes((a.pipeline || '').toLowerCase()) ? a.pipeline.toLowerCase() : 'direct';
+    const status = ITEM_STATUSES.includes((a.status || '').toLowerCase()) ? a.status.toLowerCase() : 'paused';
+    const item = {
+      v: 1, slug, key: KEY_RE.test(a.key || q.key || '') ? (a.key || q.key) : slug.replace(/[^a-z0-9]/g, '').slice(0, 6).toUpperCase().replace(/^[0-9]/, 'X').padEnd(2, 'X'),
+      title: cut(slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()), LIMITS.titleWords).slice(0, LIMITS.title),
+      pipeline, tier: pipeline === 'new' ? 'T2' : 'T1', step: cut(a.step, 6).slice(0, 40) || 'resume', status,
+      next: cut(a['next step'], LIMITS.next) || 'Resume from the migrated state', round: Number.parseInt(q['fix rounds'], 10) || 0,
+      workflows: /^yes/i.test(a.workflows || '') ? true : /^no/i.test(a.workflows || '') ? false : undefined,
+      findings, notes: [`migrated from 0.32 STATE.md${existsSync(fPath) ? ' and findings.md' : ''}`],
+    };
+    if (item.workflows === undefined) delete item.workflows;
+    const errs = validateItem(item);
+    if (errs.length) { notes.push(`${slug}: not migrated: ${errs.join('; ')}`); continue; }
+    items.push(item);
+    if (write) {
+      mkdirSync(join(teamDir, 'items'), { recursive: true });
+      writeFileSync(join(teamDir, 'items', `${slug}.json`), `${JSON.stringify(item, null, 2)}\n`);
+      if (existsSync(fPath)) { mkdirSync(join(teamDir, 'archive', slug), { recursive: true }); renameSync(fPath, join(teamDir, 'archive', slug, 'findings-0.32.md')); }
+    }
+  }
+  if (write && items.length) {
+    mkdirSync(join(teamDir, 'archive'), { recursive: true });
+    writeFileSync(join(teamDir, 'archive', 'STATE-0.32.md'), md);
+    renderTeam(teamDir);
+  }
+  return { items, notes };
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const [cmd, ...rest] = process.argv.slice(2);
   if (cmd === 'check') {
@@ -141,10 +212,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     process.exit(bad ? 1 : 0);
   } else if (cmd === 'render') {
     renderTeam(rest[0] || '.team');
+  } else if (cmd === 'migrate') {
+    const r = migrateTeam(rest.find((x) => !x.startsWith('--')) || '.team', { write: rest.includes('--write') });
+    console.log(JSON.stringify({ wrote: rest.includes('--write'), items: r.items.map((i) => ({ slug: i.slug, round: i.round, findings: i.findings.length })), notes: r.notes }, null, 2));
   } else if (cmd === 'words') {
     for (const f of rest) console.log(JSON.stringify({ file: f, ...stats(readFileSync(f, 'utf8')) }));
   } else {
-    console.error('usage: team-state.mjs check <item.json...> | render [<.team dir>] | words <file...>');
+    console.error('usage: team-state.mjs check <item.json...> | render [<.team dir>] | words <file...> | migrate [<.team dir>] [--write]');
     process.exit(2);
   }
 }

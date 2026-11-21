@@ -1,5 +1,5 @@
 // Tests for plugins/team/hooks: hooks.json wiring and guard.mjs decisions.
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -78,8 +78,11 @@ test('subagent-stop reads the subagent transcript when last_assistant_message is
 });
 
 // ---- .team/ writes ----
+const made = [];
+after(() => { for (const d of made) fs.rmSync(d, { recursive: true, force: true }); });
 const tmpTeam = () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-hook-'));
+  made.push(dir);
   fs.mkdirSync(path.join(dir, '.team', 'items'), { recursive: true });
   return dir;
 };
@@ -103,6 +106,7 @@ test('pre-write: specialists never write item state; nobody hand-writes a genera
   assert.equal(run('pre-write', { agent_type: dev, tool_input: { file_path: `${dir}/src/cart.js` } }), null);
   assert.equal(run('pre-write', { agent_type: 'technical-team:team-qa', tool_input: { file_path: `${dir}/.team/reports/x/qa.md` } }), null);
   const legacy = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-hook-'));
+  made.push(legacy);
   assert.equal(run('pre-write', { tool_input: { file_path: `${legacy}/.team/STATE.md` } }), null, 'a project without items/ keeps its hand-written STATE.md');
 });
 

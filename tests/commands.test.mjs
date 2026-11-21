@@ -137,7 +137,7 @@ test('run-kit covers roster, pipelines, brief, workspace and handoff only', () =
   assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
   // The core stays short; detail lives in references the core names, each read only when its step comes up.
   const refs = fs.readdirSync(path.join(ROOT, 'skills/run-kit/references')).sort();
-  assert.deepEqual(refs, ['qa-loop.md', 'roles.md', 'workflow.md', 'workspace.md']);
+  assert.deepEqual(refs, ['qa-lines.md', 'qa-loop.md', 'roles.md', 'workflow.md', 'workspace.md']);
   for (const r of refs) assert.match(kit, new RegExp(`\\| \`${r.replace('.', '\\.')}\` \\(§`), `run-kit's map names ${r}`);
 });
 

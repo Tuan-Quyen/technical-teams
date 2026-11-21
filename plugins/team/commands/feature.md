@@ -22,10 +22,10 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
 | 2. Design — `technical-team:team-designer` → `.team/frontend-design/<slug>.md` | — | only a changed screen | user-facing UI |
 | 3. System design — `technical-team:team-architect` → `.team/system-design/<slug>.md` (+ `technical-team:team-dba` for schema); show a summary, wait for OK | — | — | ✓ |
 | 4. Tickets — `technical-team:team-pm` → `.team/TASKS.md` | no pm: you write one ticket into `groups` | no pm, no TASKS.md: you write one ticket into `groups` from the ACs and the files they touch | ✓ |
-| 5. QA pre-check — `technical-team:team-qa` (qa-loop pre-check line) | — | — | ✓ |
+| 5. QA pre-check — `technical-team:team-qa` (qa-lines pre-check line) | — | — | ✓ |
 | 6. Build — `technical-team:team-developer` per ticket (migrations → `technical-team:team-dba`) | ✓ | ✓ | ✓ |
 | 7. Review — `technical-team:team-code-reviewer`; ∥ `technical-team:team-security` when the diff touches auth, user input, secrets, payments or personal data; ∥ `technical-team:team-dba` when it touches schema or queries | code-reviewer | ✓ | ✓ |
-| 8. Test — `technical-team:team-qa` (qa-loop execution line, then retest) | — (you re-run the test suite yourself) | ✓ | ✓ |
+| 8. Test — `technical-team:team-qa` (qa-lines execution line, then retest) | — (you re-run the test suite yourself) | ✓ | ✓ |
 | 9. Docs — `technical-team:team-writer` if usage, API or operations changed | — | if needed | if needed |
 
 With `--small`: exactly one ticket (one developer, `groups: [[one item]]`), no parallel groups, no ticket split by the lead. Blocking findings from step 7 or 8 → step 6 as one batch, then review and retest (run-kit `qa-loop.md`); unclear cause → `technical-team:team-debugger`.

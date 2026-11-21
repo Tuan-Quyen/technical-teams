@@ -64,3 +64,36 @@ test('workflows embed the same cap, statuses and limits as team-state.mjs', () =
   const c = read('workflows/compact.js');
   assert.ok(c.includes(`\nconst MAX_LINE = ${ts.LIMITS.line}\n`) && c.includes(`\nconst MAX_WORDS = ${ts.LIMITS.specWords}\n`), 'compact limits');
 });
+
+test('migrate: a 0.32 workspace (STATE.md § QA-Fix state + findings.md) becomes valid items, dry run first', async () => {
+  const os = await import('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-mig-'));
+  const team = path.join(dir, '.team');
+  fs.mkdirSync(path.join(team, 'reports', 'cart-checkout'), { recursive: true });
+  fs.writeFileSync(path.join(team, 'STATE.md'), [
+    '# Team state', '', '## Active work', '',
+    '| Slug | Key | Pipeline | Step | Agent | Ticket | Files in use | Status | Workflows | Next step |',
+    '|---|---|---|---|---|---|---|---|---|---|',
+    '| cart-checkout | CART | feature | 8 — test | team-qa | CART-T2 | src/cart.js | running | yes | Retest CART-B2 after the fix |',
+    '', '## QA-Fix state', '', '| Slug | Key | Fix rounds | Last bug no. | Review fixes |', '|---|---|---|---|---|', '| cart-checkout | CART | 2 | 2 | 0 |', '',
+  ].join('\n'));
+  const tracker = [
+    { id: 'CART-B1', origin: 'CODE_REVIEW', sourceId: 'CART-R1', status: 'VERIFIED', severity: 'major', blocking: true, title: 'Negative quantity accepted by addItem', file: 'src/cart.js', line: 4, history: [] },
+    { id: 'CART-B2', origin: 'QA', sourceId: 'CART-Q1', status: 'FIXED_PENDING_RETEST', severity: 'critical', blocking: false, leadBlocking: true, title: 'Total wrong at full discount for every cart in the store', file: 'src/cart.js', line: 11, evidence: 'node --test test/cart.test.js', history: [{ round: 1, event: 'reopened' }] },
+  ];
+  fs.writeFileSync(path.join(team, 'reports', 'cart-checkout', 'findings.md'), `# findings\n\n## Tracker data\n\n\`\`\`json\n${JSON.stringify(tracker, null, 2)}\n\`\`\`\n`);
+  const dry = ts.migrateTeam(team);
+  assert.equal(dry.items.length, 1);
+  assert.equal(fs.existsSync(path.join(team, 'items')), false, 'dry run writes nothing');
+  const it = dry.items[0];
+  assert.deepEqual([it.key, it.pipeline, it.round, it.workflows, it.status], ['CART', 'feature', 2, true, 'running']);
+  assert.deepEqual(it.findings.map((f) => [f.id, f.by, f.status, f.blocking]), [['F1', 'code-reviewer', 'verified', true], ['F2', 'qa', 'fixed', true]]);
+  assert.equal(it.findings[1].reopened, 1);
+  assert.ok(it.findings[1].title.split(' ').length <= 8);
+  ts.migrateTeam(team, { write: true });
+  assert.deepEqual(ts.validateItem(JSON.parse(fs.readFileSync(path.join(team, 'items', 'cart-checkout.json'), 'utf8')), path.join(team, 'items', 'cart-checkout.json')), []);
+  assert.ok(fs.existsSync(path.join(team, 'archive', 'cart-checkout', 'findings-0.32.md')), 'findings.md archived');
+  assert.ok(fs.existsSync(path.join(team, 'archive', 'STATE-0.32.md')), 'old STATE.md kept in the archive');
+  assert.match(fs.readFileSync(path.join(team, 'STATE.md'), 'utf8'), /Generated from[\s\S]*\| cart-checkout \| CART \| feature · T1 \|/);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

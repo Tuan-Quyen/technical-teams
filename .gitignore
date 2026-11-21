@@ -5,9 +5,3 @@ node_modules/
 *.log
 .team/
 docs/
-# plugin eval run output
-plugins/team/evals/results/
-# eval-run.mjs output (numbers are summarised in CHANGELOG.md); cases, fixtures and spike stay tracked
-plugins/team/evals/baseline/
-plugins/team/evals/p2/
-plugins/team/evals/ab*/

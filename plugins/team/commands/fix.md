@@ -14,10 +14,10 @@ You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 �
 
 1. **Root cause** — `technical-team:team-debugger` with the full symptom (error text, stack trace, failing command, environment). If the user only asked for the cause, stop here and report.
 2. **Confirm** — several fix options, or risk to shared code, data or security → show the user and wait.
-3. **QA pre-check (T2 only)** — `technical-team:team-qa` with the root cause and the qa-loop pre-check line: the regression test, failing on the unfixed code.
+3. **QA pre-check (T2 only)** — `technical-team:team-qa` with the root cause and the qa-lines pre-check line: the regression test, failing on the unfixed code.
 4. **Fix** — `technical-team:team-developer` with the root cause (`technical-team:team-dba` for data fixes): first the regression test, failing; then the fix; Evidence shows it failing before and passing after.
 5. **Review** — `technical-team:team-code-reviewer`; ∥ `technical-team:team-security` if the bug is security-related. Blocking findings → step 4.
-6. **Verify** — `technical-team:team-qa` with the qa-loop execution line: the regression test, the related suite, the area around the fix. Blocking findings → step 4 as one batch (run-kit `qa-loop.md`).
+6. **Verify** — `technical-team:team-qa` with the qa-lines execution line: the regression test, the related suite, the area around the fix. Blocking findings → step 4 as one batch (run-kit `qa-loop.md`).
 
 **Fix loop (steps 3–6)** — step 2 stays inline. **Workflow opt-in** — the Workflow tool is available (also if deferred) AND the user typed a slash command of this plugin for this item (this command, or `/technical-team:run`, which hands the chosen pipeline to the lead) → run the workflow. Otherwise (no tool, or the lead was started without a slash command) → run the steps inline below. Workflow run: call Workflow with `name: 'technical-team:team-build-loop'` (`${CLAUDE_PLUGIN_ROOT}/workflows/build-loop.js`) and `args` = `{item, groups: [[{ticket: "fix", role: "developer", brief: <step 4 brief with the root cause>, files: <the files the root cause names>}]], reviewBriefs: {"code-reviewer": …, "security": …(only if security-related)}, qaPlanBrief: <step 3 brief (T2)>, qaBrief: <step 6 brief>}` (keys as `${CLAUDE_PLUGIN_ROOT}/commands/feature.md` lists them). Write `item` back first, then route per run-kit §6.
 
