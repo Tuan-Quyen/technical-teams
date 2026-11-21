@@ -13,11 +13,11 @@ Run of `/technical-team:new` on the brief in `BRIEF.md`, branch `example-pomodor
 
 ## Rounds
 
-| Gate        | Rounds                                     | Result                                                                               |
-| ----------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Code review | 3 (one per milestone)                      | PASS ×3; 16 non-blocking findings, all fixed after each PASS and verified next round |
-| Security    | 2 (POMO-M2, POMO-M3)                                 | PASS ×2; POMO-S1..POMO-S4 fixed, POMO-S5 deploy advice in README                              |
-| QA          | 3 + 1 retest                               | PASS, PASS, FAIL (POMO-Q1: README not Prettier-clean) → PASS on retest                  |
+| Gate        | Rounds                                               | Result                                                                               |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Code review | 3 (one per milestone)                                | PASS ×3; 16 non-blocking findings, all fixed after each PASS and verified next round |
+| Security    | 2 (POMO-M2, POMO-M3)                                 | PASS ×2; POMO-S1..POMO-S4 fixed, POMO-S5 deploy advice in README                     |
+| QA          | 3 + 1 retest                                         | PASS, PASS, FAIL (POMO-Q1: README not Prettier-clean) → PASS on retest               |
 | User gates  | ba questions ×2, stack, milestones, POMO-M1, POMO-M2 | all answered; 13 user decisions recorded in requirements / ADR                       |
 
 ## Did each agent stay in its role?
