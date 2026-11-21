@@ -6,8 +6,7 @@
   "repository": "https://github.com/Tuan-Quyen/technical-teams",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "validate": "claude plugin validate plugins/team --strict && claude plugin validate .claude-plugin/marketplace.json --strict",
-    "measure": "node scripts/measure.mjs"
+    "validate": "claude plugin validate plugins/team --strict && claude plugin validate .claude-plugin/marketplace.json --strict"
   },
   "engines": {
     "node": ">=21"

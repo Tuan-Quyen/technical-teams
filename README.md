@@ -228,16 +228,13 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |
 | `tests/commands.test.mjs` | bộ lệnh/agent/skill, file được nhắc tới tồn tại, layout `.team/`, README, manifest, `claude plugin validate --strict` |
 
-`node scripts/measure.mjs` đo prose tĩnh của plugin và `.team/` của một project (`--team <dir>`), không tốn token.
-
 Thêm, đổi tên hoặc xóa command/agent/skill/template → cập nhật bảng ở trên và danh sách trong `tests/commands.test.mjs`.
 
 ```
 technical-team/
 ├── .claude-plugin/marketplace.json
-├── package.json         npm test · npm run validate · measure
+├── package.json         npm test · npm run validate
 ├── CHANGELOG.md
-├── scripts/             measure
 ├── tests/               test + validate cho plugin
 ├── LICENSE
 ├── README.md

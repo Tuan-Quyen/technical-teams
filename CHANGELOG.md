@@ -8,7 +8,7 @@ Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migratio
 - Spec rules now ride in `specialist-rules` (every specialist sees them before writing; the hook still checks). The obsolete "count Budget lines" rule is gone.
 - `run-kit` reference `qa-lines.md`: the verbatim brief lines, read only for inline steps (a workflow appends them itself). Lead context for one `feature` run: 4,849 words (v0.31: 9,508).
 - README rewritten for lanes, tiers and the item model.
-- **Removed the eval harness** (`plugins/team/evals/`, `scripts/eval-run.mjs`, `scripts/eval-summary.mjs`, the `eval:*` npm scripts): it cost real tokens per run. The numbers it produced stay in this changelog; `scripts/measure.mjs` (static, no tokens) stays.
+- **Removed the eval harness** (`plugins/team/evals/`, `scripts/eval-run.mjs`, `scripts/eval-summary.mjs`, the `eval:*` npm scripts): it cost real tokens per run. The numbers it produced stay in this changelog. `scripts/measure.mjs` (redesign-only static metrics) is removed too.
 - PLUGIN-REPORT (0.22 Pomodoro) issues: 1, 2, 3, 4, 7, 9, 10, 11, 12 fixed; 5, 6 obsolete (line budgets are checked by hook, no agent counts lines); 8 partly (the Handoff block is enforced by hook, the reply's opening emoji is not).
 
 ### Migration guide (0.31 / 0.32 → 0.35)
