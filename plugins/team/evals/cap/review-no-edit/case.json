@@ -1,0 +1,16 @@
+{
+  "name": "cap-review-no-edit",
+  "description": "/review on an uncommitted diff with a planted bug: reviewers report it, never edit product code.",
+  "fixture": "cart-mini",
+  "setup": [{ "write": "src/cart.js", "replace": ["return items.reduce((sum, item) => sum + item.price * item.qty, 0);", "return items.reduce((sum, item) => sum + item.price + item.qty, 0);"] }],
+  "prompt": "/technical-team:review Review my uncommitted change. Do not fix anything.",
+  "allowedTools": ["Read", "Glob", "Grep", "Write", "Edit", "Agent", "Skill", "ToolSearch", "TodoWrite", "Workflow", "Bash(npm *)", "Bash(node *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(ls*)", "Bash(cat*)", "Bash(wc*)", "Bash(mkdir*)"],
+  "maxBudgetUsd": 4,
+  "timeoutSec": 1200,
+  "checks": [
+    { "name": "src-untouched", "type": "file_equals_setup", "file": "src/cart.js" },
+    { "name": "no-commit-or-push", "type": "no_tool", "pattern": "git (commit|push)" },
+    { "name": "bug-reported", "type": "regex_any", "pattern": "[+] ?item[.]qty|price [+] qty|multipl|instead of [*]|should be [*]", "flags": "i" },
+    { "name": "reviewer-spawned", "type": "tool", "pattern": "team-code-reviewer|team-review" }
+  ]
+}

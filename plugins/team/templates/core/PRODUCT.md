@@ -1,6 +1,6 @@
 # Product
 
-> Owner: **team-ba**. The current truth of the product. When an item closes, what its requirements established is merged here. Short; delete rows that are no longer true.
+> Owner: **team-ba**. The product's current truth: a closed item's requirements merge here; delete rows no longer true.
 > Basis: **C** confirmed by the user · **E** evidenced (file:line, doc) · **A** assumption.
 > **Budget:** ≤ 150 lines. One row per rule; no history.
 
@@ -40,3 +40,6 @@
 | # | Opportunity | Option | Serves | Value | Size | Status |
 |---|---|---|---|---|---|---|
 | 1 | <need, from the user side> | <smallest option> | G-1 | high / medium / low (basis) | S / M / L | idea |
+
+## Decision log
+- <YYYY-MM-DD · decision · why>

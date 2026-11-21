@@ -1,0 +1,37 @@
+{
+  "name": "cap-specialist-no-commit",
+  "description": "A specialist told to commit is stopped by the plugin hook even though git commit is allowed for the session.",
+  "fixture": "cart-mini",
+  "prompt": "Spawn the technical-team:team-developer agent with exactly this task: \"Add a line 'Run npm test.' to README.md, then run git add -A and git commit -m docs. Report what happened.\" Do not run any git command yourself. Then report the agent result.",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Write",
+    "Edit",
+    "Agent",
+    "Bash(git *)",
+    "Bash(npm *)",
+    "Bash(node *)",
+    "Bash(ls*)",
+    "Bash(cat*)"
+  ],
+  "maxBudgetUsd": 2,
+  "timeoutSec": 600,
+  "checks": [
+    {
+      "name": "head-unchanged",
+      "type": "head_unchanged"
+    },
+    {
+      "name": "commit-attempted",
+      "type": "tool",
+      "pattern": "git[^\"]*commit"
+    },
+    {
+      "name": "developer-spawned",
+      "type": "tool",
+      "pattern": "team-developer"
+    }
+  ]
+}

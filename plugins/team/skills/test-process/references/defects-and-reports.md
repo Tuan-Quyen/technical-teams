@@ -1,29 +1,19 @@
 # Defects, retest, regression and the test summary
 
-## Defect report (in `.team/reports/<slug>/qa.md` → Defects, and in the handoff)
+## A finding (one entry in `.team/items/<slug>.json`, via the structured output)
 
+```json
+{ "id": "", "result": "new", "title": "Double tap creates two projects", "severity": "major", "blocking": true,
+  "test": "e2e/projects.spec.ts::create is idempotent on double tap", "ac": "CART-AC1", "file": "src/screens/NewProject.tsx",
+  "detail": "Create stays enabled while saving; two POST /api/projects 201. Expected disabled 'Creating…' (design state pending)." }
 ```
-#### CART-Q3 — Create button stays enabled while saving; double click creates two projects
-- Severity: major · Priority: P1 · Type: functional | ui-ux | a11y | compatibility | performance | reliability | data | security-suspect
-- Status: new · Scope: in-scope (introduced by W-012) | in-scope (breaks CART-AC1 / designed state) | pre-existing
-- Found in: round 2 · build/commit <short sha or "working tree"> · Android emulator Pixel 6 API 34 (release build)
-- Source: CART-AC1 · frontend design state "pending" · heuristic H1 (if UX)
-- User impact: a user who taps twice gets duplicate projects and has to delete one by hand
-- Steps:
-  1. Open Projects → New project
-  2. Type "Alpha"
-  3. Double-tap "Create" quickly
-- Expected: button shows "Creating…" and is disabled; one project created (frontend design state matrix, CART-AC1)
-- Actual: two "Alpha" rows; no pending state
-- Evidence: test-results/w-012-create-double.png · e2e/preview/w-012.yaml step 6 · backend log 2× POST /api/projects 201
-- Frequency: 5/5
-- Suspected owner: developer (src/screens/NewProject.tsx submit handler)
-```
+
+The failing test (or a one-line repro command) is the evidence; steps, screenshots and logs go in the Handoff, never a `.team/` file. A known finding is returned with its `id` (`F3`) and `result` verified or failing.
 
 | Rule | |
 |---|---|
-| One defect per report | split unrelated symptoms |
-| Reproducible | minimal steps from a known state, with test data named (seeded user, not real data) |
+| One defect per finding | split unrelated symptoms; title ≤ 8 words, verb + object |
+| Reproducible | a failing test or minimal repro from a known state, with test data named (seeded, never real data) |
 | Expected from a source | AC, frontend design, docs, platform convention, heuristic — cite it |
 | Impact for major+ | one sentence of concrete user impact; without source + impact the severity is at most minor (test-process §2a) |
 | Scope | in-scope or pre-existing (test-process §2a); pre-existing never blocks a PASS |
@@ -49,37 +39,30 @@
 
 Default: blocker/critical → P0, major → P1, minor → P2, trivial → P3. Raise priority for high exposure (first screen, most-used flow, release-critical); say why when you deviate.
 
-## Defect lifecycle
+## Finding lifecycle (the item's `status`)
 
 ```mermaid
 stateDiagram-v2
-  [*] --> new: qa logs
-  new --> open: routed to owner
-  new --> moved: pre-existing → new work item (ID recorded)
-  new --> rejected: not a defect (works as specified) — qa records the reason
-  new --> design_question: needs designer / ba decision
-  design_question --> open: decided "fix"
-  design_question --> closed: decided "accept" (record who and why)
-  open --> fixed: developer hands off
-  fixed --> retest: next qa round
-  retest --> closed: original steps pass + regression around it green
-  retest --> reopened: still fails or fix broke something
+  [*] --> open: a gate returns it (pre-existing → a new work item instead)
+  open --> fixed: developer's fix batch, its test green
+  fixed --> verified: the gate's retest passes + regression green
+  fixed --> reopened: retest still fails or the fix broke something
   reopened --> fixed
-  open --> deferred: user defers (minor/trivial only, reason + work item)
+  open --> deferred: lead, on the user's word (minor, or past the cap)
+  open --> rejected: lead, on the user's word (not a defect)
 ```
 
-Only qa moves a defect to `closed` or `reopened`, and only after retesting. An **in-scope blocking** finding (`SKILL.md` § Severity and blocking) can never be `deferred` while the work item gets a PASS; a known defect keeps its ID across rounds (`reopened`, never a new ID); a **pre-existing** one goes to a new work item (`new → moved`, with its ID).
+Only the gate that raised a finding moves it to `verified` or `reopened`, and only after a retest. An in-scope blocking finding is never `deferred` silently: the user's words go in the item's `decisions`. A known defect keeps its ID (`reopened`, never a new one); reopened twice → the loop stalls for the user. A spec question is a blocking finding with test `spec: <what conflicts>`, routed to ba, designer or architect.
 
-## Retest and regression per round
+## Retest and regression
 
 | Step | Do |
 |---|---|
-| Retest | every defect in `fixed`: run its original steps and its automated test |
+| Retest | every listed finding in `fixed`: run its test |
 | Regression | the area around each fix (same screen/module, callers, shared components), plus the relevant suite; full suite before PASS and at `release` |
-| New defects | log with the round number; a defect introduced by a fix is linked to the defect it came from |
-| Trend | per round: **open in-scope blocker/critical/major** (the number the main session tracks for progress), newly found, closed, reopened, pre-existing found — a rising reopen count is reported to the main session (escalation signal) |
+| New findings | only a regression a fix caused; name the finding it came from in `detail` |
 
-## Test summary report (completion, attached to PASS / at `release`)
+## Test summary (T2 `qa.md` and `release`; below T2 the Handoff, a few lines)
 
 | Section | Content |
 |---|---|

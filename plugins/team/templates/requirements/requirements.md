@@ -2,10 +2,10 @@
 
 Status: draft | confirmed
 
-> **Budget:** ≤ 150 lines per item. ACs as table rows with concrete values; answered questions move into ACs or facts, then leave **Open questions**.
+> **Budget:** ≤ 150 lines per item. ACs with concrete values; answered questions become ACs or facts and leave **Open questions**. Change → rewrite the section.
 
 ## Goal
-<whose problem, what is better afterwards>
+<whose problem; what improves>
 
 ## Out of scope
 - <item>
@@ -24,10 +24,10 @@ Status: draft | confirmed
 | CART-E1 | <case> | <behaviour> |
 
 ## As-is and impact
-<!-- Change to an existing system only (business-analysis contexts.md §2); otherwise "none". qa builds regression scope from it. -->
+<!-- Existing system only (business-analysis contexts.md §2), else "none". -->
 | Area | Today (file:line) | Change | Regression risk |
 |---|---|---|---|
-| <flows / roles / data / integrations / rules / operations> | <what happens now> | <what is different> | <what must not change> |
+| <flows / roles / data / rules> | <what happens now> | <what is different> | <what must not change> |
 
 ## Facts and assumptions
 | Fact | Basis (C / E / A) | Source |
@@ -38,3 +38,6 @@ Status: draft | confirmed
 | # | Question | Options → consequence | Default |
 |---|---|---|---|
 | Q1 | <question> | A → …, B → … | <recommended> |
+
+## Decision log
+- <YYYY-MM-DD · decision · why>

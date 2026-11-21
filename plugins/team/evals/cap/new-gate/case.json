@@ -1,0 +1,46 @@
+{
+  "name": "cap-new-gate",
+  "description": "/new on a vague idea, with write access: requirements questions reach the user; no build agents in the same run. (v0.31 lead asks the scoping questions itself before spawning ba; both are fine.)",
+  "fixture": "cart-mini",
+  "prompt": "/technical-team:new A separate small app for my team to track who is on call.",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Write",
+    "Edit",
+    "Agent",
+    "Skill",
+    "ToolSearch",
+    "TodoWrite",
+    "Workflow",
+    "Bash(npm *)",
+    "Bash(node *)",
+    "Bash(git status*)",
+    "Bash(git diff*)",
+    "Bash(git log*)",
+    "Bash(ls*)",
+    "Bash(cat*)",
+    "Bash(wc*)",
+    "Bash(mkdir*)"
+  ],
+  "maxBudgetUsd": 4,
+  "timeoutSec": 1200,
+  "checks": [
+    {
+      "name": "no-build-agents",
+      "type": "no_tool",
+      "pattern": "team-(developer|devops)"
+    },
+    {
+      "name": "asks-requirements",
+      "type": "final_regex",
+      "pattern": "[?]",
+      "flags": ""
+    },
+    {
+      "name": "head-unchanged",
+      "type": "head_unchanged"
+    }
+  ]
+}

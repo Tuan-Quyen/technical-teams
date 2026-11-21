@@ -2,7 +2,7 @@
 
 Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
-- **Tech lead (`team-lead`)**: orchestrator — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ `.team/STATE.md` để làm tiếp được khi session bị limit hoặc mở session mới.
+- **Tech lead (`team-lead`)**: orchestrator — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ trạng thái từng item trong `.team/items/<slug>.json` (`.team/STATE.md` được sinh ra từ đó) để làm tiếp được khi session bị limit hoặc mở session mới.
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
 - **9 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
@@ -15,7 +15,7 @@ bạn ──▶ /technical-team:run "login trả 500"
             │
             ▼
         team-lead ── phân loại: bug ──▶ pipeline fix
-            │   ghi STATE.md trước/sau mỗi bước
+            │   ghi items/<slug>.json trước/sau mỗi bước
             ▼
         debugger ──▶ qa pre-check ──▶ developer ──▶ code-reviewer ──▶ qa ──▶ đóng item
                      (regression test)    ▲               │ FAIL         │ FAIL
@@ -47,7 +47,7 @@ Repo private: máy cài cần quyền đọc repo qua git (ví dụ `gh auth log
 
 Lead phải chạy ở session chính: subagent không spawn được subagent khác.
 
-**Tiếp tục sau khi bị limit hoặc mở session mới:** gõ `/technical-team:run` (không tham số). Lead đọc `.team/STATE.md` và làm tiếp từ cột **Next step**.
+**Tiếp tục sau khi bị limit hoặc mở session mới:** gõ `/technical-team:run` (không tham số). Lead đọc `.team/STATE.md` (sinh từ `.team/items/`) và làm tiếp từ cột **Next**.
 
 ## Lệnh
 
@@ -63,7 +63,7 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 | `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` (qa pre-check trước) → release |
 | `/technical-team:crew` | xem hoặc đổi emoji, biệt danh, vibe, màu badge | không spawn ai; lead ghi `.team/CREW.md` |
 
-`→` là tuần tự, `∥` là song song. **Chất lượng chia ba lớp:** developer sở hữu code và unit/component test (nộp kết quả build/lint/test thật); code-reviewer review code và test của developer; qa lập test plan + RTM *trước* khi code (pre-check), sau review thì kiểm chứng độc lập (integration/E2E, live preview, UX) và ra verdict — các vòng sau dùng lại plan/RTM, chỉ retest + regression. `--small` và `infra` không có pre-check. **Mức test theo rủi ro:** T0 (text/CSS/UI nhỏ: kiểm phần đổi + test sẵn có), T1 (feature/CRUD/API: AC + negative path + regression có chọn lọc, RTM dạng checklist), T2 (auth/thanh toán/migration/dữ liệu: plan + RTM đầy đủ, E2E, exploratory). qa chọn mức, đổi mức phải được lead duyệt. Finding chỉ chặn PASS khi vi phạm AC/regression/do bản sửa/rủi ro nghiêm trọng và có đủ bằng chứng; tối đa 3 vòng QA-Fix mỗi item, đếm duy nhất ở mục `QA-Fix state` của STATE.md (round, cap, last bug ID, review-fix; workflow từ chối chạy nếu thiếu hoặc lệch với tracker; qa.md chỉ ghi lại và báo khi STATE bị lùi), hết vòng thì dừng `BLOCKED_PENDING_USER_DECISION` chờ chính người dùng trả lời `approve <slug> round 4` — đây là cổng thủ tục, không phải xác thực danh tính; không bao giờ tự PASS. Finding của qa và reviewer chung một tracker `findings.md` với ID `CART-B1…` cố định. Ghi ADR: nói với lead "ghi quyết định …", lead giao thẳng cho architect. Không lệnh nào tự commit, push hay deploy.
+`→` là tuần tự, `∥` là song song. **Chất lượng chia ba lớp:** developer sở hữu code và unit/component test (nộp kết quả build/lint/test thật); code-reviewer review code và test của developer; qa lập test plan + RTM *trước* khi code (pre-check), sau review thì kiểm chứng độc lập (integration/E2E, live preview, UX) và ra verdict — các vòng sau dùng lại plan/RTM, chỉ retest + regression. `--small` và `infra` không có pre-check. **Mức test theo rủi ro:** T0 (text/CSS/UI nhỏ: kiểm phần đổi + test sẵn có), T1 (feature/CRUD/API: AC + negative path + regression có chọn lọc), T2 (auth/thanh toán/migration/dữ liệu: plan + RTM đầy đủ, E2E, exploratory). Lead ghi mức vào `tier` của item; qa không tự đổi. Finding = một test fail hoặc một lệnh repro, tiêu đề ≤8 từ, ID `F1`, `F2`… nằm ngay trong `.team/items/<slug>.json` (ngoài item: `CART#F3`); chỉ chặn PASS khi vi phạm AC/regression/rủi ro nghiêm trọng và có test. Một bộ đếm `round` cho mọi lần sửa (review lẫn qa), tối đa 3; finding mở lại hai lần thì dừng hỏi bạn; hết vòng thì item `blocked`, chờ chính bạn trả lời — không bao giờ tự PASS. Dưới T2 qa/reviewer/security/debugger không ghi file report: verdict và finding đi qua structured output. Ghi ADR: nói với lead "ghi quyết định …", lead giao thẳng cho architect. Không lệnh nào tự commit, push hay deploy.
 
 `review`, `release` và vòng (qa pre-check →) build → review → qa của `feature`/`fix`/`infra`/`new` (`workflows/build-loop.js`, có vòng sửa tối đa 3 lượt) và bước tạo ticket của `feature`/`new` (`workflows/plan-tickets.js`, code kiểm tra ticket rồi trả lỗi cho pm) chạy bằng Workflow tool, gọi theo tên (`technical-team:team-review`, `team-release`, `team-build-loop`, `team-plan-tickets`; không tìm thấy tên thì đọc file và truyền làm `script`) của Claude Code (script trong `plugins/team/workflows/`, chạy nền, một thẻ tiến độ); không có Workflow tool thì chạy inline như cũ.
 
@@ -71,21 +71,21 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 
 | Agent | Việc | Ghi | Badge |
 |---|---|---|---|
-| `team-lead` | phân loại, điều phối, theo dõi | `STATE.md`, chuyển vào `archive/` | 🟪 🧭 |
+| `team-lead` | phân loại, điều phối, theo dõi | `items/<slug>.json`, chuyển vào `archive/` | 🟪 🧭 |
 | `team-ba` | yêu cầu → story + AC Given/When/Then | `requirements/<slug>.md`, `PRODUCT.md` | 🩵 🔍 |
 | `team-designer` | flow, màn hình, mọi trạng thái, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` | 🩷 🎨 |
 | `team-architect` | thiết kế + kế hoạch triển khai, ADR | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` | 🟦 📐 |
 | `team-pm` | ticket, phụ thuộc, nhóm song song, milestone, trạng thái ticket | `TASKS.md` | 🟨 📋 |
 | `team-developer` | viết code + unit/component test, tự chạy build/lint/test, nộp evidence | code, unit/component test | 🟩 🛠️ |
-| `team-debugger` | tìm root cause, không sửa code | `reports/<slug>/debug.md` | 🟧 🐞 |
-| `team-code-reviewer` | review diff | `reports/<slug>/review.md` | 🟥 👓 |
-| `team-qa` | pre-check trước build (test plan, RTM, lỗi spec); sau review: integration/E2E, live preview, UX, regression, PASS/FAIL | integration/E2E test, `reports/<slug>/qa.md` | 🟨 🧪 |
-| `team-security` | audit bảo mật | `reports/<slug>/security.md` | 🟥 🛡️ |
+| `team-debugger` | tìm root cause, không sửa code | `reports/<slug>/debug.md` (T2) | 🟧 🐞 |
+| `team-code-reviewer` | review diff | `reports/<slug>/review.md` (T2) | 🟥 👓 |
+| `team-qa` | pre-check trước build (test plan, RTM, lỗi spec); sau review: integration/E2E, live preview, UX, regression, PASS/FAIL | integration/E2E test, `reports/<slug>/qa.md` (T2) | 🟨 🧪 |
+| `team-security` | audit bảo mật | `reports/<slug>/security.md` (T2) | 🟥 🛡️ |
 | `team-dba` | migration không downtime, chỉ DB local/test | migration, mục "Data and migrations" của `system-design/<slug>.md` | 🟦 🗄️ |
 | `team-devops` | CI/CD, Docker, manifest, xác minh local | file infra | 🟩 🚢 |
 | `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` | 🩵 ✍️ |
 
-Mỗi agent chuyên môn có khối `## Rules` (quy tắc chung + `### Handoff`) giống hệt nhau ở cuối file, để agent tự đủ; test fail nếu 12 bản lệch nhau, nên sửa một chỗ thì sửa cả 12.
+Quy tắc chung + mẫu `### Handoff` của 12 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Hai quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay lead): specialist không được `git commit`/`git push` hay ghi `.team/items/`, và báo cáo thiếu Handoff (Status + Evidence) bị trả lại. Mọi lần ghi `.team/` cũng qua hook: item JSON đúng schema (rồi sinh lại `STATE.md`), spec không heading Revision/Round, dòng ≤300 ký tự, ≤4.000 từ.
 
 ## Crew: màu, emoji, vibe
 
@@ -152,7 +152,8 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 
 ```
 .team/
-├── STATE.md                    session điều phối (lead, hoặc session tự gọi agent): ai đang làm task nào, file đang dùng, bước tiếp (điểm resume)
+├── items/<slug>.json           session điều phối (lead, hoặc session tự gọi agent): bước, việc tiếp, round, finding, verdict, câu hỏi
+├── STATE.md                    sinh tự động từ items/ (điểm resume), không ai ghi tay
 ├── CREW.md                     lead tự tạo (mặc định), bạn tùy biến: emoji, biệt danh, vibe, màu badge
 ├── TASKS.md                    pm: ticket và trạng thái
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
@@ -162,11 +163,10 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 ├── frontend-design/DESIGN.md   designer: design system
 ├── frontend-design/<slug>.md   designer
 ├── adr/NNNN-<quyet-dinh>.md    architect; số NNNN do lead cấp trong brief
-├── reports/<slug>/qa.md        qa: test plan → RTM → finding → chi tiết vòng mới nhất → verdict
-├── reports/<slug>/review.md    code-reviewer
-├── reports/<slug>/findings.md lead: tracker chung (CART-B1…, origin, trạng thái, lịch sử)
-├── reports/<slug>/security.md  security
-├── reports/<slug>/debug.md     debugger
+├── reports/<slug>/qa.md        qa, chỉ T2: test plan + RTM (một cột trạng thái) → verdict
+├── reports/<slug>/review.md    code-reviewer, chỉ T2
+├── reports/<slug>/security.md  security, chỉ T2
+├── reports/<slug>/debug.md     debugger, chỉ T2
 ├── docs/**                     writer
 └── archive/<slug>/             mọi file của item đã đóng
 ```
@@ -182,9 +182,9 @@ templates/
 └── reports/       qa.md · review.md · security.md · debug.md
 ```
 
- agent đọc template trước rồi điền, không tự đặt cấu trúc. Report giữ bảng finding cộng dồn với ID cố định (`Q-01`, `R-01`, `S-01`) và chỉ chi tiết vòng mới nhất. Khi đóng item, lead chuyển các file của item vào `archive/<slug>/` và xóa dòng của nó khỏi `STATE.md`.
+ agent đọc template trước rồi điền, không tự đặt cấu trúc. Spec chỉ ghi sự thật hiện hành: đổi gì thì viết lại mục đó, quyết định ghi một dòng dưới `## Decision log`. Report T2 chỉ tham chiếu finding theo ID của item. Khi đóng item, lead chuyển các file của item vào `archive/<slug>/` và xóa JSON của nó. Hết mỗi milestone (`new`), workflow `team-compact` viết gọn spec, một agent độc lập kiểm không mất gì.
 
-**ID dễ đọc:** mỗi item có một *key* ngắn lấy từ slug (`cart-checkout` → `CART`), ghi trong `STATE.md` và tiêu đề của item trong `TASKS.md`. Mọi ID của item đều gắn key: `CART-T1` ticket · `CART-B1` bug/finding · `CART-AC1` acceptance criterion · `CART-E1` edge case · `CART-D1` quyết định · `CART-M1` milestone · `CART-R1`/`CART-S1`/`CART-Q1` finding trong report của review/security/qa. `BR-1`, `G-1` là quy tắc/mục tiêu của cả sản phẩm (`PRODUCT.md`), không cần key. Báo cáo gửi bạn luôn kèm tiêu đề ngắn bên cạnh ID, ví dụ `CART-B3 (lưu form lỗi lần 2)`.
+**ID dễ đọc:** mỗi item có một *key* ngắn lấy từ slug (`cart-checkout` → `CART`), ghi trong item JSON và tiêu đề của item trong `TASKS.md`. ID gắn key: `CART-T1` ticket · `CART-AC1` acceptance criterion · `CART-E1` edge case · `CART-M1` milestone; finding là `F1` trong item (`CART#F1` khi nhắc từ nơi khác). `BR-1`, `G-1` là quy tắc/mục tiêu của cả sản phẩm (`PRODUCT.md`), không cần key. Báo cáo gửi bạn luôn kèm tiêu đề ngắn bên cạnh ID, ví dụ `CART#F3 (lưu form lỗi lần 2)`.
 
 Dự án cũ còn `T-1`, `F-001`, `AC1` thì chuyển bằng script đi kèm plugin:
 
@@ -196,7 +196,7 @@ node <plugin>/tools/migrate-ids.mjs <thư-mục-dự-án> --all     # thêm cả
 
 - Script tự đặt key cho từng item; muốn tự chọn thì thêm `--key <slug>=<KEY>`.
 - Chạy lại nhiều lần cũng không đổi thêm gì.
-- Mỗi ID cũ nhận key của item định nghĩa ra nó: item được nhắc trên cùng dòng, các ID khác cùng dòng, hoặc item duy nhất có ID đó. Khi nhiều item có cùng `R-01`, script so nội dung dòng với finding của từng item rồi liệt kê lại để bạn xem. Trường hợp vẫn không rõ thì để nguyên và in kèm số dòng để bạn sửa tay.
+- Mỗi ID cũ nhận key của item định nghĩa ra nó; không rõ thì để nguyên và in số dòng để bạn sửa tay.
 
 Nên commit `.team/` nếu muốn cả team dùng chung.
 
@@ -210,7 +210,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 | Chỉ validate | `npm run validate` |
 | Chạy thử bản đang sửa | `claude --plugin-dir plugins/team`, sửa xong gõ `/reload-plugins` |
 
-`tests/commands.test.mjs` kiểm tra: bộ lệnh/agent/skill, lead định tuyến đủ pipeline, 12 agent có khối Rules giống hệt nhau, `run-kit` đủ 5 phần (roster, pipeline, brief, workspace, handoff), mọi agent/skill/file được nhắc tới đều tồn tại, template chia đúng folder và đều được dùng, mọi đường dẫn `.team/` khớp layout, README liệt kê đủ lệnh, `build-loop.js` chạy thật với agent giả (qa pre-check trước developer, chặn khi pre-check vướng, qa execution dùng lại RTM, resume/`startAt`, `maxRounds`) và câu chữ chế độ qa giống hệt giữa workflow và inline (`run-kit` §3), manifest có homepage/repository/license, và `claude plugin validate --strict` cho plugin lẫn marketplace.
+`tests/commands.test.mjs` kiểm tra: bộ lệnh/agent/skill, lead định tuyến đủ pipeline, 12 agent có khối Rules giống hệt nhau, `run-kit` đủ 5 phần (roster, pipeline, brief, workspace, handoff), mọi agent/skill/file được nhắc tới đều tồn tại, template chia đúng folder và đều được dùng, mọi đường dẫn `.team/` khớp layout, README liệt kê đủ lệnh, `build-loop.js` chạy thật với agent giả (pre-check trước developer, round cap, resume/`startAt`) và câu chữ chế độ qa giống hệt giữa workflow và inline (`run-kit` §3), manifest có homepage/repository/license, và `claude plugin validate --strict` cho plugin lẫn marketplace.
 
 Thêm, đổi tên hoặc xóa command/agent/skill/template → cập nhật bảng ở trên và danh sách trong `tests/commands.test.mjs`.
 

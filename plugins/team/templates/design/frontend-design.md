@@ -2,17 +2,15 @@
 
 Follows: `frontend-design/DESIGN.md`
 
-> **Budget:** ≤ 150 lines per item. One table row per screen state; big work → one file per milestone (`<slug>-m2.md`).
+> **Budget:** ≤ 150 lines per item. One row per screen state; big work → one file per milestone (`<slug>-m2.md`).
 
-
-
-## Users and top tasks
+## Users and tasks
 | User | Task | Frequency |
 |---|---|---|
 | <role> | <task> | daily / weekly / rare |
 
 ## Flows
-- F1 <task>: <step> → <step> → <done>. Cancel: <…>. Error: <…>. Retry: <…>.
+- FL1 <task>: <step> → <done>. Cancel: <…>. Error: <…>. Retry: <…>.
 
 ## Screens
 | Screen | Route | Primary action | Covers ACs |
@@ -25,15 +23,18 @@ Follows: `frontend-design/DESIGN.md`
 | <name> | <what shows> | … | … | … | … | … |
 
 ## Layout
-| Screen | Small (375 px) | Large (1280 px) |
+| Screen | Small (375) | Large (1280) |
 |---|---|---|
 | <name> | <layout> | <layout> |
 
 ## Components
-- Reuse: <components from DESIGN.md>
-- New: <component — why nothing existing fits>
+- Reuse: <from DESIGN.md>
+- New: <component — why>
 
 ## Copy
 | Place | Text |
 |---|---|
 | <button / empty state / error> | <text> |
+
+## Decision log
+- <YYYY-MM-DD · decision · why>

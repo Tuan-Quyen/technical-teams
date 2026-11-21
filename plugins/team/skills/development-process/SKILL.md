@@ -38,10 +38,10 @@ Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/development-process/re
 
 ## Fix rounds
 
-- The brief's bug IDs (`CART-B3`) are the whole scope: fix those, nothing else. A new defect you notice → name it in the Handoff, do not fix it unasked.
-- Each fix gets a regression test at your level (unit/component) that fails before and passes after; qa's integration/E2E regression test, when the pre-check wrote one, must pass too.
-- Keep the IDs: refer to `CART-B3` in the Handoff, never renumber or rename it.
-- Same bug back a second time → read qa's evidence again before touching code; a third attempt is a design problem → `blocked`.
+- The brief's finding IDs (`F3`) are the whole scope: fix those, nothing else. A new defect you notice → name it in the Handoff, do not fix it unasked.
+- Each finding's failing test must pass; add a regression test at your level (unit/component) when it has none. qa's integration/E2E regression test, when the pre-check wrote one, must pass unchanged.
+- Keep the IDs: refer to `F3` in the Handoff, never renumber it.
+- A finding reopened → read the gate's evidence again before touching code; reopened twice is a design problem → `blocked`.
 
 ## Stop instead of pushing on
 

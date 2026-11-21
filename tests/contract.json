@@ -1,0 +1,140 @@
+{
+  "_doc": "Public contract of the technical-team plugin, frozen at 0.31.0 (redesign P1). Users and existing projects depend on these names and paths. To change one: set status to deprecated (with since/replacement) or removed (with since), and add a matching line under Deprecated/Removed in CHANGELOG.md. tests/contract.test.mjs enforces this.",
+  "frozenAt": "0.31.0",
+  "plugin": {
+    "name": "technical-team",
+    "marketplace": "technical-team-marketplace"
+  },
+  "entryPoints": {
+    "run": {
+      "status": "stable"
+    },
+    "new": {
+      "status": "stable"
+    },
+    "feature": {
+      "status": "stable"
+    },
+    "fix": {
+      "status": "stable"
+    },
+    "review": {
+      "status": "stable"
+    },
+    "release": {
+      "status": "stable"
+    },
+    "test": {
+      "status": "stable"
+    },
+    "infra": {
+      "status": "stable"
+    },
+    "crew": {
+      "status": "stable"
+    }
+  },
+  "agents": {
+    "team-lead": {
+      "status": "stable"
+    },
+    "team-ba": {
+      "status": "stable"
+    },
+    "team-designer": {
+      "status": "stable"
+    },
+    "team-architect": {
+      "status": "stable"
+    },
+    "team-pm": {
+      "status": "stable"
+    },
+    "team-developer": {
+      "status": "stable"
+    },
+    "team-debugger": {
+      "status": "stable"
+    },
+    "team-code-reviewer": {
+      "status": "stable"
+    },
+    "team-qa": {
+      "status": "stable"
+    },
+    "team-security": {
+      "status": "stable"
+    },
+    "team-dba": {
+      "status": "stable"
+    },
+    "team-devops": {
+      "status": "stable"
+    },
+    "team-writer": {
+      "status": "stable"
+    }
+  },
+  "workspace": {
+    ".team/STATE.md": {
+      "status": "stable",
+      "role": "resume entry point: /run with no arguments reads it; generated from .team/items/ since 0.33.0"
+    },
+    ".team/items/": {
+      "status": "stable",
+      "since": "0.33.0",
+      "role": "item state (JSON), the source STATE.md is generated from"
+    },
+    ".team/TASKS.md": {
+      "status": "stable",
+      "role": "tickets (may become a generated view)"
+    },
+    ".team/PRODUCT.md": {
+      "status": "stable",
+      "role": "spec"
+    },
+    ".team/ARCHITECTURE.md": {
+      "status": "stable",
+      "role": "spec"
+    },
+    ".team/CREW.md": {
+      "status": "stable",
+      "role": "persona overrides"
+    },
+    ".team/requirements/": {
+      "status": "stable",
+      "role": "spec per item"
+    },
+    ".team/system-design/": {
+      "status": "stable",
+      "role": "spec per item"
+    },
+    ".team/frontend-design/": {
+      "status": "stable",
+      "role": "spec per item + DESIGN.md"
+    },
+    ".team/adr/": {
+      "status": "stable",
+      "role": "decisions"
+    },
+    ".team/reports/": {
+      "status": "stable",
+      "role": "gate reports and findings (may become generated views)"
+    },
+    ".team/archive/": {
+      "status": "stable",
+      "role": "closed items"
+    }
+  },
+  "handoff": {
+    "statusValues": [
+      "done",
+      "blocked",
+      "needs-input"
+    ],
+    "fields": [
+      "Status",
+      "Evidence"
+    ]
+  }
+}

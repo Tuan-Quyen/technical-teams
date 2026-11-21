@@ -140,7 +140,7 @@ test('--write migrates every item file, checks it, leaves no backup, and a secon
   assert.deepEqual(again.keys, r.keys, 'keys are read back from the migrated files');
 });
 
-test('the migrated state and tracker pass the real workflow gate', () => {
+test('the migrated tracker keeps stable IDs for the one-time move into item JSON', () => {
   const root = fixture();
   migrate(root, { write: true, stamp: 'x' });
   const md = read(root, 'reports/cart-checkout/findings.md');
@@ -148,13 +148,6 @@ test('the migrated state and tracker pass the real workflow gate', () => {
   assert.deepEqual(migrated.map((e) => e.id), ['CART-B1', 'CART-B2']);
   assert.deepEqual(migrated[1].relatedTo, ['CART-B1']);
   assert.equal(migrated[0].sourceId, 'CART-Q1');
-  const src = fs.readFileSync(path.join(REPO, 'plugins/team/workflows/build-loop.js'), 'utf8').replace(/\r\n/g, '\n');
-  const block = (name) => { const ls = src.split('\n'); const i = ls.findIndex((l) => l.startsWith(`const ${name} = `)); if (!/[{[]$/.test(ls[i])) return ls[i]; return ls.slice(i, ls.findIndex((l, j) => j > i && /^[}\]]$/.test(l)) + 1).join('\n'); };
-  const checkState = new Function(`${['clean', 'ROUND_CAP', 'ORIGIN', 'STATUSES', 'LEAD_ONLY', 'NOT_STATE', 'KEY_RE', 'bugNo', 'checkState'].map(block).join('\n')}; return checkState;`)();
-  const row = read(root, 'STATE.md').match(/^\| cart-checkout \| (\w+) \| (\d+) \| (\d+) \| (\d+) \|$/m);
-  const st = { item: 'cart-checkout', key: row[1], fixRounds: Number(row[2]), lastId: Number(row[3]), reviewFixes: Number(row[4]) };
-  const g = checkState('cart-checkout', st, migrated, (m) => { throw new Error(m); });
-  assert.deepEqual([g.key, g.lastId, g.tracker.length], ['CART', 2, 2]);
 });
 
 test('an ID one item defines gets that key, also in shared files and other items\' files', () => {

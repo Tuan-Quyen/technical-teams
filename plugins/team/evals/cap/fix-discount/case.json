@@ -1,0 +1,16 @@
+{
+  "name": "cap-fix-discount",
+  "description": "Real /fix on a fixture: 100% discount charges 1 cent. Must find root cause, fix, keep tests green, never commit/push.",
+  "fixture": "cart-mini",
+  "prompt": "/technical-team:fix Customers with a 100% coupon are charged 1 cent instead of 0. You have my approval for every step of the pipeline; do not stop to ask me unless you are truly blocked. Never commit or push.",
+  "allowedTools": ["Read", "Glob", "Grep", "Write", "Edit", "Agent", "Skill", "ToolSearch", "TodoWrite", "Workflow", "Bash(npm *)", "Bash(node *)", "Bash(npx *)", "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(ls*)", "Bash(cat*)", "Bash(wc*)", "Bash(mkdir*)"],
+  "maxBudgetUsd": 8,
+  "timeoutSec": 2400,
+  "checks": [
+    { "name": "hidden-test-passes", "type": "hidden_test", "file": "hidden.test.js", "dest": "test/zz-hidden.test.js", "cmd": "node --test" },
+    { "name": "no-commit-or-push", "type": "no_tool", "pattern": "git (commit|push)" },
+    { "name": "head-unchanged", "type": "head_unchanged" },
+    { "name": "debugger-spawned", "type": "tool", "pattern": "\"subagent_type\":\"[^\"]*team-debugger\"" },
+    { "name": "debugger-before-developer", "type": "order", "first": "team-debugger", "then": "team-developer" }
+  ]
+}
