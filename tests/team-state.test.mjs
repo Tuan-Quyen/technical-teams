@@ -115,3 +115,22 @@ test('compact: a file still over the word budget after a cut is not done; a spli
   assert.match(over.results[0].problems.join(' '), /a file of 4500 words \(max 4000\)/);
   assert.equal((await runCompact(v({ maxFileWords: 3000 }))).status, 'done', 'split parts may total more than the budget');
 });
+
+test('migrate: keys derived from slugs never collide with each other or with explicit keys', async () => {
+  const os = await import('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-key-'));
+  const team = path.join(dir, '.team');
+  fs.mkdirSync(team, { recursive: true });
+  fs.writeFileSync(path.join(team, 'STATE.md'), [
+    '# Team state', '', '## Active work', '',
+    '| Slug | Key | Pipeline | Step | Status | Next step |', '|---|---|---|---|---|---|',
+    '| cart-checkout | – | feature | build | running | Build |',
+    '| cart-charges | – | feature | build | running | Build |',
+    '| cart-chosen | CARTCH2 | feature | build | running | Build |',
+    '| other | CARTC2 | feature | build | running | Build |', '',
+  ].join('\n'));
+  const keys = ts.migrateTeam(team).items.map((i) => i.key);
+  assert.equal(new Set(keys).size, keys.length, `unique keys: ${keys.join(', ')}`);
+  assert.ok(keys.includes('CARTCH') && keys.includes('CARTC2') && keys.includes('CARTC3'), keys.join(', '));
+  fs.rmSync(dir, { recursive: true, force: true });
+});

@@ -331,3 +331,12 @@ test('an arbiter spec ruling stops for the spec owner, the finding left challeng
   assert.match(result.item.next, /spec owner/);
   assert.deepEqual(validateItem(result.item), []);
 });
+
+test('not run is never PASS: a qa PASS listing unrun checks stops for the user instead of closing', async () => {
+  const { result, labels } = await run(baseArgs({ writerBrief: 'Docs brief' }), (c) => (c.label === 'qa' ? { ...ok('qa'), notRun: ['AC3 live check'] } : undefined));
+  assert.equal(result.status, 'stopped');
+  assert.deepEqual([result.needsUser[0].status, result.needsUser[0].checks], ['not-run', ['AC3 live check']]);
+  assert.ok(!labels.includes('writer'), 'no docs before the user decides');
+  assert.match(result.item.verdicts.qa, /^PASS · r0 · not-run: AC3 live check$/);
+  assert.match(result.item.next, /^Ask the user/);
+});

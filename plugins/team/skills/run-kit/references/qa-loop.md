@@ -24,7 +24,7 @@ reviewers re-check their findings · qa retests the listed ones + suite ──�
 
 - **IDs** — `F1`, `F2`… in the item, given once, never reused (next = highest + 1). Outside the item: `CART#F3`. Status: `open → fixed → verified`, or `reopened` (`reopened` +1) when a retest fails; `challenged` (§ Challenges); otherwise `deferred`, `rejected` only by the lead, on the user's word, with a line in `decisions`.
 - **One counter** — `round` counts every fix batch, from a review or from qa. Cap 3, code in the workflow, never in the item.
-- **Not run is never PASS** — the qa verdict is `PASS · r1 · not-run: AC3`; a blocking finding left `fixed` that no gate re-checked stops the run (`retest-incomplete`).
+- **Not run is never PASS** — the qa verdict is `PASS · r1 · not-run: AC3` and the run stops (`not-run`): the user runs those checks, or accepts them as not run with a line in `decisions`, before the item closes; a blocking finding left `fixed` that no gate re-checked stops the run (`retest-incomplete`).
 - **Findings are work items** — no fix tickets in `TASKS.md`, no report prose. T2 adds `reports/<slug>/qa.md` (test plan, RTM with one status column) and the reviewers' reports.
 - **Spec issues** from the pre-check go to their owner (ba, designer, architect) or the user; no developer starts before.
 

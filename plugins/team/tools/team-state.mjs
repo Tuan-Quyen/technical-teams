@@ -158,6 +158,16 @@ export function migrateTeam(teamDir, { write = false } = {}) {
   const slugs = [...new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.slug).filter((s) => SLUG_RE.test(s || '')))];
   const items = [];
   const notes = [];
+  // Keys must not collide: explicit ones are reserved first; a derived one gets a digit suffix when taken.
+  const used = new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.key).filter((k) => KEY_RE.test(k || '')));
+  const freeKey = (slug) => {
+    const base = slug.replace(/[^a-z0-9]/g, '').slice(0, 6).toUpperCase().replace(/^[0-9]/, 'X').padEnd(2, 'X');
+    for (let n = 1; n < 1000; n++) {
+      const k = n === 1 ? base : `${base.slice(0, 6 - String(n).length)}${n}`;
+      if (!used.has(k)) return k;
+    }
+    return base;
+  };
   for (const slug of slugs) {
     const a = active?.rows.find((r) => r.slug === slug) || {};
     const q = qafix?.rows.find((r) => r.slug === slug) || {};
@@ -177,7 +187,7 @@ export function migrateTeam(teamDir, { write = false } = {}) {
     const pipeline = PIPELINES.includes((a.pipeline || '').toLowerCase()) ? a.pipeline.toLowerCase() : 'direct';
     const status = ITEM_STATUSES.includes((a.status || '').toLowerCase()) ? a.status.toLowerCase() : 'paused';
     const item = {
-      v: 1, slug, key: KEY_RE.test(a.key || q.key || '') ? (a.key || q.key) : slug.replace(/[^a-z0-9]/g, '').slice(0, 6).toUpperCase().replace(/^[0-9]/, 'X').padEnd(2, 'X'),
+      v: 1, slug, key: KEY_RE.test(a.key || q.key || '') ? (a.key || q.key) : freeKey(slug),
       title: cut(slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()), LIMITS.titleWords).slice(0, LIMITS.title),
       pipeline, tier: pipeline === 'new' ? 'T2' : 'T1', step: cut(a.step, 6).slice(0, 40) || 'resume', status,
       next: cut(a['next step'], LIMITS.next) || 'Resume from the migrated state', round: Number.parseInt(q['fix rounds'], 10) || 0,
@@ -185,6 +195,7 @@ export function migrateTeam(teamDir, { write = false } = {}) {
       findings, notes: [`migrated from 0.32 STATE.md${existsSync(fPath) ? ' and findings.md' : ''}`],
     };
     if (item.workflows === undefined) delete item.workflows;
+    used.add(item.key);
     const errs = validateItem(item);
     if (errs.length) { notes.push(`${slug}: not migrated: ${errs.join('; ')}`); continue; }
     items.push(item);

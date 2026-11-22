@@ -264,7 +264,7 @@ const qaRound = async () => {
   const notRun = (res.notRun || []).map((x) => clean(x, 20)).filter(Boolean)
   item.verdicts.qa = `${verdict} · r${item.round}${notRun.length ? ` · not-run: ${notRun.join(', ')}` : ''}`
   // qa re-checks every fixed blocker, whoever found it; one it skipped is never assumed fixed.
-  return { verdict, left: unchecked(Object.values(ORIGIN), seen), spec }
+  return { verdict, left: unchecked(Object.values(ORIGIN), seen), spec, notRun }
 }
 
 // One developer per ticket for the whole batch: the finding's owner ticket, the ticket owning its file, or the only ticket.
@@ -348,6 +348,8 @@ for (;;) {
     if (gate.spec.length) return stop('Test', { role: 'arbiter', status: 'spec-issue', findings: gate.spec }, specNext(gate.spec))
     if (gate.left.length) return stop('Test', { role: 'qa', status: 'retest-incomplete', findings: gate.left.map((f) => f.id) })
     if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Test', { role: 'qa', status: 'fail-without-blocker', note: 'qa FAIL with no blocking finding that has a test; the lead decides' })
+    // Not run is never PASS: a PASS that lists unrun checks stops for the user instead of closing the item.
+    if (gate.verdict === 'PASS' && gate.notRun.length) return stop('Test', { role: 'qa', status: 'not-run', checks: gate.notRun }, `Ask the user: run ${gate.notRun.join(', ')}, or accept them as not run (a line in decisions), then close`)
   }
   const batch = openBlocking().filter((f) => !PENDING.includes(f.status))
   if (!batch.length) break
