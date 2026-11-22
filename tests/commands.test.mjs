@@ -202,6 +202,36 @@ test('README lists every command, and only those', () => {
   assert.deepEqual([...new Set(cmds)].sort(), COMMANDS);
 });
 
+test('README counts, blocked-tools table and template tree match the plugin', () => {
+  const readme = read('README.md', REPO);
+  const count = (re) => Number(readme.match(re)?.[1]);
+  assert.equal(count(/\*\*(\d+) agent chuyên môn\*\*/), WORKERS.length, 'specialist count');
+  assert.equal(count(/\*\*(\d+) lệnh\*\*/), COMMANDS.length, 'command count');
+  const templates = walk('templates').map((p) => p.slice('templates/'.length)).sort();
+  assert.equal(count(/\*\*(\d+) template\*\*/), templates.length, 'template count');
+
+  // Template tree: `├── core/   A.md · B.md`, one line per type folder.
+  const tree = readme.match(/```\ntemplates\/\n([\s\S]*?)```/);
+  assert.ok(tree, 'README has the templates/ tree');
+  const listed = [...tree[1].matchAll(/^[├└]── ([a-z]+)\/\s+(.+)$/gm)]
+    .flatMap(([, dir, files]) => files.split('·').map((f) => `${dir}/${f.trim()}`)).sort();
+  assert.deepEqual(listed, templates, 'templates/ tree');
+
+  // Blocked-tools table: `| \`team-x\` · \`team-y\` | \`Bash\`, \`NotebookEdit\` (note) | ✅ |`; "không" = none.
+  const rows = [...readme.matchAll(/^\| (`team-[a-z-]+`(?: · `team-[a-z-]+`)*) \| ([^|]+) \| ✅ \|$/gm)];
+  const documented = {};
+  for (const [, agents, blocked] of rows) {
+    const tools = blocked.trim().startsWith('không') ? [] : [...blocked.matchAll(/`([A-Za-z_]+)`/g)].map((m) => m[1]).sort();
+    for (const [, a] of agents.matchAll(/`(team-[a-z-]+)`/g)) documented[a] = tools;
+  }
+  assert.deepEqual(Object.keys(documented).sort(), WORKERS, 'every specialist is in the blocked-tools table once');
+  for (const a of WORKERS) {
+    const actual = (frontmatter(`agents/${a}.md`).match(/^disallowedTools: (.+)$/m)?.[1] ?? '')
+      .split(',').map((t) => t.trim()).filter(Boolean).sort();
+    assert.deepEqual(documented[a], actual, `${a}: README blocked tools vs disallowedTools`);
+  }
+});
+
 test('nothing points at removed machinery', () => {
   const gone = [/team-hr/, /agent-kit/, /W-NNN/, /OPS_HANDOFF/, /\bG[1-4]\b/, /\/technical-team:docs\b/, /Phiếu bàn giao/, /CLAUDE_PLUGIN_ROOT\}\/(hooks|config|scripts)/];
   for (const f of DOCS) for (const re of gone) assert.doesNotMatch(read(f), re, `${f} still mentions ${re}`);
