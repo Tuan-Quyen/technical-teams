@@ -4,9 +4,9 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
 - **Tech lead (`team-lead`)**: orchestrator — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ trạng thái từng item trong `.team/items/<slug>.json` (`.team/STATE.md` được sinh ra từ đó) để làm tiếp được khi session bị limit hoặc mở session mới.
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
-- **9 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
+- **10 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + `triage` (xếp hạng issue) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
-- **13 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
+- **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
 - **4 skill** nạp khi cần: `business-analysis` (spec), `technical-planning` (thiết kế + ticket), `development-process` (code + unit test + evidence), `test-process` (QA).
 
@@ -56,11 +56,12 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 | `/technical-team:run` | bất kỳ; lead tự phân loại (trống = resume) | theo pipeline lead chọn |
 | `/technical-team:feature` | làm tính năng (`--small` = T0, `--tier T0\|T1\|T2`) | theo tier, bảng dưới |
 | `/technical-team:fix` | sửa bug | T1: debugger → developer → code-reviewer (∥ security) → qa · T2 thêm qa pre-check |
-| `/technical-team:review` | review diff, không sửa code | code-reviewer ∥ security (∥ dba) |
+| `/technical-team:review` | review diff, không sửa code; finding không thuộc item nào → dòng `new` trong `ISSUES.md` | code-reviewer ∥ security (∥ dba) |
 | `/technical-team:test` | bổ sung và chạy test | qa |
 | `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
-| `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO | qa ∥ security ∥ devops (∥ dba) → writer |
+| `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO; issue mở blocker/critical/P1 → NO-GO trừ khi bạn chấp nhận; release notes có Known issues | qa ∥ security ∥ devops (∥ dba) → writer |
 | `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` (qa pre-check trước) → release |
+| `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` | qa |
 | `/technical-team:crew` | xem hoặc đổi emoji, biệt danh, vibe, màu badge | không spawn ai; lead ghi `.team/CREW.md` |
 
 `→` là tuần tự, `∥` là song song.
@@ -166,6 +167,7 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 ├── STATE.md                    sinh tự động từ items/ (điểm resume), không ai ghi tay
 ├── CREW.md                     lead tự tạo (mặc định), bạn tùy biến: emoji, biệt danh, vibe, màu badge
 ├── TASKS.md                    pm: ticket và trạng thái
+├── ISSUES.md                   qa (`triage`): issue đã xếp hạng; lead thêm dòng mới, đặt status/item khi đóng item
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
 ├── ARCHITECTURE.md             architect: tổng quan, trần ~200 dòng, trỏ sang ADR
 ├── requirements/<slug>.md      ba
@@ -185,7 +187,7 @@ Mỗi file (trừ `docs/**`) được viết theo template trong `plugins/team/t
 
 ```
 templates/
-├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
+├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md · ISSUES.md
 ├── requirements/  requirements.md
 ├── design/        system-design.md · DESIGN.md · frontend-design.md
 ├── adr/           adr.md

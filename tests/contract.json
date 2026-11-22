@@ -32,6 +32,10 @@
     },
     "crew": {
       "status": "stable"
+    },
+    "triage": {
+      "status": "stable",
+      "since": "0.38.0"
     }
   },
   "agents": {
@@ -100,6 +104,11 @@
     ".team/CREW.md": {
       "status": "stable",
       "role": "persona overrides"
+    },
+    ".team/ISSUES.md": {
+      "status": "stable",
+      "since": "0.38.0",
+      "role": "ranked issue list (qa; lead adds rows and sets status/item)"
     },
     ".team/requirements/": {
       "status": "stable",

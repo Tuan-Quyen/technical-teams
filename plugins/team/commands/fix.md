@@ -1,6 +1,6 @@
 ---
 description: "Fix a bug by tier: T1 debugger → developer → code-reviewer (∥ security) → qa · T2 adds a qa pre-check and reports"
-argument-hint: "<bug, error message or failing test> [--tier T1|T2]"
+argument-hint: "<bug, error message, failing test or issue ID (I3)> [--tier T1|T2]"
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ Fix this bug with the technical team:
 
 $ARGUMENTS
 
-You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Empty request → ask for the bug or symptom, then stop.
+You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Empty request → ask for the bug or symptom, then stop. An issue ID (`I3`) → its row in `.team/ISSUES.md` is the symptom; set its `status` to `in-progress` and `item` to this item's slug.
 
 **Tier**: T1; T2 when it touches auth or permissions, payment processing (charging, refunds, payouts), schema migrations, or deleting or rewriting stored data. Calculation logic that tests cover (prices, totals, tax) stays T1. Below T2 no gate writes a report file: the debugger's brief says `Write: –` and its reproduction and root cause stay in its handoff; pass them to the next briefs verbatim.
 
