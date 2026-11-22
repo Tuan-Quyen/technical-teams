@@ -300,6 +300,10 @@ test('the shared schema and contract blocks are identical across workflow script
     assert.equal(block(read('workflows/release.js'), name), block(ref, name), `release.js: ${name} drifted from review.js`);
   }
   for (const name of ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe']) assert.ok(block(ref, name), `review.js has ${name}`);
+  // release.js fails closed on severe open issues from .team/ISSUES.md, as it does on items.
+  const rel = read('workflows/release.js');
+  assert.match(rel, /if \(!Array\.isArray\(A\.issues\)\) failA\(/, 'release.js requires args.issues');
+  assert.match(rel, /const goNoGo = [^\n]*issueResults\.every\(\(i\) => i\.accepted\)/, 'an unaccepted issue makes release.js NO-GO');
   // Every script parses args, cleans agent text and wraps it in a data block the same way.
   for (const w of WORKFLOWS) for (const name of ['clean', 'dataBlock', 'parseArgs']) assert.equal(block(read(`workflows/${w}`), name), block(ref, name), `${w}: ${name} drifted from review.js`);
   // The cap is the same constant wherever an item is judged.

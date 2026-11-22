@@ -67,7 +67,7 @@ Route each handoff by its Status (run-kit §5). A developer handoff without buil
 
 1. T2 item that changed product behaviour → brief `technical-team:team-ba` to merge what still holds into `.team/PRODUCT.md` (T0, T1: no PRODUCT.md edit).
 2. Milestone close or a spec over budget → compaction (run-kit `workspace.md` § Compaction).
-3. `.team/ISSUES.md` (create from `${CLAUDE_PLUGIN_ROOT}/templates/core/ISSUES.md` if missing): the row whose `item` is this slug → `fixed` (`not-a-bug` when the debugger proved it); each finding still `open` or `deferred` that blocked nothing → a `new` row, source `<slug>#F<n>`. Then 5 or more `new` rows → `triage` step 2 now (one qa spawn); its top rows go in the report.
+3. `.team/ISSUES.md` (create from `${CLAUDE_PLUGIN_ROOT}/templates/core/ISSUES.md` if missing): the row whose `item` is this slug → `fixed` (`not-a-bug` when the debugger proved it); each finding still `open` or `deferred` that blocked nothing → a `new` row (ID from its `Next ID` line), source `<slug>#F<n>`. Then 5 or more `new` rows → `triage` step 2 now (one qa spawn); its top rows go in the report.
 4. Move the item's spec and report files (`requirements/`, `system-design/`, `frontend-design/` and their `<slug>-m<n>.md`, `reports/<slug>/`) to `.team/archive/<slug>/`; delete `.team/items/<slug>.json`.
 5. If the item has tickets, brief `technical-team:team-pm` to mark them `done`.
 6. Report to the user, naming items by label (`[CART] [CHECKOUT]`): what was done, files changed, test and review evidence, open risks.

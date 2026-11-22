@@ -9,8 +9,9 @@ Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migratio
 - Issues no longer vanish: at item close (lead §6) the issue the item came from → `fixed` / `not-a-bug`, and every non-blocking finding still open or deferred → a `new` row (`<slug>#F2`). `/technical-team:test` adds its production-code failures as rows.
 - **`/run` triages by itself**: a request with several bugs or issues (a list, a file) → `triage`, then your pick runs as `fix` / `feature`; `/run` with no request and no open item → the top issues instead of "what to work on?"; an item close leaving 5+ `new` rows → triage before the report; a bug matching an open row → `fix I<n>`, no duplicate.
 - **`review`**: findings on a diff no open item owns become `new` rows (disputed ones stay in the report); 5+ → triage.
-- **`release`**: an open issue with severity blocker or critical, or priority P1, is NO-GO unless you accept it (recorded in `decisions`); the writer adds **Known issues** from the open bug rows; a gate's blocking finding left open becomes a row.
-- `/technical-team:fix I3` takes an issue ID: its row is the symptom, set `in-progress` with the item's slug.
+- **`release`**: an open issue with severity blocker or critical, or priority P1, is NO-GO unless you accept it (recorded in `decisions`), inline and in `release.js` (new required arg `issues`, returned as `issues`); the writer adds **Known issues** from the open bug rows; a gate's blocking finding left open becomes a row.
+- `ISSUES.md` keeps a `Next ID` line, so compaction never frees an ID for reuse.
+- `/technical-team:fix I3` and `/technical-team:feature I3` take an issue ID: its row is the symptom, set `in-progress` with the item's slug.
 - Compaction drops closed rows from `ISSUES.md`; git keeps them.
 
 ## 0.37.0 — 2026-11-22 (item labels people can read)
