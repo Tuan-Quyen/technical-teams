@@ -8,7 +8,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 - **Màu phân loại agent**: mỗi agent có một `color:` trong frontmatter (nhãn trong UI + badge khi orchestrator spawn).
 - **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Orchestrator nạp khi cần; không tự spawn ai.
-- **5 skill** nạp khi cần: `business-analysis` (spec), `plan` (thiết kế + ticket + lập sprint: ai tham gia bước nào, xếp theo priority, vừa capacity, board), `development-process` (code + unit test + evidence), `test-process` (QA), `retrospect` (playbook audit team: nguồn, ngưỡng tín hiệu, luật evidence, report, tự phản biện; kèm script `retrospect.mjs` đọc transcript).
+- **5 skill** nạp khi cần: `business-analysis` (spec), `plan` (thiết kế + ticket + lập sprint: ai tham gia bước nào, xếp theo priority, vừa capacity, board), `development-process` (code + unit test + evidence), `test-process` (QA), `retrospect` (playbook audit team: nguồn, ngưỡng tín hiệu, luật evidence, report, tự phản biện; kèm script `retro-miner.mjs` đọc transcript).
 
 ```
 bạn ──▶ /technical-team:run "login trả 500"
@@ -96,7 +96,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 | `team-dba` | migration không downtime, chỉ DB local/test | migration, mục "Data and migrations" của `system-design/<slug>.md` | 🟦 🗄️ |
 | `team-devops` | CI/CD, Docker, manifest, xác minh local | file infra | 🟩 🚢 |
 | `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` | 🩵 ✍️ |
-| `team-retrospector` | retro + audit chính team: theo skill `retrospect`: transcript local (`retrospect.mjs`), `.team/`, git, định nghĩa agent; đối chiếu từng tín hiệu với file của plugin, đề xuất sửa kèm evidence; không sửa plugin | `retrospect/<YYYY-MM-DD>/` | 🟪 🔭 |
+| `team-retrospector` | retro + audit chính team: theo skill `retrospect`: transcript local (`retro-miner.mjs`), `.team/`, git, định nghĩa agent; đối chiếu từng tín hiệu với file của plugin, đề xuất sửa kèm evidence; không sửa plugin | `retrospect/<YYYY-MM-DD>/` | 🟪 🔭 |
 
 Quy tắc chung + mẫu `### Handoff` của 13 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Hai quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay orchestrator): specialist không được `git commit`/`git push`, và báo cáo thiếu `### Handoff` (Status + Evidence) bị trả lại. Lưu `.team/items/*.json` thì hook sinh lại `STATE.md`. Luật chung của mọi pipeline (tier, opt-in workflow, task list, không commit/push) nằm **một chỗ**: run-kit §2.
 
@@ -216,7 +216,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 | `tests/build-loop.test.mjs` | chạy thật `build-loop.js` với agent giả: lô sửa, một bộ đếm, stall, cap, challenge (concede / trọng tài), câu brief giống hệt `run-kit` `qa-lines.md` |
 | `tests/team-state.test.mjs` | schema item JSON, view `STATE.md`, luật spec, `migrate` từ 0.32 |
 | `tests/hooks.test.mjs` | chặn commit/push của specialist, Handoff bắt buộc, sinh lại `STATE.md` |
-| `tests/retrospect.test.mjs` | `skills/retrospect/scripts/retrospect.mjs` trên transcript giả: lọc phiên plugin/probe, cửa sổ ngày, usage, work inventory, correction, health (Status/Next, StructuredOutput), guard, evidence ref đúng dòng, `--show`, che secret |
+| `tests/retrospect.test.mjs` | `skills/retrospect/scripts/retro-miner.mjs` trên transcript giả: lọc phiên plugin/probe, cửa sổ ngày, usage, work inventory, correction, health (Status/Next, StructuredOutput), guard, evidence ref đúng dòng, `--show`, che secret |
 | `tests/structure.test.mjs` | khung section của từng loại file: agent, command, skill, reference (CLAUDE.md § Document format) |
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |
 | `tests/commands.test.mjs` | bộ lệnh/agent/skill, file được nhắc tới tồn tại, layout `.team/`, README, manifest, `claude plugin validate --strict` |

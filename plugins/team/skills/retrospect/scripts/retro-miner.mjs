@@ -4,10 +4,10 @@
 // subagents/workflows/wf_*/) and turns them into counts and signals with evidence (file:line @time + a redacted snippet).
 // Every signal is a keyword heuristic: open it with --show before citing it. Read-only, local only: no network,
 // writes only to --out.
-//   node retrospect.mjs [--days 14] [--out <dir>] [--project <substr>] [--exclude-project <substr>]...
+//   node retro-miner.mjs [--days 14] [--out <dir>] [--project <substr>] [--exclude-project <substr>]...
 //                       [--exclude-session <id>] [--root <projects dir>] [--plugin technical-team] [--plugin-root <dir>]
 //                       [--include-dev] [--include-probes] [--now <ISO>]
-//   node retrospect.mjs --show <project>/<session>.jsonl:L<n> [--radius 4]   → the context of one evidence item
+//   node retro-miner.mjs --show <project>/<session>.jsonl:L<n> [--radius 4]   → the context of one evidence item
 // → <out>/digest.md (short, for the retrospector) and <out>/digest.json (everything).
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname, relative, sep, resolve } from 'node:path';
@@ -518,7 +518,7 @@ export function renderDigest(d) {
   L.push(`Plugin versions: current ${sg.versions.current} · older ${sg.versions.older} sessions · working copy (dev, version unknown) ${sg.versions.dev} · unknown ${sg.versions.unknown}`);
   for (const n of meta.notes) L.push(`Note: ${n}`);
   if (meta.pluginSessions < 10) L.push(`Note: fewer than 10 plugin sessions — every conclusion is low confidence.`);
-  L.push('', 'Every count is a keyword heuristic: `node retrospect.mjs --show <ref>` before citing it. Refs are `<project>/<session>.jsonl:L<line>` under ~/.claude/projects. Cost-tokens = input + 1.25×cache write + 0.1×cache read + 5×output.', '');
+  L.push('', 'Every count is a keyword heuristic: `node retro-miner.mjs --show <ref>` before citing it. Refs are `<project>/<session>.jsonl:L<line>` under ~/.claude/projects. Cost-tokens = input + 1.25×cache write + 0.1×cache read + 5×output.', '');
 
   L.push('## Follow-up metrics', '', '| Metric | Now |', '|---|---|');
   for (const [k, v] of Object.entries(sg.metrics)) L.push(`| ${k} | ${v} |`);

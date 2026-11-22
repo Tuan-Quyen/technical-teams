@@ -42,7 +42,7 @@ plugins/team/
 │                Handoff, preloaded by every specialist via `skills:`) · method
 │                skills: business-analysis, plan,
 │                development-process, test-process,
-│                retrospect (+ scripts/retrospect.mjs, transcript miner)
+│                retrospect (+ scripts/retro-miner.mjs, transcript miner)
 ├── workflows/   Workflow-tool scripts (plugin component dir, auto-registered by
 │                name): build-loop, review, release, plan-tickets, compact
 ├── hooks/       hooks.json → guard.mjs (deterministic rule enforcement)

@@ -1,6 +1,6 @@
 ---
 name: retrospect
-description: The retrospector's audit playbook for the technical team itself — evidence from the user's real work history (local Claude Code transcripts mined by `scripts/retrospect.mjs`, the target projects' `.team/` artifacts, git history, the plugin's own definitions) to find missing, weak, overlapping or unused agents, skills, commands, hooks and workflows, and the smallest change that fixes each. team-retrospector loads it for every `/technical-team:retrospect`.
+description: The retrospector's audit playbook for the technical team itself — evidence from the user's real work history (local Claude Code transcripts mined by `scripts/retro-miner.mjs`, the target projects' `.team/` artifacts, git history, the plugin's own definitions) to find missing, weak, overlapping or unused agents, skills, commands, hooks and workflows, and the smallest change that fixes each. team-retrospector loads it for every `/technical-team:retrospect`.
 ---
 
 # retrospect — an audit of the team you can act on
@@ -59,7 +59,7 @@ Test: could the user act on the report without translating it?
 
 | # | Source | How |
 |---|---|---|
-| 1 | Transcripts | `node "<plugin root>/skills/retrospect/scripts/retrospect.mjs" --days <n> <flags> --exclude-session <id> --out .team/retrospect/<YYYY-MM-DD>/evidence`, then `--show <ref> --radius 4` per item you cite. Details: `references/sources.md` |
+| 1 | Transcripts | `node "<plugin root>/skills/retrospect/scripts/retro-miner.mjs" --days <n> <flags> --exclude-session <id> --out .team/retrospect/<YYYY-MM-DD>/evidence`, then `--show <ref> --radius 4` per item you cite. Details: `references/sources.md` |
 | 2 | Team artifacts | in each project the digest lists: `.team/ISSUES.md`, `.team/reports/<slug>/`, `.team/archive/<slug>/`, `.team/TASKS.md` (sprints, risks), earlier `.team/retrospect/` |
 | 3 | Git history | per project: `git log --since=<date> --pretty='%h %ad %s' --date=short` and `--stat`; reverts, "fix fix" chains, Claude co-authored commits |
 | 4 | Definitions | every file in the digest's Definitions: description (the trigger), `model`, `disallowedTools`, length; compare descriptions pairwise for overlap and ambiguous triggers |

@@ -4,7 +4,7 @@
 
 ## The miner
 
-`scripts/retrospect.mjs` (Node ≥ 21, no dependencies) reads `~/.claude/projects/<project>/<session>.jsonl` (CLI and desktop write the same place), subagent runs under `<session>/subagents/agent-*.jsonl` and workflow runs under `subagents/workflows/wf_*/`. Read-only; no network; writes only `--out`.
+`scripts/retro-miner.mjs` (Node ≥ 21, no dependencies) reads `~/.claude/projects/<project>/<session>.jsonl` (CLI and desktop write the same place), subagent runs under `<session>/subagents/agent-*.jsonl` and workflow runs under `subagents/workflows/wf_*/`. Read-only; no network; writes only `--out`.
 
 | Flag | Use |
 |---|---|

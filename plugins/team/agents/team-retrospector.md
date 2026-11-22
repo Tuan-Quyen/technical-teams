@@ -26,7 +26,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 
 1. **Collect** — the skill's Method §1, in its order: the miner into `.team/retrospect/<YYYY-MM-DD>/evidence/`, then `.team/` artifacts, git history and the definitions. → verify: `.team/retrospect/.gitignore` holds `*/evidence/`; the miner's line shows the window and the plugin-session count.
 2. **Audit** — each signal against the plugin file that would cause it, or noise (skill `references/signals.md`); open every item you will cite with `--show`.
-3. **Decide** — the skill's Principles and the self-critique; what fails goes to the appendix, a defect of the miner itself is a proposal on `skills/retrospect/scripts/retrospect.mjs`.
+3. **Decide** — the skill's Principles and the self-critique; what fails goes to the appendix, a defect of the miner itself is a proposal on `skills/retrospect/scripts/retro-miner.mjs`.
 4. **Report** — `retrospect.md` from the template in the user's language, every proposal with its exact replacement text; new-component drafts under `drafts/`. → verify: every ref is in the digest or a file you read, written in full (no `…`), and pastes into `--show`; nothing a reader could drop without losing a decision.
 
 ## Done when

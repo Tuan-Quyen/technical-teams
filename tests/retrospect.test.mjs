@@ -1,4 +1,4 @@
-// plugins/team/skills/retrospect/scripts/retrospect.mjs on fake transcripts built in a temp dir: which sessions count, the day window,
+// plugins/team/skills/retrospect/scripts/retro-miner.mjs on fake transcripts built in a temp dir: which sessions count, the day window,
 // usage, guard firings, handoff status, evidence refs on the right line, redaction, dedupe, CLI output.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,10 +7,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { collect, parseArgs, normBash, redact, renderDigest, show, workType, promptKey, DAYS } from '../plugins/team/skills/retrospect/scripts/retrospect.mjs';
+import { collect, parseArgs, normBash, redact, renderDigest, show, workType, promptKey, DAYS } from '../plugins/team/skills/retrospect/scripts/retro-miner.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const TOOL = path.join(REPO, 'plugins/team/skills/retrospect/scripts/retrospect.mjs');
+const TOOL = path.join(REPO, 'plugins/team/skills/retrospect/scripts/retro-miner.mjs');
 const NOW = '2026-11-22T12:00:00.000Z';
 const at = (daysAgo) => new Date(Date.parse(NOW) - daysAgo * 864e5).toISOString();
 const usage = { input_tokens: 10, cache_creation_input_tokens: 100, cache_read_input_tokens: 1000, output_tokens: 20 };
