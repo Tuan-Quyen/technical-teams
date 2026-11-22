@@ -1,0 +1,28 @@
+schema_version: "1.1"
+name: route-feature-t2
+description: Payment processing goes to the feature pipeline at T2, classified from run-kit.
+tags: [smoke, routing]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /technical-team:run Add card payments to checkout: charge the cart total with Stripe and refund on cancel.
+
+    (Eval run: do only §1 Start and §2 Classify of the orchestrator. Stop before you create the item, ask questions or spawn anyone. End your reply with exactly one line: `ROUTE: <pipeline> <tier>`.)
+  max_turns: 12
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: tool_used
+    name: reads-orchestrator
+    tool: Read
+    input_match: 'team-orchestrator\.md'
+  - type: tool_used
+    name: loads-run-kit
+    tool: Skill
+    input_match: 'run-kit'
+    weight: 0.25
+  - type: regex
+    name: route-feature-t2
+    pattern: 'ROUTE:\s*`?feature\s+T2'
+    flags: i

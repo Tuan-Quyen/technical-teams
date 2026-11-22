@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: nl-feature-plan
+description: A plain-language feature request (no slash command) finds the team and plans the T1 feature lane.
+tags: [smoke, trigger]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    I'd like the technical team to add 10% VAT to the total that cartTotal returns. Don't start yet: tell me which team agents you would use, in which order, and which tier this is.
+  max_turns: 10
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: tool_used
+    name: loads-run-kit
+    tool: Skill
+    input_match: 'run-kit'
+    weight: 0.25
+  - type: regex
+    name: names-developer
+    pattern: 'team-developer|\bdeveloper\b'
+    flags: i
+  - type: llm
+    name: t1-feature-lane
+    criteria: |
+      Binary check. PASS only if all hold:
+      1. The plan is a feature at tier T1 (not T2: price calculation covered by tests is not T2; not T0: only the user picks --small).
+      2. The order is ba (requirements) → developer → code-reviewer → qa. Security or dba alongside the review is fine; architect, pm or designer as steps is not.
+      3. It does not write or propose code.

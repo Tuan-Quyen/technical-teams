@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: route-feature-t1-tax
+description: Price calculation covered by tests is not T2 (run-kit tier rule) — feature at T1.
+tags: [smoke, routing]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /technical-team:run Add 10% VAT to the cart total returned by cartTotal.
+
+    (Eval run: do only §1 Start and §2 Classify of the orchestrator. Stop before you create the item, ask questions or spawn anyone. End your reply with exactly one line: `ROUTE: <pipeline> <tier>`.)
+  max_turns: 12
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: tool_used
+    name: loads-run-kit
+    tool: Skill
+    input_match: 'run-kit'
+    weight: 0.25
+  - type: regex
+    name: route-feature-t1
+    pattern: 'ROUTE:\s*`?feature\s+T1'
+    flags: i

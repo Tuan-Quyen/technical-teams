@@ -207,6 +207,8 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 |---|---|
 | Test (gồm cả validate nếu có `claude` CLI) | `npm test` |
 | Chỉ validate | `npm run validate` |
+| Eval hành vi thật, nhanh (Claude chạy plugin, mỗi case 1 lần; cần `ANTHROPIC_API_KEY` hoặc đã login, ~$0.8, không chạy trên CI) | `npm run eval` (`-- --case <tên>` cho một case) |
+| Eval đầy đủ trước release (mỗi case 3 lần + nhánh không plugin để đo Δ) | `npm run eval:full` |
 | Chạy thử bản đang sửa | `claude --plugin-dir plugins/team`, sửa xong gõ `/reload-plugins` |
 
 | Test | Kiểm |
@@ -219,12 +221,21 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |
 | `tests/commands.test.mjs` | bộ lệnh/agent/skill, file được nhắc tới tồn tại, layout `.team/`, README, manifest, `claude plugin validate --strict` |
 
+Eval (`plugins/team/evals/<case>/case.yaml`, fixture `evals/_fixtures/tiny-node.sh`; grader tất định, LLM judge chỉ cho chất lượng):
+
+| Nhóm | Case | Kiểm |
+|---|---|---|
+| Phân loại | `route-feature-t2`, `route-feature-t1-tax`, `route-fix-t1` | `/technical-team:run` chọn đúng pipeline + tier theo run-kit |
+| Tự kích hoạt | `nl-feature-plan`, `nl-bug-plan` | câu tự nhiên, không slash command → đúng lane, đúng thứ tự agent |
+| Phủ định | `neg-question-no-pipeline`, `neg-auth-typo-not-t2` | câu hỏi → trả lời, không spawn/không item; sửa chữ ở trang login → không lên T2 |
+| Làm thật | `ba-writes-gwt`, `specialist-handoff`, `state-md-generated` | ba viết spec GWT có biên 100; debugger tìm đúng lỗi + Handoff; hook sinh lại `STATE.md` | Trên Windows eval không cấp được Bash/PowerShell (không có sandbox) nên chặn `git commit` chỉ được kiểm ở `tests/hooks.test.mjs`. Báo cáo HTML ở `plugins/team/evals/results/` (gitignored).
+
 Thêm, đổi tên hoặc xóa command/agent/skill/template → cập nhật bảng ở trên và danh sách trong `tests/commands.test.mjs`.
 
 ```
 technical-team/
 ├── .claude-plugin/marketplace.json
-├── package.json         npm test · npm run validate
+├── package.json         npm test · npm run validate · npm run eval[:full]
 ├── CHANGELOG.md
 ├── tests/               test + validate cho plugin
 ├── LICENSE

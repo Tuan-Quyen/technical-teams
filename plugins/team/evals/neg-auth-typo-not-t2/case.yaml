@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: neg-auth-typo-not-t2
+description: A typo on the login page mentions auth but is not T2 work — and the orchestrator never picks T0 itself.
+tags: [smoke, negative, routing]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /technical-team:run The login page says "Pasword" instead of "Password" in the field label. Fix the typo.
+
+    (Eval run: do only §1 Start and §2 Classify of the orchestrator. Stop before you create the item, ask questions or spawn anyone. End your reply with exactly one line: `ROUTE: <pipeline> <tier>`.)
+  max_turns: 12
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: regex
+    name: route-t1
+    pattern: 'ROUTE:\s*`?(fix|feature)\s+T1'
+    flags: i
+  - type: regex
+    name: not-t2
+    pattern: 'ROUTE:\s*`?\S+\s+T2'
+    flags: i
+    match: not_contains

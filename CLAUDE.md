@@ -24,6 +24,8 @@ Node ≥ 21, no dependencies to install.
 | One test file | `node --test tests/hooks.test.mjs` |
 | One test by name | `node --test --test-name-pattern="<regex>" tests/<file>.test.mjs` |
 | Validate manifests only | `npm run validate` |
+| Behaviour eval (real Claude runs `plugins/team/evals/`, 1 run per case; ~$0.8, local only, not CI) | `npm run eval` (`-- --case <name>`) |
+| Full eval before a release (3 runs per case + a no-plugin baseline arm for the score delta) | `npm run eval:full` |
 | Try the working copy of the plugin | `claude --plugin-dir plugins/team`, then `/reload-plugins` after edits |
 | Migrate an old `.team/` workspace | `node plugins/team/tools/team-state.mjs migrate <dir>/.team` (dry run; `--write`) |
 | Migrate old IDs (`T-1`, `AC1`) | `node plugins/team/skills/run-kit/scripts/migrate-ids.mjs <project>` (dry run; `--write`, `--all`) |
@@ -80,3 +82,4 @@ The four working principles (Think before you work · Simplicity first · Surgic
 - A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (Breaking / Deprecated / Removed / Migration when they apply).
 - Keep prompts short: orchestrator context size per run is a tracked metric in the CHANGELOG; prefer moving detail into a skill reference loaded on demand over growing an agent or command file.
 - Line endings: tests normalise CRLF, but keep files LF.
+- After a change to an agent, command, skill or hook, run `npm run eval` too. A failing case is a regression unless the transcript shows the plugin behaved correctly. Fix the grader only in that case. One eval case is one behaviour. Grade it deterministically, and use an `llm` grader only for quality a regex cannot judge. A new trigger or routing rule gets a should-not-fire case too.

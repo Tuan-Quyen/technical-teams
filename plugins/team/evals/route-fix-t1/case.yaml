@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: route-fix-t1
+description: A wrong result is a bug — fix pipeline at T1, never the user-only T0.
+tags: [smoke, routing]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /technical-team:run cartTotal returns 5 instead of 11 for a two-line cart, and test/cart.test.js fails.
+
+    (Eval run: do only §1 Start and §2 Classify of the orchestrator. Stop before you create the item, ask questions or spawn anyone. End your reply with exactly one line: `ROUTE: <pipeline> <tier>`.)
+  max_turns: 12
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: tool_used
+    name: loads-run-kit
+    tool: Skill
+    input_match: 'run-kit'
+    weight: 0.25
+  - type: regex
+    name: route-fix-t1
+    pattern: 'ROUTE:\s*`?fix\s+T1'
+    flags: i

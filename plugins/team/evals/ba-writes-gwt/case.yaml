@@ -1,0 +1,40 @@
+schema_version: "1.1"
+name: ba-writes-gwt
+description: team-ba writes the item spec in .team/requirements/ with Given/When/Then ACs.
+tags: [smoke, specialist]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Spawn the technical-team:team-ba agent with this brief, then relay its handoff:
+
+    Item slug `cart-discount`. Write the spec in `.team/requirements/cart-discount.md` for: a cart total over 100 gets a 5% discount; totals of 100 or less get none. Business rules are confirmed by the user as stated; do not ask questions, mark anything else as an assumption.
+  max_turns: 10
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Agent, Write, Edit]
+runs: 1
+graders:
+  - type: tool_used
+    name: spawns-ba
+    tool: Agent
+    input_match: 'team-ba'
+  - type: file_exists
+    name: spec-written
+    path: '.team/requirements/*.md'
+  - type: regex
+    name: given-when-then
+    target: { source: file, path: .team/requirements/cart-discount.md }
+    pattern: 'Given[\s\S]*When[\s\S]*Then'
+  - type: regex
+    name: boundary-100
+    target: { source: file, path: .team/requirements/cart-discount.md }
+    pattern: '\b100\b'
+  - type: llm
+    name: ac-quality
+    focus: { source: file, path: .team/requirements/cart-discount.md }
+    criteria: |
+      Binary check. PASS only if all hold:
+      1. Each acceptance criterion is a testable Given/When/Then with concrete numbers.
+      2. The boundary is covered on both sides: a total of exactly 100 gets no discount, and a total just over 100 gets 5%.
+      3. Nothing beyond the stated rule is presented as a confirmed business rule: extra choices (rounding, currency, what the total includes) are listed as assumptions or open questions somewhere in the spec. Criteria may rely on a listed assumption.
+      Judge only these three points, not style or extra content.

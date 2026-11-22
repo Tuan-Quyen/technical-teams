@@ -1,0 +1,39 @@
+schema_version: "1.1"
+name: specialist-handoff
+description: team-debugger finds the planted off-by-one and reports with the Handoff block (Status + Evidence).
+tags: [smoke, specialist]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Spawn the technical-team:team-debugger agent with this brief, then relay its report verbatim:
+
+    Bug: `cartTotal([{price:2,qty:3},{price:5,qty:1}])` returns 5, expected 11 (test/cart.test.js fails). Find the root cause with evidence and a fix direction. No shell is available in this run: prove it by reading the code.
+  max_turns: 10
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill, Agent]
+runs: 1
+graders:
+  - type: tool_used
+    name: spawns-debugger
+    tool: Agent
+    input_match: 'team-debugger'
+  - type: regex
+    name: handoff-heading
+    target: last_message
+    pattern: '### Handoff'
+  - type: regex
+    name: handoff-status
+    target: last_message
+    pattern: '-\s*Status:\s*\**(done|blocked|needs-input)'
+    flags: i
+  - type: regex
+    name: handoff-evidence
+    target: last_message
+    pattern: '-\s*Evidence:'
+    flags: i
+  - type: regex
+    name: root-cause
+    target: last_message
+    pattern: 'i\s*=\s*1|index\s*1|first (line|item|element)|lines\[0\]|off-by-one'
+    flags: i

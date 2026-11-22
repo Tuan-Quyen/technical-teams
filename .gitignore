@@ -5,3 +5,4 @@ node_modules/
 *.log
 .team/
 docs/
+plugins/team/evals/results/

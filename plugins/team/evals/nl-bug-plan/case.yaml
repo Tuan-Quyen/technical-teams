@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: nl-bug-plan
+description: A plain-language bug report (no slash command) plans the fix lane with the debugger first.
+tags: [smoke, trigger]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Our cartTotal returns 5 instead of 11 for a two-line cart and test/cart.test.js fails. Have the team fix it, but don't run anything yet: which agents, in what order?
+  max_turns: 10
+  allowed_tools: [Read, Glob, Grep, Skill]
+runs: 1
+graders:
+  - type: tool_used
+    name: loads-run-kit
+    tool: Skill
+    input_match: 'run-kit'
+    weight: 0.25
+  - type: regex
+    name: names-debugger
+    pattern: 'team-debugger|\bdebugger\b'
+    flags: i
+  - type: llm
+    name: fix-lane
+    criteria: |
+      Binary check. PASS only if all hold:
+      1. The debugger comes first, to reproduce and prove the root cause before any code change.
+      2. Then developer (with a regression test), then code-reviewer, then qa.
+      3. The answer does not apply or write the fix itself.
