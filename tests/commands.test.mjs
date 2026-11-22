@@ -402,6 +402,8 @@ test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: undefined })]), ['estimate'], 'missing estimate');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 0 })]), ['estimate'], 'zero estimate');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 3 })]), ['estimate-split'], 'over 2d is split');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 1.3 })]), ['estimate'], 'not in 0.5-day steps');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 1.5 })]), [], '0.5-day step passes');
   assert.deepEqual(rules([]), ['no-tickets'], 'empty ticket list');
   assert.deepEqual(rules([t('T-1', 1, ['src/A.js']), t('T-2', 1, ['src/a.JS'])]), ['file-overlap'], 'overlap ignores case');
   const m = (id, milestone, group, files, o = {}) => t(id, group, files, { milestone, ...o });

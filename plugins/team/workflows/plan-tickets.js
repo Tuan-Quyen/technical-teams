@@ -84,6 +84,7 @@ const checkTickets = (tickets) => {
     if (t.milestone != null && !(Number.isInteger(t.milestone) && t.milestone >= 1)) add(t.id, 'milestone', `milestone "${t.milestone}" is not a whole number from 1`)
     if (!(t.acs || []).length) add(t.id, 'acs', 'no acceptance criteria')
     if (!(typeof t.estimate === 'number' && t.estimate > 0)) add(t.id, 'estimate', `estimate "${t.estimate}" is not a number of days above 0`)
+    else if (!Number.isInteger(t.estimate * 2)) add(t.id, 'estimate', `estimate ${t.estimate}d is not in 0.5-day steps`)
     else if (t.estimate > 2) add(t.id, 'estimate-split', `estimate ${t.estimate}d is over 2d: split the ticket`)
     if (!(t.files || []).length) add(t.id, 'files', 'no files')
     const safe = []
