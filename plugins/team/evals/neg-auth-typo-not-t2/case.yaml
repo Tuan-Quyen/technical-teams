@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: neg-auth-typo-not-t2
-description: A typo on the login page mentions auth but is not T2 work — and the orchestrator never picks T0 itself.
+description: A typo on the login page mentions auth but is not T2 work — T1 or a direct one-agent brief, never a T0 the orchestrator picks itself.
 tags: [smoke, negative, routing]
 context:
   scaffold_script: scaffold.sh
@@ -14,8 +14,8 @@ execution:
 runs: 1
 graders:
   - type: regex
-    name: route-t1
-    pattern: 'ROUTE:\s*`?(fix|feature)\s+T1'
+    name: route-t1-or-direct
+    pattern: 'ROUTE:\s*`?((fix|feature)\s+T1|direct\b|none\b)'
     flags: i
   - type: regex
     name: not-t2

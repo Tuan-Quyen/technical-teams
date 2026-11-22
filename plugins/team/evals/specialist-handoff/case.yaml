@@ -20,8 +20,8 @@ graders:
     input_match: 'team-debugger'
   - type: regex
     name: handoff-heading
-    target: last_message
-    pattern: '### Handoff'
+    target: trace
+    pattern: '### Handoff(\\n|\s)+-\s*Status:'
   - type: regex
     name: handoff-status
     target: last_message

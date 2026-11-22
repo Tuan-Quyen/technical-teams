@@ -31,7 +31,7 @@ color: purple
 
 ### 2. Classify
 
-From run-kit, pick the row of its §2 table that fits the request. A pipeline row → Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow it with run-kit §2 *Running a pipeline*. Record in the item whether it was opted into workflows (`workflows: yes|no` → `"workflows": true|false`, run-kit §2 **Workflow opt-in**): a resumed item keeps its choice.
+Load `technical-team:run-kit` with the Skill tool if this session has not yet, then pick the row of its §2 table that fits the request. A pipeline row → Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow it with run-kit §2 *Running a pipeline*. Record in the item whether it was opted into workflows (`workflows: yes|no` → `"workflows": true|false`, run-kit §2 **Workflow opt-in**): a resumed item keeps its choice.
 
 ### 3. Bookkeeping
 

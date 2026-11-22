@@ -55,7 +55,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 |---|---|---|
 | `/technical-team:run` | bất kỳ; orchestrator tự phân loại (trống = resume) | theo pipeline orchestrator chọn |
 | `/technical-team:feature` | làm tính năng (`--small` = T0, `--tier T0\|T1\|T2`) | theo tier, bảng dưới |
-| `/technical-team:fix` | sửa bug | T1: debugger → developer → code-reviewer (∥ security) → qa · T2 thêm qa pre-check |
+| `/technical-team:fix` | sửa bug | T1: debugger → developer (regression test trước, rồi sửa) → code-reviewer (∥ security) → qa · T2 thêm qa pre-check |
 | `/technical-team:review` | review diff, không sửa code; finding không thuộc item nào → đề xuất `triage` để qa nhập vào `ISSUES.md` | code-reviewer ∥ security (∥ dba) |
 | `/technical-team:test` | bổ sung và chạy test | qa |
 | `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
@@ -98,7 +98,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 | `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` | 🩵 ✍️ |
 | `team-retrospector` | retro + audit chính team: theo skill `retrospect`: transcript local (`retrospect.mjs`), `.team/`, git, định nghĩa agent; đối chiếu từng tín hiệu với file của plugin, đề xuất sửa kèm evidence; không sửa plugin | `retrospect/<YYYY-MM-DD>/` | 🟪 🔭 |
 
-Quy tắc chung + mẫu `### Handoff` của 13 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Hai quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay orchestrator): specialist không được `git commit`/`git push`, và báo cáo thiếu Handoff (Status + Evidence) bị trả lại. Lưu `.team/items/*.json` thì hook sinh lại `STATE.md`. Luật chung của mọi pipeline (tier, opt-in workflow, task list, không commit/push) nằm **một chỗ**: run-kit §2.
+Quy tắc chung + mẫu `### Handoff` của 13 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Hai quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay orchestrator): specialist không được `git commit`/`git push`, và báo cáo thiếu `### Handoff` (Status + Evidence) bị trả lại. Lưu `.team/items/*.json` thì hook sinh lại `STATE.md`. Luật chung của mọi pipeline (tier, opt-in workflow, task list, không commit/push) nằm **một chỗ**: run-kit §2.
 
 ## Màu agent
 

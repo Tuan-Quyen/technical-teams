@@ -54,6 +54,7 @@ test('pre-handback refuses a specialist report without its Handoff block', () =>
   const qa = 'technical-team:team-qa';
   const call = (agent_type, message) => run('pre-handback', { agent_type, tool_name: 'SubagentHandback', tool_input: { message } });
   assert.equal(call(qa, 'ok')?.hookSpecificOutput?.permissionDecision, 'deny');
+  assert.equal(call(qa, 'ok\n- Status: done\n- Evidence: npm test 4/4')?.hookSpecificOutput?.permissionDecision, 'deny', 'fields without the ### Handoff heading');
   assert.equal(call(qa, 'ok\n### Handoff\n- Status: blocked\n- Files: none\n- Evidence: npm test failed'), null);
   assert.equal(call('technical-team:team-orchestrator', 'ok'), null, 'orchestrator untouched');
   assert.equal(call(undefined, 'ok'), null, 'non-team subagents untouched');

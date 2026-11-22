@@ -1,6 +1,6 @@
 ---
 name: run-kit
-description: Reference for running the technical team: roster, pipelines and their shared rules, brief format, .team/ workspace, handoff. Load it when running a pipeline, writing a brief, reading a handoff, or when the user asks what the team or a command does; also before spawning team agents yourself for work with more than one step or that may be resumed.
+description: Load before you plan, explain or run any technical-team work — which team agents, in what order, which pipeline or tier — and before spawning team agents yourself, writing a brief or reading a handoff. Holds the roster, the pipelines and their shared rules (lanes by tier, the fix lane with its regression test), the brief format, the .team/ workspace and the handoff.
 ---
 
 # technical-team run kit — roster, pipelines, briefs, workspace, handoff
@@ -41,7 +41,7 @@ The orchestrator picks the command from the request; `/technical-team:<command>`
 | anything; empty = resume from `STATE.md` | `run <request>` | the orchestrator classifies it into a row below |
 | a new capability, or a change to how the product behaves | `feature` | T1: ba → developer → code-reviewer (∥ security, dba) → qa · T2: ba → (designer) → architect → pm → qa pre-check → developer → review → qa → writer |
 | small and in existing patterns (the user's flag only; the orchestrator may suggest it, never choose it) | `feature --small` | T0: developer → code-reviewer |
-| a bug, an error, a failing test, wrong behaviour | `fix` | T1: debugger → developer → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
+| a bug, an error, a failing test, wrong behaviour | `fix` | T1: debugger → developer (regression test first, then the fix) → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
 | review / check this diff / audit security | `review` | code-reviewer ∥ security (∥ dba); no code changes |
 | add tests / is this covered | `test` | qa writes missing tests |
 | sort / rank issues, or several bugs or issues at once | `triage [list]` | qa ranks `ISSUES.md`; no item; the pick goes to `fix` or `feature` |

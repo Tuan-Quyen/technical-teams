@@ -2,8 +2,8 @@
 // technical-team hooks. Rule enforcement applies to team specialist subagents only
 // (agent_type "technical-team:team-*", not the orchestrator); the user's own session is never touched.
 //   pre-shell      PreToolUse Bash|PowerShell → deny `git commit` / `git push` (specialists never commit or push)
-//   pre-handback   PreToolUse SubagentHandback → a report without its Handoff (Status + Evidence) is refused
-//   subagent-stop  SubagentStop → a prose reply without its Handoff (Status + Evidence) is sent back once
+//   pre-handback   PreToolUse SubagentHandback → a report without its Handoff (### Handoff, Status, Evidence) is refused
+//   subagent-stop  SubagentStop → a prose reply without its Handoff (### Handoff, Status, Evidence) is sent back once
 //   post-write     PostToolUse Write|Edit|MultiEdit on .team/items/*.json (any session) → regenerate STATE.md
 // Exit 0 with no output = no opinion. Any internal error also exits 0: a broken guard must not block work.
 import { readFileSync } from 'node:fs';
@@ -52,7 +52,7 @@ function lastAssistantText() {
 }
 
 const HANDOFF_HINT = 'technical-team: end with your Handoff block from specialist-rules (### Handoff, then - Status: done | blocked | needs-input, - Files, - Evidence, - Next).';
-const hasHandoffBlock = (m) => /-\s*Status:\s*(done|blocked|needs-input)\b/i.test(m) && /-\s*Evidence:/i.test(m);
+const hasHandoffBlock = (m) => /^#{2,4}\s*Handoff\b/m.test(m) && /-\s*Status:\s*(done|blocked|needs-input)\b/i.test(m) && /-\s*Evidence:/i.test(m);
 
 // Where the report goes out through a SubagentHandback tool call, a stop hook comes too late
 // (the call ends the run), so check the call itself.
