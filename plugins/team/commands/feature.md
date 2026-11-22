@@ -1,6 +1,6 @@
 ---
 description: "Build a feature by tier: T0 developer → code-reviewer · T1 ba → developer → code-reviewer (∥ security) → qa · T2 ba → (designer) → architect → pm → qa pre-check → developer → code-reviewer ∥ security → qa → writer"
-argument-hint: "<feature description> [--small | --tier T0|T1|T2]"
+argument-hint: "<feature description or issue ID (I3)> [--small | --tier T0|T1|T2]"
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ Build this feature with the technical team:
 
 $ARGUMENTS
 
-You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Empty request → ask what to build, then stop.
+You are the lead: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-lead.md` §3–§6 — Read it if you are not already the lead. Empty request → ask what to build, then stop. An issue ID (`I3`) → its row in `.team/ISSUES.md` is the request; set its `status` to `in-progress` and `item` to this item's slug.
 
 **Tier** (write it in the item; the user forces one with `--tier`):
 - **T2** — new screen flow, new contract or module, auth or permissions, payment processing (charging, refunds, payouts), schema migrations, or deleting or rewriting stored data. Calculation logic that tests cover (prices, totals, tax) is not T2.

@@ -28,7 +28,7 @@ const frontmatter = (p) => {
 };
 
 const PIPELINES = ['feature', 'fix', 'infra', 'new', 'release', 'review', 'test'];
-const COMMANDS = [...PIPELINES, 'crew', 'run'].sort();
+const COMMANDS = [...PIPELINES, 'crew', 'run', 'triage'].sort();
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
 const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
 const AGENTS = [...WORKERS, 'team-lead'].sort();
@@ -39,7 +39,7 @@ const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
 
 // The .team/ layout documented in the README; `<slug>` and `NNNN-<…>` are placeholders.
 const LAYOUT = [
-  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/CREW\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
+  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/CREW\.md$/, /^\.team\/ISSUES\.md$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
   /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
@@ -300,6 +300,10 @@ test('the shared schema and contract blocks are identical across workflow script
     assert.equal(block(read('workflows/release.js'), name), block(ref, name), `release.js: ${name} drifted from review.js`);
   }
   for (const name of ['SKEPTIC', 'skepticPrompt', 'verifyFindings', 'dedupe']) assert.ok(block(ref, name), `review.js has ${name}`);
+  // release.js fails closed on severe open issues from .team/ISSUES.md, as it does on items.
+  const rel = read('workflows/release.js');
+  assert.match(rel, /if \(!Array\.isArray\(A\.issues\)\) failA\(/, 'release.js requires args.issues');
+  assert.match(rel, /const goNoGo = [^\n]*issueResults\.every\(\(i\) => i\.accepted\)/, 'an unaccepted issue makes release.js NO-GO');
   // Every script parses args, cleans agent text and wraps it in a data block the same way.
   for (const w of WORKFLOWS) for (const name of ['clean', 'dataBlock', 'parseArgs']) assert.equal(block(read(`workflows/${w}`), name), block(ref, name), `${w}: ${name} drifted from review.js`);
   // The cap is the same constant wherever an item is judged.

@@ -10,6 +10,7 @@ Spec files and their owners: run-kit §1 Writes; templates under `requirements/`
 | `STATE.md` — open items, resume point | view, generated from `items/` | nobody writes it |
 | `reports/<slug>/qa.md`, `review.md`, `security.md`, `debug.md` | T2 only | qa, code-reviewer, security, debugger |
 | `CREW.md` — emoji, names, vibes, colors | config | lead creates from `core/CREW.md`; the user edits |
+| `ISSUES.md` — the project's issue list (bugs, enhancements, debt), ranked | backlog, template `core/ISSUES.md` | qa (`/technical-team:triage`); the lead adds `new` rows and sets `status` / `item` |
 | `archive/<slug>/` — files of a closed item; agents never read it unless a brief names it | — | lead |
 
 Evidence (test output, repro steps, round details) lives in handoffs and test files, never in a `.team/` document.
@@ -38,4 +39,4 @@ In `specialist-rules` (preloaded into every specialist) and checked by a hook on
 
 ## Compaction
 
-At a milestone close, and to migrate a `.team/` over budget: workflow `technical-team:team-compact` (`${CLAUDE_PLUGIN_ROOT}/workflows/compact.js`), args `{ files: [{ path, owner }] }`. The owner rewrites each file to its current truth; an independent verifier compares it with the git version and the code; code checks words after ≤ before, each file ≤4,000 words, lines ≤300, no revision headings, ≤3 rounds. Inline: the same three steps by hand.
+At a milestone close, and to migrate a `.team/` over budget: workflow `technical-team:team-compact` (`${CLAUDE_PLUGIN_ROOT}/workflows/compact.js`), args `{ files: [{ path, owner }] }`. The owner rewrites each file to its current truth; an independent verifier compares it with the git version and the code; code checks words after ≤ before, each file ≤4,000 words, lines ≤300, no revision headings, ≤3 rounds. Inline: the same three steps by hand. `ISSUES.md` (owner qa) drops its closed rows there.

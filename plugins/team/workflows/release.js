@@ -1,5 +1,6 @@
 // Workflow script for /technical-team:release. Run with the Workflow tool: `script` = this file unchanged.
-// args: { slug, briefs: { qa, security, devops, dba?, writer: <run-kit §3 brief> }, items: [.team/items/<slug>.json objects], context?: <string> }
+// args: { slug, briefs: { qa, security, devops, dba?, writer: <run-kit §3 brief> }, items: [.team/items/<slug>.json objects],
+//        issues: [{ id, title, severity, priority, accepted? }] — open .team/ISSUES.md rows that are blocker/critical or P1 ([] when none), context?: <string> }
 // The lead writes the briefs; this script only appends round context, the gates' verdicts and the output contract.
 export const meta = {
   name: 'team-release',
@@ -69,6 +70,7 @@ const extra = (r, list) => [
 
 const failA = (m) => { throw new Error(`release: ${m} — ${HOW}`) }
 if (!Array.isArray(A.items)) failA('args.items is required: the .team/items/*.json of every open item in scope (all of them); [] when none')
+if (!Array.isArray(A.issues)) failA('args.issues is required: the open .team/ISSUES.md rows with severity blocker or critical, or priority P1; [] when none')
 
 phase('Gates')
 const results = await parallel(gateRoles.map((role) => () =>
@@ -99,6 +101,9 @@ else if (notes.status !== 'done') needsUser.push({ role: 'writer', status: notes
 // Fail closed: an item that is blocked or has open blockers is NO-GO whatever the gates say.
 const itemResults = A.items.map(itemStatus)
 for (const it of itemResults) if (it.status !== 'clear') needsUser.push({ role: 'state', ...it })
-const goNoGo = gateRoles.every((r) => gates[r].status === 'done' && gates[r].verdict === 'PASS') && itemResults.every((it) => it.status === 'clear') ? 'GO' : 'NO-GO'
+// Fail closed: a severe open issue the user has not accepted (accepted: true, their words in decisions) is NO-GO too.
+const issueResults = A.issues.map((i) => ({ id: clean(i && i.id, 10) || '?', title: clean(i && i.title, 60), accepted: !!(i && i.accepted === true) }))
+for (const i of issueResults) if (!i.accepted) needsUser.push({ role: 'issues', status: 'open-issue', ...i })
+const goNoGo = gateRoles.every((r) => gates[r].status === 'done' && gates[r].verdict === 'PASS') && itemResults.every((it) => it.status === 'clear') && issueResults.every((i) => i.accepted) ? 'GO' : 'NO-GO'
 log(`${A.slug || "release"} ${goNoGo}: ${lines.join('; ')}`)
-return { gates, notes, needsUser, goNoGo, items: itemResults }
+return { gates, notes, needsUser, goNoGo, items: itemResults, issues: issueResults }

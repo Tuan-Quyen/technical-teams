@@ -27,7 +27,7 @@ The core is this file. Read a reference (`${CLAUDE_PLUGIN_ROOT}/skills/run-kit/r
 | `team-developer` | code changes per ticket or debug report, unit/component tests, self-check with evidence | source code, config, unit/component tests |
 | `team-debugger` | reproduce, root cause with evidence, fix direction | handoff; `reports/<slug>/debug.md` at T2 |
 | `team-code-reviewer` | review the diff, PASS / FAIL | findings in its result; `reports/<slug>/review.md` at T2 |
-| `team-qa` | pre-check before build (checks, regression test, spec issues); execution after review (integration/E2E/acceptance, live preview, UX, regression, PASS / FAIL) | integration/E2E/acceptance tests; `reports/<slug>/qa.md` at T2 |
+| `team-qa` | pre-check before build (checks, regression test, spec issues); execution after review (integration/E2E/acceptance, live preview, UX, regression, PASS / FAIL) | integration/E2E/acceptance tests; `reports/<slug>/qa.md` at T2; `ISSUES.md` (triage) |
 | `team-security` | vulnerability review of a diff or the repo, PASS / FAIL | findings in its result; `reports/<slug>/security.md` at T2 |
 | `team-dba` | zero-downtime migrations, local/test databases only | migrations, "Data and migrations" in `system-design/<slug>.md` |
 | `team-devops` | CI/CD, Docker, manifests, local verification, remote steps for the user | infra files |
@@ -50,6 +50,7 @@ Paths are under `.team/`. Only the agent in the Writes column writes a file; eve
 | `fix` | T1: debugger → developer → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
 | `review` | code-reviewer ∥ security (∥ dba); no code changes |
 | `test` | qa writes missing tests |
+| `triage [list]` | qa ranks `ISSUES.md`; no item, you pick what to fix |
 | `infra` | devops proposal → devops → code-reviewer ∥ security → writer |
 | `release` | qa ∥ security ∥ devops (∥ dba) → writer: GO / NO-GO |
 | `new` | ba → architect ∥ designer → architect → pm → per milestone: build loop → compact → release |
