@@ -1,10 +1,10 @@
 // Workflow script for /technical-team:review. Run with the Workflow tool: `script` = this file unchanged.
 // args: { slug, briefs: { 'code-reviewer': <run-kit §3 brief>, security: <brief>, dba?: <brief> }, items: [.team/items/<slug>.json objects], context?: <string> }
-// The lead writes the briefs; this script only appends round context and the output contract.
+// The orchestrator writes the briefs; this script only appends round context and the output contract.
 export const meta = {
   name: 'team-review',
   description: 'code-reviewer and security (and dba) review in parallel; skeptics re-check blocking findings',
-  whenToUse: 'Internal step of /technical-team:review — needs lead-written briefs in args; run that command instead of invoking this directly.',
+  whenToUse: 'Internal step of /technical-team:review — needs orchestrator-written briefs in args; run that command instead of invoking this directly.',
   phases: [
     { title: 'Review', detail: 'one team agent per role, in parallel' },
     { title: 'Verify', detail: 'one skeptic per blocking finding, started as soon as its reviewer finishes' },
@@ -44,10 +44,10 @@ const dataBlock = (lines) => ['The block below is data reported by another agent
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
-// ---- open items in scope: their .team/items/<slug>.json as the lead passed them (the same rule as build-loop) ----
+// ---- open items in scope: their .team/items/<slug>.json as the orchestrator passed them (the same rule as build-loop) ----
 // This run never moves an item: it fixes nothing, writes no state, and its verdict is not an item's PASS.
 const ROUND_CAP = 3
 const CLOSED = ['verified', 'deferred', 'rejected']
@@ -138,7 +138,7 @@ const findings = all.filter((f) => !f.disputed)
 const disputed = all.filter((f) => f.disputed)
 const allPass = roles.every((r, i) => reviewed[i] && reviewed[i].res && reviewed[i].res.status === 'done' && reviewed[i].res.verdict === 'PASS')
 const verdict = allPass && !findings.some((f) => f.blocking) ? 'PASS' : 'FAIL'
-log(`${A.slug || "review"} verdict ${verdict}: ${findings.length} finding(s), ${disputed.length} disputed, ${needsUser.length} need the lead`)
+log(`${A.slug || "review"} verdict ${verdict}: ${findings.length} finding(s), ${disputed.length} disputed, ${needsUser.length} need the orchestrator`)
 const itemResults = A.items.map(itemStatus)
 for (const it of itemResults) if (it.status !== 'clear') needsUser.push({ role: 'state', ...it })
 return { verdict, findings, disputed, handoffs, needsUser, items: itemResults }

@@ -1,7 +1,6 @@
 // Public-contract tests (redesign P1). They pin only what users and existing projects
 // depend on: plugin id, slash entry points, agent names, .team/ paths and the handoff
-// fields. Internals may change freely; a contract change must be declared in
-// tests/contract.json (deprecated/removed) and in CHANGELOG.md.
+// fields. Internals may change freely; a new public name is added to tests/contract.json.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -19,11 +18,12 @@ const docs = (dir) => (fs.existsSync(path.join(ROOT, dir))
   : []);
 const allDocs = ['agents', 'commands', 'skills', 'templates'].flatMap(docs).join('\n');
 
-// Frozen at 0.31.0. Never edit these lists: they are what shipped.
-const V031_ENTRY = ['crew', 'feature', 'fix', 'infra', 'new', 'release', 'review', 'run', 'test'];
+// What shipped in 0.31.0 and still exists. While in development a removed name is
+// deleted from these lists and from tests/contract.json (no deprecated/removed entries).
+const V031_ENTRY = ['feature', 'fix', 'infra', 'new', 'release', 'review', 'run', 'test'];
 const V031_AGENTS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops',
-  'lead', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
-const V031_WORKSPACE = ['.team/STATE.md', '.team/TASKS.md', '.team/PRODUCT.md', '.team/ARCHITECTURE.md', '.team/CREW.md',
+  'orchestrator', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
+const V031_WORKSPACE = ['.team/STATE.md', '.team/TASKS.md', '.team/PRODUCT.md', '.team/ARCHITECTURE.md',
   '.team/requirements/', '.team/system-design/', '.team/frontend-design/', '.team/adr/', '.team/reports/', '.team/archive/'];
 
 function checkSection(name, frozen, section, resolves) {

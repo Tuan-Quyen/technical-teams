@@ -1,5 +1,7 @@
 # Evidence, RTM self-check and fix rounds
 
+> Used by: developer · Read when: writing the Handoff evidence, or working a fix round
+
 ## Handoff evidence
 
 The **Evidence** line holds real output, trimmed to its summary lines — never "tests pass" without the line that says so.
@@ -36,4 +38,4 @@ The **Evidence** line holds real output, trimmed to its summary lines — never 
 
 ## When review or qa disagrees
 
-- A finding you think is wrong → do not ignore it: say why in the Handoff with evidence (code, test, spec line); the lead routes it. Never close it yourself.
+- A finding you think is wrong → do not ignore it: say why in the Handoff with evidence (code, test, spec line); the orchestrator routes it. Never close it yourself.

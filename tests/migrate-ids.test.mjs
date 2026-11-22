@@ -1,4 +1,4 @@
-// plugins/team/tools/migrate-ids.mjs on a fixture .team/ with old IDs: dry run, write, backup, idempotence, shared
+// plugins/team/skills/run-kit/scripts/migrate-ids.mjs on a fixture .team/ with old IDs: dry run, write, backup, idempotence, shared
 // files left for a human, and the migrated state and tracker accepted by the real workflow gate (checkState).
 // Run from the repo root: npm test
 import { test } from 'node:test';
@@ -8,10 +8,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { migrate, deriveKey } from '../plugins/team/tools/migrate-ids.mjs';
+import { migrate, deriveKey } from '../plugins/team/skills/run-kit/scripts/migrate-ids.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const TOOL = path.join(REPO, 'plugins/team/tools/migrate-ids.mjs');
+const TOOL = path.join(REPO, 'plugins/team/skills/run-kit/scripts/migrate-ids.mjs');
 
 const tracker = [
   { id: 'F-001', origin: 'QA', sourceId: 'Q-01', status: 'REOPENED', severity: 'major', blocking: true, title: 'save fails', file: 'src/a.js', line: 1, requirement: 'AC-1', relatedTo: [], history: [{ round: 1, event: 'fix', trigger: 'QA' }] },

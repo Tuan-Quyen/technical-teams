@@ -28,18 +28,18 @@ const frontmatter = (p) => {
 };
 
 const PIPELINES = ['feature', 'fix', 'infra', 'new', 'release', 'review', 'test'];
-const COMMANDS = [...PIPELINES, 'crew', 'retrospect', 'run', 'triage'].sort();
+const COMMANDS = [...PIPELINES, 'retrospect', 'run', 'standup', 'triage'].sort();
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'cyan'];
-const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'security', 'writer'].map((a) => `team-${a}`);
-const AGENTS = [...WORKERS, 'team-lead'].sort();
-const SKILLS = ['business-analysis', 'development-process', 'run-kit', 'specialist-rules', 'technical-planning', 'test-process'];
+const WORKERS = ['architect', 'ba', 'code-reviewer', 'dba', 'debugger', 'designer', 'developer', 'devops', 'pm', 'qa', 'retrospector', 'security', 'writer'].map((a) => `team-${a}`);
+const AGENTS = [...WORKERS, 'team-orchestrator'].sort();
+const SKILLS = ['business-analysis', 'development-process', 'plan', 'retrospect', 'run-kit', 'specialist-rules', 'test-process'];
 const TEMPLATE_DIRS = ['adr', 'core', 'design', 'reports', 'requirements'];
 const DOCS = [...walk('commands'), ...walk('agents'), ...walk('skills'), ...walk('templates')];
 const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
 
 // The .team/ layout documented in the README; `<slug>` and `NNNN-<…>` are placeholders.
 const LAYOUT = [
-  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/CREW\.md$/, /^\.team\/ISSUES\.md$/, /^\.team\/retrospect\/(<YYYY-MM-DD>\.md)?$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
+  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/ISSUES\.md$/, /^\.team\/retrospect\/(<YYYY-MM-DD>\/((retrospect\.md|evidence\/?|drafts\/.*))?|\.gitignore)?$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
   /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
@@ -60,10 +60,14 @@ test('every command has a description, an argument-hint and uses $ARGUMENTS', ()
   }
 });
 
-test('every pipeline runs under the lead, and the lead routes to every pipeline', () => {
-  for (const c of COMMANDS) assert.match(read(`commands/${c}.md`), /agents\/team-lead\.md/, `${c}: follows the lead`);
-  const lead = read('agents/team-lead.md');
-  for (const c of PIPELINES) assert.match(lead, new RegExp(`\\| \`${c}\``), `lead classifies to ${c}`);
+test('every command runs per run-kit §2, which routes to every pipeline and points at the orchestrator', () => {
+  const kit = read('skills/run-kit/SKILL.md');
+  for (const c of COMMANDS.filter((x) => x !== 'run')) assert.match(read(`commands/${c}.md`), /Load `technical-team:run-kit` and run this per its §2 \*Running a pipeline\*/, `${c}: runs per run-kit §2`);
+  assert.match(read('commands/run.md'), /agents\/team-orchestrator\.md/, 'run hands the request to the orchestrator');
+  for (const c of PIPELINES) assert.match(kit, new RegExp(`\\| \`${c}[\` ]`), `run-kit §2 routes to ${c}`);
+  assert.match(kit, /^### Running a pipeline$/m, 'run-kit holds the shared pipeline rules');
+  assert.match(kit, /follow `\$\{CLAUDE_PLUGIN_ROOT\}\/agents\/team-orchestrator\.md` §3–§6/, 'run-kit §2 points at the orchestrator');
+  assert.match(read('agents/team-orchestrator.md'), /pick the row of its §2 table/, 'the orchestrator classifies with run-kit §2');
 });
 
 test('every agent has name = file name, a description and a model', () => {
@@ -84,33 +88,28 @@ test('no agent has a tools allowlist, so project MCP tools and skills reach it',
     const deny = fm.match(/^disallowedTools: (.+)$/m)?.[1].split(/,\s*/) ?? [];
     assert.ok(!deny.some((t) => t.startsWith('mcp__') || t === 'Skill'), `${a}: does not block MCP tools or skills`);
   }
-  assert.match(read('agents/team-lead.md'), /mcp__/, 'lead names MCP tools in briefs');
+  assert.match(read('agents/team-orchestrator.md'), /mcp__/, 'orchestrator names MCP tools in briefs');
 });
 
-test('the lead finds project agents and briefs them with the team rules', () => {
-  const lead = read('agents/team-lead.md');
-  assert.match(lead, /Glob `\.claude\/agents\/\*\.md`/, 'lead lists project agents at start');
-  assert.match(lead, /### Project specialists/, 'lead has a Project specialists section');
-  for (const mode of ['replace', 'consult']) assert.match(lead, new RegExp(`\\*\\*${mode}\\*\\*`), `lead defines mode ${mode}`);
+test('the orchestrator finds project agents and briefs them with the team rules', () => {
+  const orchestrator = read('agents/team-orchestrator.md');
+  assert.match(orchestrator, /Glob `\.claude\/agents\/\*\.md`/, 'orchestrator lists project agents at start');
+  assert.match(orchestrator, /### Project specialists/, 'orchestrator has a Project specialists section');
+  for (const mode of ['replace', 'consult']) assert.match(orchestrator, new RegExp(`\\*\\*${mode}\\*\\*`), `orchestrator defines mode ${mode}`);
   const kit = read('skills/run-kit/SKILL.md');
   assert.match(kit, /\*\*Project specialists\*\*/, 'run-kit roster mentions project specialists');
   assert.match(kit, /\*\*Briefing a project specialist\*\*/, 'run-kit has the specialist brief');
 });
 
-test('every agent has a color; persona defaults live only in the CREW template', () => {
-  const crew = read('templates/core/CREW.md');
+test('every agent has a color, and the run-kit roster shows the same one', () => {
+  const kit = read('skills/run-kit/SKILL.md');
   for (const a of AGENTS) {
     const color = frontmatter(`agents/${a}.md`).match(/^color: (\w+)$/m)?.[1];
     assert.ok(COLORS.includes(color), `${a}: color is one of ${COLORS.join(', ')}`);
-    assert.doesNotMatch(read(`agents/${a}.md`), /\*\*Persona\*\*/, `${a}: no Persona in the agent file`);
-    const row = crew.split('\n').find((l) => l.startsWith(`| \`${a}\` |`));
-    assert.ok(row, `${a}: has a default row in the CREW template`);
-    const [, , emoji, name, vibe, rowColor] = row.split('|').map((c) => c.trim());
-    assert.ok(emoji !== '–' && name !== '–' && vibe !== '–', `${a}: CREW row has emoji, name and vibe`);
-    assert.equal(rowColor, color, `${a}: CREW default color matches frontmatter`);
+    const row = kit.split('\n').find((l) => l.startsWith(`| \`${a}\` |`));
+    assert.ok(row, `${a}: has a row in the run-kit roster`);
+    assert.equal(row.split('|')[2].trim(), color, `${a}: roster color matches frontmatter`);
   }
-  assert.match(read('skills/specialist-rules/SKILL.md'), /\.team\/CREW\.md/, 'specialists read CREW.md (shared rules)');
-  assert.match(read('agents/team-lead.md'), /Missing → create it from `\$\{CLAUDE_PLUGIN_ROOT\}\/templates\/core\/CREW\.md`/, 'lead creates CREW.md');
 });
 
 test('every specialist lists what it writes and preloads the one shared rules skill', () => {
@@ -120,21 +119,21 @@ test('every specialist lists what it writes and preloads the one shared rules sk
   for (const a of WORKERS) {
     const s = read(`agents/${a}.md`);
     const fm = frontmatter(`agents/${a}.md`);
-    assert.match(s, /\n\*\*Writes\*\*\n/, `${a}: has a Writes list`);
+    assert.match(s, /\n## Writes\n/, `${a}: has a Writes section`);
     assert.doesNotMatch(fm, /run-kit/, `${a}: does not preload run-kit`);
     assert.match(fm, /^skills: \["technical-team:specialist-rules"\]$/m, `${a}: preloads specialist-rules`);
     assert.doesNotMatch(s, /### Handoff/, `${a}: no copy of the handoff block (it lives in specialist-rules)`);
   }
-  assert.doesNotMatch(frontmatter('agents/team-lead.md'), /specialist-rules/, 'the lead does not preload specialist rules');
+  assert.doesNotMatch(frontmatter('agents/team-orchestrator.md'), /specialist-rules/, 'the orchestrator does not preload specialist rules');
 });
 
 test('run-kit covers roster, pipelines, brief, workspace and handoff only', () => {
   const kit = read('skills/run-kit/SKILL.md');
   const sections = [...kit.matchAll(/^## \d+\. (.+)$/gm)].map((m) => m[1]);
-  assert.deepEqual(sections, ['Roster', 'Pipeline workflow commands', 'Writing a brief', 'Workspace `.team/`', 'Handoff', 'Workflow steps']);
+  assert.deepEqual(sections, ['Roster', 'Pipelines', 'Writing a brief', 'Workspace `.team/`', 'Handoff', 'Workflow steps']);
   for (const a of AGENTS) assert.ok(kit.includes(`| \`${a}\` |`), `roster lists ${a}`);
   for (const c of COMMANDS) assert.ok(kit.includes(`| \`${c}`), `run-kit lists command ${c}`);
-  assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the lead is launched');
+  assert.doesNotMatch(kit, /claude --agent|main session/, 'run-kit does not prescribe how the orchestrator is launched');
   // The core stays short; detail lives in references the core names, each read only when its step comes up.
   const refs = fs.readdirSync(path.join(ROOT, 'skills/run-kit/references')).sort();
   assert.deepEqual(refs, ['qa-lines.md', 'qa-loop.md', 'roles.md', 'workflow.md', 'workspace.md']);
@@ -148,19 +147,19 @@ test('every skill file stays under 150 lines; longer content goes to a reference
   }
 });
 
-test('item state belongs to the orchestrating session, with or without the lead; STATE.md is generated', () => {
+test('item state belongs to the orchestrating session, with or without the orchestrator; STATE.md is generated', () => {
   const kit = read('skills/run-kit/SKILL.md');
-  assert.match(kit, /^### Orchestrating without the lead$/m, 'run-kit covers direct orchestration');
+  assert.match(kit, /^### Orchestrating without the orchestrator$/m, 'run-kit covers direct orchestration');
   assert.match(frontmatter('skills/run-kit/SKILL.md'), /spawning team agents yourself/, 'run-kit loads for direct orchestration');
-  assert.match(kit, /Spawned agents never write item state \(a hook refuses them\)/);
-  assert.match(read('agents/team-lead.md'), /You write only `\.team\/items\/`/, 'the lead writes the item JSON');
+  assert.match(kit, /Spawned agents never write item state \(specialist-rules\)/);
+  assert.match(read('agents/team-orchestrator.md'), /You write only `\.team\/items\/`/, 'the orchestrator writes the item JSON');
   assert.match(read('skills/run-kit/references/workspace.md'), /\| `STATE\.md` — open items, resume point \| view, generated from `items\/` \| nobody writes it \|/);
   for (const a of WORKERS) assert.doesNotMatch(read(`agents/${a}.md`), /write[^\n]*`?\.team\/(STATE\.md|items)/i, `${a}: never writes item state`);
 });
 
 test('TASKS.md belongs to pm alone', () => {
-  for (const f of DOCS) assert.doesNotMatch(read(f), /Status column|lead \(Status\)/, `${f}: only pm writes TASKS.md`);
-  assert.doesNotMatch(read('agents/team-lead.md'), /You write only[^\n]*TASKS/, 'lead does not write TASKS.md');
+  for (const f of DOCS) assert.doesNotMatch(read(f), /Status column|orchestrator \(Status\)/, `${f}: only pm writes TASKS.md`);
+  assert.doesNotMatch(read('agents/team-orchestrator.md'), /You write only[^\n]*TASKS/, 'orchestrator does not write TASKS.md');
 });
 
 const WORKFLOW_NAMES = fs.readdirSync(path.join(ROOT, 'workflows')).filter((f) => f.endsWith('.js')).map((f) => read(`workflows/${f}`).match(/^  name: '([^']+)'/m)[1]);
@@ -328,13 +327,15 @@ test('the shared schema and contract blocks are identical across workflow script
   for (const c of ['feature', 'fix', 'infra', 'new']) assert.match(read(`commands/${c}.md`), /workflows\/build-loop\.js/, `${c}: uses build-loop`);
 });
 
-test('every command that runs a workflow carries the shared opt-in sentence; run and the lead state the opt-in rules', () => {
-  const sentence = "**Workflow opt-in** — the Workflow tool is available (also if deferred) AND the user typed a slash command of this plugin for this item (this command, or `/technical-team:run`, which hands the chosen pipeline to the lead) → run the workflow. Otherwise (no tool, or the lead was started without a slash command) → run the steps inline below.";
+test('the Workflow opt-in lives once in run-kit §2; workflow commands point to it; run and the orchestrator state the opt-in rules', () => {
+  const sentence = "**Workflow opt-in** — the Workflow tool is available (also if deferred) AND the user typed a slash command of this plugin for this item (the command itself, or `/technical-team:run`, which hands the chosen pipeline to the orchestrator) → run the command's workflow step (§6). Otherwise (no tool, or the orchestrator was started without a slash command) → run the command's steps inline.";
+  assert.ok(read('skills/run-kit/SKILL.md').includes(sentence), 'run-kit §2 has the opt-in sentence');
   const users = COMMANDS.filter((c) => read(`commands/${c}.md`).includes('workflows/'));
   assert.deepEqual(users, ['feature', 'fix', 'infra', 'new', 'release', 'review'], 'commands that run workflows');
-  for (const c of users) assert.ok(read(`commands/${c}.md`).includes(sentence), `${c}: has the Workflow opt-in sentence`);
+  for (const c of COMMANDS) assert.ok(!read(`commands/${c}.md`).includes('the Workflow tool is available'), `${c}: no copy of the opt-in rule`);
+  for (const c of users) assert.match(read(`commands/${c}.md`), /\*\*Workflow\*\* \(run-kit §2 opt-in/, `${c}: points to the opt-in`);
   assert.match(read('commands/run.md'), /Typing `\/technical-team:run` is your opt-in for the workflows/, 'run.md states the opt-in');
-  assert.match(read('agents/team-lead.md'), /`workflows: yes\|no` → `"workflows": true\|false`/, 'the lead records the opt-in in the item');
+  assert.match(read('agents/team-orchestrator.md'), /`workflows: yes\|no` → `"workflows": true\|false`/, 'the orchestrator records the opt-in in the item');
 });
 
 test('commands call workflows by name and point to run-kit §6; the shared workflow rules are not repeated in them', () => {
@@ -376,7 +377,7 @@ test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   const src = read('workflows/plan-tickets.js');
   const code = ['root', 'ROLES', 'safePath', 'checkTickets'].map((n) => block(src, n)).join(';\n');
   const check = new Function('a', `${code}; return checkTickets;`)({});
-  const t = (id, group, files, o = {}) => ({ id, title: id, role: 'developer', group, files, dependsOn: [], acs: ['AC-1'], ...o });
+  const t = (id, group, files, o = {}) => ({ id, title: id, role: 'developer', group, files, dependsOn: [], acs: ['AC-1'], estimate: 1, ...o });
   const rules = (tickets) => check(tickets).map((i) => i.rule).sort();
   assert.deepEqual(rules([t('T-1', 1, ['src/a.js']), t('T-2', 1, ['src/b.js']), t('T-3', 2, ['src/a.js'], { dependsOn: ['T-1', 'T-2'] })]), [], 'clean set');
   assert.deepEqual(rules([t('T-1', 1, ['src/a.js']), t('T-2', 1, ['./src/a.js'])]), ['file-overlap'], 'same file in a group');
@@ -398,6 +399,11 @@ test('plan-tickets checkTickets enforces the ticket rules in code', () => {
   assert.deepEqual(rules([t('T-1', 1, ['a.js']), t('T-1', 1, ['b.js'])]), ['unique-id'], 'duplicate id');
   assert.deepEqual(rules([t('T-1', 1, ['a.js'], { role: 'qa' })]), ['role'], 'invalid role');
   assert.deepEqual(rules([t('T-1', 1, [])]), ['files'], 'no files');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: undefined })]), ['estimate'], 'missing estimate');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 0 })]), ['estimate'], 'zero estimate');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 3 })]), ['estimate-split'], 'over 2d is split');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 1.3 })]), ['estimate'], 'not in 0.5-day steps');
+  assert.deepEqual(rules([t('T-1', 1, ['a.js'], { estimate: 1.5 })]), [], '0.5-day step passes');
   assert.deepEqual(rules([]), ['no-tickets'], 'empty ticket list');
   assert.deepEqual(rules([t('T-1', 1, ['src/A.js']), t('T-2', 1, ['src/a.JS'])]), ['file-overlap'], 'overlap ignores case');
   const m = (id, milestone, group, files, o = {}) => t(id, group, files, { milestone, ...o });
@@ -443,13 +449,12 @@ for (const target of [PLUGIN_DIR, '.claude-plugin/marketplace.json']) {
   });
 }
 
-test('--small is the user flag only: feature.md says so and needs one ticket; the lead only suggests it', () => {
+test('--small is the user flag only: feature.md says so and needs one ticket; the orchestrator only suggests it', () => {
   const f = read('commands/feature.md');
   assert.match(f, /`--small` is the user's flag only: it applies only when `\$ARGUMENTS` contains `--small`/, 'feature: --small is user-only');
-  assert.match(f, /never pick it yourself/, 'feature: the lead never picks --small');
-  assert.match(f, /suggest `--small` in one line at step 0 and wait for the user's yes/, 'feature: suggest and wait');
+  assert.match(f, /never pick it yourself/, 'feature: the orchestrator never picks --small');
+  assert.match(f, /suggest `--small` in one line before step 1 and wait for the user's yes/, 'feature: suggest and wait');
   assert.match(f, /exactly one ticket \(one developer, `groups: \[\[one item\]\]`\), no parallel groups/, 'feature: --small is one ticket');
-  const row = read('agents/team-lead.md').split('\n').find((l) => l.includes('| `feature`'));
-  assert.match(row, /only suggest `--small` to the user; never choose it/, 'lead §2: suggests only');
-  assert.doesNotMatch(row, /`--small` if it fits/, 'lead §2 no longer picks --small');
+  const row = read('skills/run-kit/SKILL.md').split('\n').find((l) => l.includes('| `feature --small`'));
+  assert.match(row, /the user's flag only; the orchestrator may suggest it, never choose it/, 'run-kit §2: suggests only');
 });

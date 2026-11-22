@@ -1,48 +1,45 @@
-# Implementation — shaping the change
+# Implementation — shaping the change and its tests
+
+> Used by: developer · Read when: shaping a non-trivial change and its unit/component tests
 
 ## Read the code first
 
-- Open the files the ticket names and their callers; find how the neighbouring code does the same thing (naming, layering, errors, logging, config, tests). Copy that. A new pattern needs a reason you can state in one line.
-- Check the system design's **Contracts** and **Implementation plan** step for this ticket; the plan's files are your files.
-- Library or framework behaviour you are not sure of → read its docs or source; do not rely on memory.
+- Open the ticket's files and their callers; copy how the neighbouring code does the same thing (naming, layering, errors, logging, config, tests). A new pattern needs a reason you can state in one line.
+- The system design's **Contracts** and the **Implementation plan** step for this ticket: the plan's files are your files.
+- Unsure how a library behaves → read its docs or source, not memory.
 
 ## Contracts
 
-| Change | Do in the same ticket |
+| Change | In the same ticket |
 |---|---|
-| API request/response, status codes, error shape | your side as the design's **Contracts** pin it; both sides only when both are in your `Files`, else `needs-input`. Keep old fields until every caller moved (or the design says it is a breaking change) |
-| event or message schema | your side as pinned; producer and consumers together only when both are in your `Files`, else `needs-input`; a test that round-trips one message |
-| DB schema | the migration is dba's ticket; you change the code that reads/writes it, behind the order the design gives (expand → backfill → contract) |
-| config or env var | the default, the example config, the docs line the writer needs (name it in the Handoff) |
+| API request/response, status codes, error shape | your side as **Contracts** pin it; both sides only when both are in your `Files`, else `needs-input`. Keep old fields until every caller moved, unless the design calls it breaking |
+| event or message schema | as above, plus a test that round-trips one message |
+| DB schema | the migration is dba's ticket; you change the code that reads and writes it, in the order the design gives (expand → backfill → contract) |
+| config or env var | the default, the example config, and the docs line the writer needs (name it in the Handoff) |
 
-## States checklist
+## States — decide each, test those that can happen
 
-For every changed path, decide what happens — then test the ones that can happen:
+Empty / one / many / max · invalid, missing, wrong-type or too-long input · dependency error, timeout, slow response, retry · concurrent use, double submit, stale data · no permission, expired session, another user's data · partial failure halfway.
 
-- empty / none / zero · one · many · the maximum
-- invalid input · missing field · wrong type · too long
-- error from a dependency · timeout · slow response · retry
-- concurrent use · double submit · stale data
-- no permission · expired session · another user's data
-- partial failure: half the work done, then an error
+## Errors, refactoring, dependencies, safety
 
-## Error handling
+- Handle an error where you can act on it; otherwise propagate it with context. Never catch and ignore. User-facing errors say what to do; logs say why, without secrets or personal data. Validate at the boundary, trust inside.
+- Refactor only what the ticket needs, as a separate step, tests green before and after; growing past the ticket's files → `needs-input`.
+- A new dependency needs the architect's approval. Parallel agents running → no installs, no tree-wide formatter or codegen.
+- Avoid N+1 queries, unbounded loops or lists, whole-table loads, blocking calls on hot paths. Input that reaches queries, shell, HTML or file paths is parameterised or escaped.
 
-- Handle an error where you can do something about it; otherwise let it propagate with context. Never catch and ignore.
-- User-facing errors say what happened and what to do; logs say why (no secrets, no personal data).
-- Validate at the boundary (request, file, message), trust inside.
+## Unit and component tests
 
-## Refactoring
+| Cover | Example |
+|---|---|
+| happy path of each AC condition | valid order → saved, total correct |
+| negative paths | invalid input rejected with the right error |
+| boundaries | 0, 1, max, max + 1; empty string; midnight, month end |
+| error handling | dependency throws or times out → the documented behaviour |
+| each finding of a fix round | the exact reproduction, as a test |
 
-- Refactor only what the ticket needs, in a separate step from the behaviour change, with the tests green before and after.
-- A refactor that grows past the ticket's files → stop and say so (`needs-input`); it becomes its own ticket.
-
-## Dependencies
-
-- A new dependency needs the design's approval (architect); otherwise use what the project has.
-- Parallel agents running → no installs and no tree-wide formatter or codegen (the brief names them under `parallel with:`).
-
-## Performance and safety, in proportion
-
-- Avoid the obvious traps: N+1 queries, unbounded loops or lists, loading whole tables, blocking calls on hot paths.
-- Inputs that reach queries, shell, HTML or file paths are escaped or parameterised; security reviews it, you prevent it.
+- One test per equivalence class plus each boundary; a decision with several conditions → a small table of the combinations that change the outcome; state logic → each valid transition and one invalid event per state.
+- Name tests by behaviour (`rejects an expired coupon`); one reason to fail; arrange → act → assert, no logic in the test.
+- Fake what crosses a boundary you do not own (network, clock, randomness, third-party API); keep your own logic real. Mock only to observe an interaction the AC is about. Time and randomness come from an injectable source.
+- A flaky test is a defect: find the race, shared state or real clock; never add retries or sleeps. One you did not write → report it with its failure rate; never delete or skip it.
+- Never loosen an assertion or change an expected value without the AC saying the behaviour changed. Coverage is a hint where tests are missing, not proof.

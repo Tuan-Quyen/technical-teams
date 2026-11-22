@@ -1,5 +1,7 @@
 # run-kit §3 · QA-Fix loop
 
+> Used by: the orchestrating session · Read when: reading a gate result; a round, cap or challenge question
+
 The same rules inline and in `build-loop.js`. The item's state is `.team/items/<slug>.json` (`workspace.md` § Item state): its `round`, `findings` and `verdicts` are the loop.
 
 Brief lines for an inline qa, reviewer or fix step: `qa-lines.md` (a workflow appends them itself).
@@ -22,7 +24,7 @@ round + 1 · developer fixes the whole batch (one per ticket) · tests green
 reviewers re-check their findings · qa retests the listed ones + suite ──▶ back to the top
 ```
 
-- **IDs** — `F1`, `F2`… in the item, given once, never reused (next = highest + 1). Outside the item: `CART#F3`. Status: `open → fixed → verified`, or `reopened` (`reopened` +1) when a retest fails; `challenged` (§ Challenges); otherwise `deferred`, `rejected` only by the lead, on the user's word, with a line in `decisions`.
+- **IDs** — `F1`, `F2`… in the item, given once, never reused (next = highest + 1). Outside the item: `CART#F3`. Status: `open → fixed → verified`, or `reopened` (`reopened` +1) when a retest fails; `challenged` (§ Challenges); otherwise `deferred`, `rejected` only on the user's word, recorded with a line in `decisions`.
 - **One counter** — `round` counts every fix batch, from a review or from qa. Cap 3, code in the workflow, never in the item.
 - **Not run is never PASS** — the qa verdict is `PASS · r1 · not-run: AC3` and the run stops (`not-run`): the user runs those checks, or accepts them as not run with a line in `decisions`, before the item closes; a blocking finding left `fixed` that no gate re-checked stops the run (`retest-incomplete`).
 - **Findings are work items** — no fix tickets in `TASKS.md`, no report prose. T2 adds `reports/<slug>/qa.md` (test plan, RTM with one status column) and the reviewers' reports.

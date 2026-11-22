@@ -1,69 +1,41 @@
 # Contexts — greenfield, operating system, discovery
 
-> Reference of the `business-analysis` skill. Read the section of the context you are in.
+> Used by: ba · Read when: working out the steps and outputs of your context: greenfield, operating system, discovery
 
-## 1. Greenfield (`new` command, no application code yet)
+## 1. Greenfield (`new`, no application code yet)
 
-| Step | Do | Output |
-|---|---|---|
-| Problem and vision | whose problem, how they cope today, what is better afterwards | `.team/PRODUCT.md` → Vision |
-| Users and stakeholders | roles, their goals, who decides, who is affected | `.team/PRODUCT.md` → Users |
-| Goals and measures | 1–3 business goals, each with a measure the user can observe | `.team/PRODUCT.md` → Goals |
-| Context | other systems, data that already exists elsewhere, constraints (legal, deadline, budget, platforms, scale) | `.team/PRODUCT.md` → Context |
-| Capability map | story map of the whole product; mark the MVP slice | `.team/PRODUCT.md` → Capability map |
-| Glossary and rules | the business words and the rules behind them, with examples | `.team/PRODUCT.md` → Glossary, Business rules |
-| MVP spec | stories, ACs, edge cases for the MVP slice only (quality targets as ACs with concrete values) | `.team/requirements/<slug>.md` |
+`.team/PRODUCT.md`: **Vision** (whose problem, how they cope today, what is better afterwards) · **Users** (roles, goals, who decides, who is affected) · **Goals** (1–3, each with a measure the user can observe) · **Context** (other systems, existing data, legal, deadline, budget, platforms, scale) · **Capability map** (a story map of the product, MVP slice marked) · **Glossary** and **Business rules** with examples.
 
-Benchmark comparable products (web) for conventions users will expect; cite the URLs. The MVP is the smallest slice that reaches one goal end to end, not a list of the user's first ideas.
+`.team/requirements/<slug>.md`: stories, ACs and edge cases for the MVP slice only; quality targets as ACs with concrete values. The MVP is the smallest slice that reaches one goal end to end, not the list of first ideas. Benchmark comparable products for the conventions users expect; cite the URLs.
 
 ## 2. Operating system (a change to something that exists)
 
-| Step | Do | Output in `.team/requirements/<slug>.md` |
-|---|---|---|
-| As-is | read the code and docs for the flow being changed: what happens today, which rules are enforced where (file:line), who can do it | **As-is and impact** (Today column) |
-| To-be and gap | what must be different; what stays exactly as it is | **Goal**, **Out of scope** |
-| Impact | every place the change is felt (table below) | **As-is and impact** (Change, Regression risk) |
-| Existing users and data | records created under the old rule, saved settings, habits, links, exports | **As-is and impact** → Data / Roles rows |
-| Elicit only the gap | questions about the new behaviour and about each impact you cannot decide | rounds |
+In `.team/requirements/<slug>.md`:
+- **As-is and impact** — what happens today in the flow being changed, which rule is enforced where (file:line), who can do it; then every place the change is felt.
+- **Goal**, **Out of scope** — what must differ, and what must stay exactly as it is.
+- Elicit only the gap: the new behaviour and each impact you cannot decide.
 
 | Impact area | Look for |
 |---|---|
 | Flows | other flows that pass through the changed step |
 | Roles | who gains or loses an action |
-| Data | fields added/changed/removed, old records, migrations (→ dba) |
-| Integrations | consumers of the API, webhooks, files, reports that read the changed data |
+| Data | fields added, changed or removed; old records; migrations (→ dba) |
+| Integrations | API consumers, webhooks, files, reports that read the changed data |
 | Rules | rules elsewhere that assume the old behaviour |
-| Operations | support, runbooks, monitoring, documentation (→ writer / devops) |
-| Regression risk | behaviour that must not change — qa builds regression scope from this list |
+| Operations | support, runbooks, monitoring, docs (→ writer, devops) |
+| Regression risk | behaviour that must not change; qa builds the regression scope from this list |
 
-No `.team/PRODUCT.md` yet on an operating system: create it from what you read (capabilities found in the code, marked `live`), kept short; do not document the whole system for a small change.
+No `PRODUCT.md` yet: create a short one from what you read (capabilities found in the code, marked `live`); do not document the whole system for a small change.
 
-## 3. Discovery (`feature --discover`: what to build next, how to grow a feature)
+## 3. Discovery (what to build next, how to grow a feature)
 
-```mermaid
-flowchart LR
-  O[Outcome the user wants] --> P[Opportunities: needs, pains, gaps]
-  P --> S[Solution options per opportunity]
-  S --> R[Rank with stated basis]
-  R --> B[Backlog in PRODUCT.md] --> U[User picks]
-```
-
-| Step | Do |
-|---|---|
-| Outcome | one measurable outcome for the business or the user (not a feature). Elicit it if the user gave a feature |
-| Evidence | what the user supplied (feedback, tickets, analytics exports, sales notes), the product itself (dead ends, missing states, friction in existing flows — read the code and the frontend design), comparable products (web) |
-| Opportunities | needs/pains phrased from the user's side ("when …, I want …, so that …"), each with its evidence |
-| Options | 1–3 ways to address each top opportunity, smallest first |
-| Rank | value (toward the outcome) · reach (who, how many) · confidence · rough size (S/M/L — your guess, the architect confirms later). Each score carries its basis C / E / A |
-| Backlog | ranked rows in `.team/PRODUCT.md` → Backlog, status `idea`; your recommendation for the next one or two and why |
-
-| Rule | Detail |
-|---|---|
-| No invented numbers | without data say "assumption" and rank qualitatively (high / medium / low); name the evidence that would raise confidence |
-| Opportunities before solutions | compare opportunities first, then choose an option for the chosen opportunity |
-| The user decides | you recommend; the pick becomes a normal `feature` work item, where the spec is elicited in full |
-| Basics before delighters | an option that fixes a broken or missing basic expectation outranks a new delighter of equal size |
+1. **Outcome** — one measurable outcome for the business or the user, not a feature; elicit it if you were given a feature.
+2. **Evidence** — what the user supplied (feedback, tickets, analytics, sales notes), the product itself (dead ends, missing states, friction; read the code and the design), comparable products.
+3. **Opportunities** — needs and pains from the user's side ("when …, I want …, so that …"), each with its evidence. Compare opportunities before solutions.
+4. **Options** — 1–3 per top opportunity, smallest first.
+5. **Rank** — value toward the outcome · reach · confidence · rough size S/M/L (the architect confirms later), each with its basis C / E / A. No data → rank high / medium / low and name the evidence that would raise confidence. A fix to a broken or missing basic expectation outranks a new delighter of equal size.
+6. **Backlog** — ranked rows in `PRODUCT.md` → Backlog, status `idea`, with your recommendation for the next one or two. The user picks; the pick becomes a normal `feature` item.
 
 ## 4. After delivery (milestone gates in `new`, when briefed)
 
-Check the delivered behaviour against the goal, not only the ACs: which goal each delivered capability serves, what is still missing for the goal, capabilities to mark `live` in `.team/PRODUCT.md`, new backlog rows the work revealed.
+Check the delivered behaviour against the goal, not only the ACs: which goal each capability serves, what the goal still misses, capabilities to mark `live` in `PRODUCT.md`, new backlog rows the work revealed.

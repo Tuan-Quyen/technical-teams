@@ -1,12 +1,14 @@
 # run-kit §6 · Workflow steps
 
+> Used by: the orchestrating session · Read when: a command runs a step through the Workflow tool, or routes its result
+
 How a command runs a step through the Workflow tool. The command gives the opt-in, the workflow name and `args`; the rest is here.
 
 ## Run
 
 - **Run** — write every agent's §3 brief yourself, set the item's `step` to `<n> (workflow)`, then call `Workflow` with `name: 'technical-team:team-…'` and the command's `args`. Only if the name is not found: Read `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` (the file the command names) and pass its text as `script` with the same args.
 - **Task list** — one entry per workflow phase in place of the steps it covers (build-loop: `Plan` only with a `qaPlanBrief`, `Build`, `Review`, `Test`, `Docs`).
-- **While it runs** — tell the user it runs in the background and the result arrives as a task notification. The workflow cannot ask the user; the lead does.
+- **While it runs** — tell the user it runs in the background and the result arrives as a task notification. The workflow cannot ask the user; the orchestrator does.
 - **Result** — first write `item` back to `.team/items/<slug>.json` verbatim (build-loop), then route by `status`.
 
 ## Route the result
@@ -27,7 +29,7 @@ How a command runs a step through the Workflow tool. The command gives the opt-i
 | `spec-issues` | qa pre-check found spec issues; nothing was built. Route each to its owner (ba, designer, architect) or the user. Resolved → re-run with `startAt: "plan"`; accepted as-is → `startAt: "build"` with the answer in `context` |
 | `stalled` | a finding reopened twice: the same fix keeps failing. Show it with its test; ask the user (debugger, a design change, defer) |
 | `retest-incomplete` | a gate skipped findings waiting for retest (`findings`): back to that gate (`startAt: "review"` or `"qa"`); nothing counts as fixed |
-| `fail-without-blocker` | a gate said FAIL with no blocking finding that has a test: ask it for the test, or the lead decides; nothing was fixed |
+| `fail-without-blocker` | a gate said FAIL with no blocking finding that has a test: send it back to that gate for the test or a PASS; nothing was fixed |
 | `unowned` | no ticket's `files` hold the finding's file: ask who owns it, set `owner` (a ticket) on the finding, re-run with `startAt: "review"`. Never widen a ticket's `files` without the answer |
 | `qa-pending` | qa findings are open and the call had no `qaBrief`: re-run with it (`startAt: "qa"`) |
 | `open-blockers`, `BLOCKED_PENDING_USER_DECISION` | review.js / release.js `items`: the item has open blockers; the verdict does not move it (release: NO-GO) |

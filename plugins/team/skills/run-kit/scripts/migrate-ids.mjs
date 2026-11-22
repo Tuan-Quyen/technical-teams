@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { deriveKey as keyFromSlug } from './team-state.mjs';
+import { deriveKey as keyFromSlug } from '../../../tools/team-state.mjs';
 
 const KEY_RE = /^[A-Z][A-Z0-9]{1,5}$/;
 const SLUG = '[a-z0-9][a-z0-9-]*';

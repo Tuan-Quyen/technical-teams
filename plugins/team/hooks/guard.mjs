@@ -1,14 +1,10 @@
 #!/usr/bin/env node
-// technical-team hooks: deterministic guards for rules that used to live only in prose.
-// Applies to team specialist subagents only (agent_type "technical-team:team-*", not the lead);
-// the user's own session is never touched.
-//   pre-shell      PreToolUse Bash|PowerShell → deny `git commit` / `git push` (specialist rule: never commit or push)
-//   pre-handback   PreToolUse SubagentHandback → a report without its Handoff (Status + Evidence) is refused
-//   subagent-stop  SubagentStop → a prose reply without its Handoff (Status + Evidence) is sent back once
-//   pre-write      PreToolUse Write|Edit|MultiEdit → specialists never write item state (.team/items/, .team/STATE.md);
-//                  nobody hand-writes STATE.md once .team/items/ exists (it is generated)
-//   post-write     PostToolUse Write|Edit|MultiEdit on .team/** (any session) → item JSON is validated and STATE.md
-//                  regenerated; spec markdown gets the spec rules (no revision headings, lines ≤300, ≤4k words)
+// technical-team hooks. Rule enforcement applies to team specialist subagents only
+// (agent_type "technical-team:team-*", not the orchestrator); the user's own session is never touched.
+//   pre-shell      PreToolUse Bash|PowerShell → deny `git commit` / `git push` (specialists never commit or push)
+//   pre-handback   PreToolUse SubagentHandback → a report without its Handoff (### Handoff, Status, Evidence) is refused
+//   subagent-stop  SubagentStop → a prose reply without its Handoff (### Handoff, Status, Evidence) is sent back once
+//   post-write     PostToolUse Write|Edit|MultiEdit on .team/items/*.json (any session) → regenerate STATE.md
 // Exit 0 with no output = no opinion. Any internal error also exits 0: a broken guard must not block work.
 import { readFileSync } from 'node:fs';
 
@@ -17,7 +13,7 @@ let input = {};
 try { input = JSON.parse(readFileSync(0, 'utf8') || '{}'); } catch { process.exit(0); }
 
 const type = String(input.agent_type || '');
-const isSpecialist = /^technical-team:team-/.test(type) && type !== 'technical-team:team-lead';
+const isSpecialist = /^technical-team:team-/.test(type) && type !== 'technical-team:team-orchestrator';
 const out = (o) => { process.stdout.write(JSON.stringify(o)); process.exit(0); };
 
 if (mode === 'pre-shell' && isSpecialist) {
@@ -56,7 +52,7 @@ function lastAssistantText() {
 }
 
 const HANDOFF_HINT = 'technical-team: end with your Handoff block from specialist-rules (### Handoff, then - Status: done | blocked | needs-input, - Files, - Evidence, - Next).';
-const hasHandoffBlock = (m) => /-\s*Status:\s*(done|blocked|needs-input)\b/i.test(m) && /-\s*Evidence:/i.test(m);
+const hasHandoffBlock = (m) => /^#{2,4}\s*Handoff\b/m.test(m) && /-\s*Status:\s*(done|blocked|needs-input)\b/i.test(m) && /-\s*Evidence:/i.test(m);
 
 // Where the report goes out through a SubagentHandback tool call, a stop hook comes too late
 // (the call ends the run), so check the call itself.
@@ -79,39 +75,13 @@ if (mode === 'subagent-stop' && isSpecialist && !input.stop_hook_active) {
   }
 }
 
-// ---- .team/ writes ----
-const filePath = String(input.tool_input?.file_path || input.tool_input?.notebook_path || '').replace(/\\/g, '/');
-const teamAt = filePath.lastIndexOf('/.team/');
-const teamDir = teamAt >= 0 ? filePath.slice(0, teamAt + 6) : '';
-const rel = teamAt >= 0 ? filePath.slice(teamAt + 7) : '';
-const isState = rel === 'STATE.md' || rel.startsWith('items/');
-
-if (mode === 'pre-write' && teamDir && isState) {
-  const { existsSync } = await import('node:fs');
-  const deny = (why) => out({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: why } });
-  if (isSpecialist) deny('technical-team: item state (.team/items/, .team/STATE.md) belongs to the orchestrating session. Report findings, verdicts and questions in your handoff or structured output; do not write state.');
-  if (rel === 'STATE.md' && existsSync(`${teamDir}/items`)) deny('technical-team: .team/STATE.md is generated from .team/items/*.json. Write the item JSON instead; the view regenerates on save.');
-}
-
-if (mode === 'post-write' && teamDir && !rel.startsWith('archive/')) {
-  const ts = await import(new URL('../tools/team-state.mjs', import.meta.url));
-  const { readFileSync: rf } = await import('node:fs');
-  let text = '';
-  try { text = rf(filePath, 'utf8'); } catch { process.exit(0); }
-  const block = (reason) => out({ decision: 'block', reason });
-  if (/^items\/[^/]+\.json$/.test(rel)) {
-    let errs;
-    try { errs = ts.validateItem(JSON.parse(text), filePath); } catch (x) { errs = [`not valid JSON: ${x.message}`]; }
-    if (errs.length) block(`technical-team: ${rel} breaks the item schema (run-kit workspace § Item state): ${errs.slice(0, 8).join('; ')}. Fix the JSON.`);
-    try { ts.renderTeam(teamDir); } catch { /* view only */ }
-  } else if (rel.endsWith('.md') && rel !== 'STATE.md') {
-    // Edit/MultiEdit: judge only the new text for line rules, so an old file is not blamed for what it already had.
-    const ti = input.tool_input || {};
-    const fresh = ti.new_string != null ? String(ti.new_string) : Array.isArray(ti.edits) ? ti.edits.map((x) => x.new_string || '').join('\n') : text;
-    const hard = ts.specProblems(fresh).filter((p) => !/ words \(max/.test(p));
-    const size = ts.stats(text).words > ts.LIMITS.specWords ? ` ${rel} is ${ts.stats(text).words} words (max ${ts.LIMITS.specWords}): do not grow it; compaction is the lead's call (workflow compact).` : '';
-    if (hard.length) block(`technical-team spec rules for ${rel}: ${hard.slice(0, 6).join('; ')}.${size} Rewrite in place.`);
-    if (size) out({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: `technical-team:${size}` } });
-  }
+// ---- .team/items/*.json → regenerate the STATE.md view ----
+const filePath = String(input.tool_input?.file_path || '').replace(/\\/g, '/');
+const m = filePath.match(/^(.*\/\.team)\/items\/[^/]+\.json$/);
+if (mode === 'post-write' && m) {
+  try {
+    const ts = await import(new URL('../tools/team-state.mjs', import.meta.url));
+    ts.renderTeam(m[1]);
+  } catch { /* view only */ }
 }
 process.exit(0);

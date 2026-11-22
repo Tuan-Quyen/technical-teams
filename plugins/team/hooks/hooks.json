@@ -1,10 +1,9 @@
 {
-  "description": "technical-team guards: specialists never commit/push or write item state, reports carry the Handoff block, .team/ item JSON is validated and spec markdown follows the spec rules.",
+  "description": "technical-team guards: specialists never commit or push, reports carry the Handoff block, and saving an item JSON regenerates .team/STATE.md.",
   "hooks": {
     "PreToolUse": [
       { "matcher": "Bash|PowerShell", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\" pre-shell", "timeout": 10 }] },
-      { "matcher": "^SubagentHandback$", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\" pre-handback", "timeout": 10 }] },
-      { "matcher": "Write|Edit|MultiEdit", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\" pre-write", "timeout": 10 }] }
+      { "matcher": "^SubagentHandback$", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\" pre-handback", "timeout": 10 }] }
     ],
     "PostToolUse": [
       { "matcher": "Write|Edit|MultiEdit", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.mjs\" post-write", "timeout": 15 }] }
