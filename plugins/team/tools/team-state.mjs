@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 export const ROUND_CAP = 3;
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
 export const KEY_RE = /^[A-Z][A-Z0-9]{1,5}$/;
+// The item's module for people (CART, STORE, USER-AUTH); default: the slug's first word.
+export const AREA_RE = /^[A-Z][A-Z0-9-]{0,23}$/;
 export const FINDING_ID_RE = /^F[1-9][0-9]*$/;
 export const PIPELINES = ['feature', 'fix', 'review', 'test', 'infra', 'release', 'new', 'direct'];
 export const TIERS = ['T0', 'T1', 'T2'];
@@ -25,6 +27,25 @@ export const BY = ['qa', 'code-reviewer', 'security', 'dba'];
 export const FINDING_STATUSES = ['open', 'fixed', 'verified', 'reopened', 'challenged', 'deferred', 'rejected'];
 export const CLOSED = ['verified', 'deferred', 'rejected'];
 export const LIMITS = { title: 60, titleWords: 8, next: 30, detail: 40, notes: 5, line: 300, specWords: 4000 };
+
+// A short key for IDs, readable as the slug, never one taken; null when none is free (never a digit suffix):
+// first word (4, then 6 letters), then fewer letters of it plus the rest (cart-charges → CARTCH, cart-chosen → CARCHO).
+export const deriveKey = (slug, taken = new Set()) => {
+  const [first = '', ...rest] = String(slug).split('-').map((w) => w.replace(/[^a-z0-9]/gi, '')).filter(Boolean);
+  const tail = rest.join('');
+  const tries = [first.slice(0, 4), first.slice(0, 6)];
+  for (let i = Math.min(4, first.length); i >= 1 && tail; i--) tries.push(first.slice(0, i) + tail.slice(0, 6 - i));
+  // A leading digit moves to the end: 2fa-setup → FA2.
+  return tries.map((k) => k.toUpperCase().replace(/^([0-9]+)(.*)$/, '$2$1').slice(0, 6)).find((k) => KEY_RE.test(k) && !taken.has(k)) || null;
+};
+
+// The name people read in STATE.md, TASKS.md headings and reports: [AREA] [FEATURE] (cart-checkout → [CART] [CHECKOUT]).
+export const itemLabel = (item) => {
+  const parts = String(item.slug || '').toUpperCase().split('-').filter(Boolean);
+  const area = AREA_RE.test(item.area || '') ? item.area : parts[0] || '?';
+  const feature = (parts[0] === area ? parts.slice(1) : parts).join('-');
+  return feature ? `[${area}] [${feature}]` : `[${area}]`;
+};
 
 const words = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
 const str = (v) => typeof v === 'string';
@@ -42,6 +63,7 @@ export function validateItem(item, file = '') {
   req(str(item.slug) && SLUG_RE.test(item.slug), 'slug: kebab-case, ≤48 chars');
   if (file && str(item.slug)) req(basename(file, '.json') === item.slug, `file name must be ${item.slug}.json`);
   req(str(item.key) && KEY_RE.test(item.key), 'key: 2-6 capitals or digits, first a capital (e.g. CART)');
+  req(item.area == null || (str(item.area) && AREA_RE.test(item.area)), 'area: the module in capitals, e.g. CART or USER-AUTH (default: the first word of the slug)');
   req(str(item.title) && item.title.length <= LIMITS.title && words(item.title) <= LIMITS.titleWords, `title: ≤${LIMITS.titleWords} words and ≤${LIMITS.title} chars (verb + object)`);
   req(PIPELINES.includes(item.pipeline), `pipeline: one of ${PIPELINES.join(', ')}`);
   req(TIERS.includes(item.tier), `tier: one of ${TIERS.join(', ')}`);
@@ -81,23 +103,24 @@ export function validateItem(item, file = '') {
 const cell = (s, n = 80) => String(s ?? '–').replace(/\|/g, '/').replace(/\s+/g, ' ').trim().slice(0, n) || '–';
 
 export function renderState(items) {
-  const open = items.filter((i) => i.status !== 'done').sort((a, b) => a.slug.localeCompare(b.slug));
+  // Sorted by label, so the items of one area sit together.
+  const open = items.filter((i) => i.status !== 'done').map((i) => [itemLabel(i), i]).sort((a, b) => a[0].localeCompare(b[0]) || a[1].slug.localeCompare(b[1].slug));
   const out = [
     '# Team state',
     '',
     '> Generated from `.team/items/*.json` by the plugin — do not edit; write the item JSON instead. Resume: continue each item at **Next**.',
     '',
-    '| Item | Key | Pipeline · tier | Step | Status | Round | Open blockers | Next |',
-    '|---|---|---|---|---|---|---|---|',
+    '| Item | Key | Slug | Pipeline · tier | Step | Status | Round | Open blockers | Next |',
+    '|---|---|---|---|---|---|---|---|---|',
   ];
-  for (const i of open) {
+  for (const [label, i] of open) {
     const ob = openBlocking(i).map((f) => f.id).join(' ') || '–';
-    out.push(`| ${i.slug} | ${i.key} | ${i.pipeline} · ${i.tier} | ${cell(i.step, 40)} | ${isBlocked(i) ? 'blocked (cap)' : i.status} | ${i.round} of ${ROUND_CAP} | ${ob} | ${cell(i.next, 200)} |`);
+    out.push(`| ${cell(label, 60)} | ${i.key} | ${i.slug} | ${i.pipeline} · ${i.tier} | ${cell(i.step, 40)} | ${isBlocked(i) ? 'blocked (cap)' : i.status} | ${i.round} of ${ROUND_CAP} | ${ob} | ${cell(i.next, 200)} |`);
   }
-  if (!open.length) out.push('| – | | | | | | | nothing open |');
-  const qs = open.flatMap((i) => (i.questions || []).map((q) => `- ${i.slug}: ${cell(q.q, 200)}${q.options ? ` (${cell(q.options, 80)})` : ''}`));
+  if (!open.length) out.push('| – | | | | | | | | nothing open |');
+  const qs = open.flatMap(([label, i]) => (i.questions || []).map((q) => `- ${label}: ${cell(q.q, 200)}${q.options ? ` (${cell(q.options, 80)})` : ''}`));
   if (qs.length) out.push('', '## Waiting on the user', '', ...qs);
-  const notes = open.flatMap((i) => (i.notes || []).map((n) => `- ${i.slug}: ${cell(n, 200)}`));
+  const notes = open.flatMap(([label, i]) => (i.notes || []).map((n) => `- ${label}: ${cell(n, 200)}`));
   if (notes.length) out.push('', '## Notes', '', ...notes);
   return `${out.join('\n')}\n`;
 }
@@ -158,17 +181,9 @@ export function migrateTeam(teamDir, { write = false } = {}) {
   const slugs = [...new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.slug).filter((s) => SLUG_RE.test(s || '')))];
   const items = [];
   const notes = [];
-  // Keys must not collide and must still read as the slug: explicit ones are reserved first; a derived one is the
-  // slug's first 6 letters, else fewer letters of the first word plus the start of the rest (cart-charges → CARCHA).
-  // None free → no key is invented: the item is skipped with a note to add a Key column.
+  // Keys must not collide: explicit ones are reserved first, then deriveKey. None free → no key is invented: the item
+  // is skipped with a note to add a Key column.
   const used = new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.key).filter((k) => KEY_RE.test(k || '')));
-  const freeKey = (slug) => {
-    const [first, ...rest] = slug.split('-').map((w) => w.replace(/[^a-z0-9]/g, '')).filter(Boolean);
-    const tail = rest.join('');
-    const tries = [slug.replace(/[^a-z0-9]/g, '').slice(0, 6).replace(/^[0-9]/, 'x').padEnd(2, 'x')];
-    for (let i = Math.min(4, first.length); i >= 1 && tail; i--) tries.push(first.slice(0, i) + tail.slice(0, 6 - i));
-    return tries.map((k) => k.toUpperCase()).find((k) => KEY_RE.test(k) && !used.has(k)) || null;
-  };
   for (const slug of slugs) {
     const a = active?.rows.find((r) => r.slug === slug) || {};
     const q = qafix?.rows.find((r) => r.slug === slug) || {};
@@ -188,7 +203,7 @@ export function migrateTeam(teamDir, { write = false } = {}) {
     const pipeline = PIPELINES.includes((a.pipeline || '').toLowerCase()) ? a.pipeline.toLowerCase() : 'direct';
     const status = ITEM_STATUSES.includes((a.status || '').toLowerCase()) ? a.status.toLowerCase() : 'paused';
     const item = {
-      v: 1, slug, key: KEY_RE.test(a.key || q.key || '') ? (a.key || q.key) : freeKey(slug),
+      v: 1, slug, key: KEY_RE.test(a.key || q.key || '') ? (a.key || q.key) : deriveKey(slug, used),
       title: cut(slug.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()), LIMITS.titleWords).slice(0, LIMITS.title),
       pipeline, tier: pipeline === 'new' ? 'T2' : 'T1', step: cut(a.step, 6).slice(0, 40) || 'resume', status,
       next: cut(a['next step'], LIMITS.next) || 'Resume from the migrated state', round: Number.parseInt(q['fix rounds'], 10) || 0,

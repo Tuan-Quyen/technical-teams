@@ -37,12 +37,32 @@ test('the STATE.md view: open items only, blocked at the cap, questions and note
   const blocked = item({ slug: 'fix-a', pipeline: 'fix', tier: 'T1', round: 3, findings: [f1({ id: 'F2', title: 'Still fails', blocking: true, status: 'reopened', test: 't' })], questions: [{ q: 'Defer F2?', options: 'yes / no → no' }], notes: ['branch x not merged'] });
   const v = ts.renderState([item(), blocked, item({ slug: 'closed', status: 'done' })]);
   assert.match(v, /Generated from `\.team\/items\/\*\.json`/);
-  assert.match(v, /\| fix-a \| CART \| fix · T1 \| build \| blocked \(cap\) \| 3 of 3 \| F2 \|/);
-  assert.match(v, /- fix-a: Defer F2\? \(yes \/ no → no\)/);
-  assert.match(v, /- fix-a: branch x not merged/);
+  assert.match(v, /\| \[FIX\] \[A\] \| CART \| fix-a \| fix · T1 \| build \| blocked \(cap\) \| 3 of 3 \| F2 \|/);
+  assert.match(v, /- \[FIX\] \[A\]: Defer F2\? \(yes \/ no → no\)/);
+  assert.match(v, /- \[FIX\] \[A\]: branch x not merged/);
   assert.doesNotMatch(v, /closed/);
   assert.ok(v.split('\n').every((l) => l.length <= 300));
   assert.equal(ts.isBlocked(blocked), true);
+});
+
+test('labels: [AREA] [FEATURE] from the slug or the area field; the view groups an area', () => {
+  assert.equal(ts.itemLabel(item({ slug: 'cart-checkout' })), '[CART] [CHECKOUT]');
+  assert.equal(ts.itemLabel(item({ slug: 'banner-carousel', area: 'STORE' })), '[STORE] [BANNER-CAROUSEL]');
+  assert.equal(ts.itemLabel(item({ slug: 'store-paging', area: 'STORE' })), '[STORE] [PAGING]');
+  assert.equal(ts.itemLabel(item({ slug: 'cart' })), '[CART]');
+  assert.ok(ts.validateItem(item({ area: 'store' })).some((e) => e.startsWith('area:')));
+  assert.deepEqual(ts.validateItem(item({ area: 'USER-AUTH' })), []);
+  const v = ts.renderState([item({ slug: 'store-paging' }), item({ slug: 'cart-change' }), item({ slug: 'banner', area: 'STORE' })]);
+  const order = v.split('\n').filter((l) => /^\| \[/.test(l)).map((l) => l.split(' | ')[0]);
+  assert.deepEqual(order, ['| [CART] [CHANGE]', '| [STORE] [BANNER]', '| [STORE] [PAGING]']);
+});
+
+test('deriveKey: readable, never taken, never a digit suffix', () => {
+  const taken = new Set();
+  const keys = ['cart-checkout', 'cart-charges', 'cart-chosen', 'store-banner'].map((s) => { const k = ts.deriveKey(s, taken); taken.add(k); return k; });
+  assert.deepEqual(keys, ['CART', 'CARTCH', 'CARCHO', 'STOR']);
+  assert.equal(ts.deriveKey('cart', taken), null, 'nothing free → no invented key');
+  assert.equal(ts.deriveKey('2fa-setup'), 'FA2');
 });
 
 test('spec rules ignore fenced code, catch revision headings and long lines', () => {
@@ -97,7 +117,7 @@ test('migrate: a 0.32 workspace (STATE.md § QA-Fix state + findings.md) becomes
   assert.deepEqual(ts.validateItem(JSON.parse(fs.readFileSync(path.join(team, 'items', 'cart-checkout.json'), 'utf8')), path.join(team, 'items', 'cart-checkout.json')), []);
   assert.ok(fs.existsSync(path.join(team, 'archive', 'cart-checkout', 'findings-0.32.md')), 'findings.md archived');
   assert.ok(fs.existsSync(path.join(team, 'archive', 'STATE-0.32.md')), 'old STATE.md kept in the archive');
-  assert.match(fs.readFileSync(path.join(team, 'STATE.md'), 'utf8'), /Generated from[\s\S]*\| cart-checkout \| CART \| feature · T1 \|/);
+  assert.match(fs.readFileSync(path.join(team, 'STATE.md'), 'utf8'), /Generated from[\s\S]*\| \[CART\] \[CHECKOUT\] \| CART \| cart-checkout \| feature · T1 \|/);
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
@@ -133,7 +153,7 @@ test('migrate: derived keys never collide, still read as the slug, and are never
   ].join('\n'));
   const res = ts.migrateTeam(team);
   const keys = Object.fromEntries(res.items.map((i) => [i.slug, i.key]));
-  assert.deepEqual(keys, { 'cart-checkout': 'CARTCH', 'cart-charges': 'CACHAR', 'cart-chosen': 'CARCHO', other: 'CARCHA', 'ab-x': 'AB' });
+  assert.deepEqual(keys, { 'cart-checkout': 'CART', 'cart-charges': 'CARTCH', 'cart-chosen': 'CARCHO', other: 'CARCHA', 'ab-x': 'AB' });
   assert.ok(res.notes.some((n) => /^ab: not migrated: every key from its slug is taken/.test(n)), 'no invented key');
   fs.rmSync(dir, { recursive: true, force: true });
 });

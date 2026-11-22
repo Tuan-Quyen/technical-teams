@@ -2,10 +2,10 @@
 
 > Owner: **team-pm** — tickets and status. Everyone else reads it. Status: todo · doing · blocked · review · done.
 > Tickets that run in parallel must have disjoint `Files`.
-> IDs: `<KEY>-T<n>` ticket · `<KEY>-AC<n>` acceptance criterion; KEY is the item's `key`. Findings (`F1`) live in `.team/items/<slug>.json`, never as tickets. Write an ID with its summary the first time in a line: `CART-T2 (save button)`.
+> IDs: `<KEY>-T<n>` ticket · `<KEY>-AC<n>` acceptance criterion; KEY is the item's `key`; the heading starts with the item's label (`[CART] [CHECKOUT]`, see STATE.md). Findings (`F1`) live in `.team/items/<slug>.json`, never as tickets. Write an ID with its summary the first time in a line: `CART-T2 (save button)`.
 > **Budget:** open tickets only, one row each, `Summary` ≤ 12 words. Done tickets collapse into one `Done:` line per item (ID ranges); their detail stays in git.
 
-## <slug> · <KEY> — <title>
+## [<AREA>] [<FEATURE>] <slug> · <KEY> — <title>
 
 | Ticket | Summary | Owner | Files | Depends on | Size | ACs | Status |
 |---|---|---|---|---|---|---|---|

@@ -81,10 +81,8 @@ test('keys come from the slug and never collide', () => {
   const taken = new Set();
   const k1 = deriveKey('cart-checkout', taken); taken.add(k1);
   const k2 = deriveKey('cart-refund', taken); taken.add(k2);
-  const k3 = deriveKey('cart', taken); taken.add(k3);
-  assert.equal(k1, 'CART');
-  assert.notEqual(k2, k1);
-  assert.ok([k1, k2, k3].every((k) => /^[A-Z][A-Z0-9]{1,5}$/.test(k)) && new Set([k1, k2, k3]).size === 3, `${k1} ${k2} ${k3}`);
+  assert.deepEqual([k1, k2], ['CART', 'CARTRE']);
+  assert.throws(() => deriveKey('cart', taken), /--key cart=<KEY>/, 'no digit suffix: ask for a key');
   assert.match(deriveKey('2fa-setup', new Set()), /^[A-Z][A-Z0-9]{1,5}$/, 'a slug starting with a digit still gets a valid key');
 });
 

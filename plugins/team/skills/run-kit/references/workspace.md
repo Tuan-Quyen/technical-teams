@@ -25,7 +25,7 @@ Evidence (test output, repro steps, round details) lives in handoffs and test fi
     "blocking": true, "status": "fixed", "test": "test/cart.test.js::100% off is 0", "file": "src/cart.js" }],
   "verdicts": { "qa": "FAIL · r0" }, "questions": [], "decisions": [], "notes": [] }
 ```
-Optional: `files`, `reopened`, `detail`, `owner` (a ticket) on a finding; `questions` `{q, options}`; `decisions` `{date, by, text}`.
+Optional: `area` (the module in capitals, `STORE`; default the slug's first word; STATE.md shows `[AREA] [FEATURE]`); `files`, `reopened`, `detail`, `owner` (a ticket) on a finding; `questions` `{q, options}`; `decisions` `{date, by, text}`.
 
 - `title` ≤8 words / 60 characters, verb + object, stored once; elsewhere the bare ID. `next` ≤30 words. `detail` ≤40 words. `notes` ≤5.
 - `status`: `running`, `waiting-for-user`, `blocked`, `paused`, `done`. A workflow returns the item updated: write it back verbatim before anything else.

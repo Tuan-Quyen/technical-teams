@@ -85,7 +85,7 @@ Reply ending: the Handoff block of §5 (use your name; emoji ⬜).
 
 ### IDs people can read
 
-Item **key**: 2–6 capitals or digits from the slug (`cart-checkout` → `CART`), in the item and its TASKS.md heading; it never changes. Tickets `CART-T1`, milestones `CART-M1` (pm); ACs `CART-AC1`, edge cases `CART-E1`, decisions `CART-D1` (ba, designer, architect); findings `F1` in the item (`CART#F1` elsewhere); `BR-1`, `G-1` in PRODUCT.md. To the user, an ID comes with its short title once per line: `F3 (save fails on second click)`. Old IDs (`T-1`, `AC1`…): `node ${CLAUDE_PLUGIN_ROOT}/tools/migrate-ids.mjs <project>`.
+Item **key**: 2–6 capitals or digits from the slug (`cart-checkout` → `CART`), in the item and its TASKS.md heading; it never changes. People read an item as its label `[AREA] [FEATURE]` (`[CART] [CHECKOUT]`; `area` defaults to the slug's first word): use it in reports and questions, the slug only for files. Tickets `CART-T1`, milestones `CART-M1` (pm); ACs `CART-AC1`, edge cases `CART-E1`, decisions `CART-D1` (ba, designer, architect); findings `F1` in the item (`CART#F1` elsewhere); `BR-1`, `G-1` in PRODUCT.md. To the user, an ID comes with its short title once per line: `F3 (save fails on second click)`. Old IDs (`T-1`, `AC1`…): `node ${CLAUDE_PLUGIN_ROOT}/tools/migrate-ids.mjs <project>`.
 
 ## 4. Workspace `.team/`
 
