@@ -1,6 +1,6 @@
 ---
 name: development-process
-description: The developer's method for a ticket or fix: understand before coding, the codebase's own patterns, contracts on both sides, unit/component tests, the self-check and evidence before handoff, scoped fix rounds, when to stop blocked. developer loads it for a non-trivial ticket or fix.
+description: "The developer's method for a ticket or fix: understand before coding, the codebase's own patterns, contracts on both sides, unit/component tests, the self-check and evidence before handoff, scoped fix rounds, when to stop blocked. developer loads it for a non-trivial ticket or fix."
 ---
 
 # development-process — the ACs hold, and the evidence proves it

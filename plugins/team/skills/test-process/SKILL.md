@@ -1,6 +1,6 @@
 ---
 name: test-process
-description: The QA engineer's test process (from ISTQB and ISO/IEC 25010): risk-based planning, test design techniques, UI/UX verification, defect reports with severity and priority, retest and regression, the summary behind PASS/FAIL. qa loads it for a deep test plan or UX check.
+description: "The QA engineer's test process (from ISTQB and ISO/IEC 25010): risk-based planning, test design techniques, UI/UX verification, defect reports with severity and priority, retest and regression, the summary behind PASS/FAIL. qa loads it for a deep test plan or UX check."
 ---
 
 # test-process — QA is the gate for product quality

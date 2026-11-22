@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - The deliverable is prompts and config: agent definitions, slash commands, skills, templates, hooks and workflow scripts under `plugins/team/`, distributed through the marketplace in `.claude-plugin/marketplace.json`.
 - "Building a feature" here means changing how the team behaves (an agent's prompt, a pipeline, a hook rule, a template), not writing application code.
-- Do not run the team's own pipelines (`/technical-team:feature`, `fix`, `new`, …) to change this repo, and do not treat it as a target project of the team. The `technical-team:team-*` agents available in the session are the *installed* copy of this plugin, which may differ from the source being edited.
+- The team's own pipelines (`/technical-team:feature`, `fix`, `review`, …) may be run on this repo. They come from the *installed* copy of this plugin, which may differ from the source being edited: to dogfood the working copy, start with `claude --plugin-dir plugins/team`. The run's `.team/` workspace stays local (gitignored), and the rules below still apply to whatever the pipeline changes.
 - `example/pomodoro-timer/` is a sample product the plugin built (`BRIEF.md` = the run's brief, `PLUGIN-REPORT.md` = findings about the plugin). It is evidence of plugin behaviour, not code to develop; it has its own `package.json` and CI (`.github/workflows/pomodoro-timer.yml`).
 - Root `.team/` and `docs/` are gitignored on purpose (local scratch / redesign notes). Never commit them.
 
