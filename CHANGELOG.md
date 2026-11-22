@@ -2,6 +2,13 @@
 
 Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migration** when they apply. Public names and paths are pinned in `tests/contract.json`.
 
+## 0.37.0 — 2026-11-22 (item labels people can read)
+
+- **Item label `[AREA] [FEATURE]`** (`[CART] [CHECKOUT]`, `[STORE] [BANNER]`): `STATE.md` shows it first and sorts by it, so one area's items sit together; the `TASKS.md` heading starts with it; the lead names items by it in reports. IDs are unchanged (`CART-T1`).
+- New optional item field `area` (the module in capitals, e.g. `STORE` for `banner-carousel`); default: the slug's first word.
+- One key derivation (`deriveKey` in `team-state.mjs`, used by `migrate` and `migrate-ids.mjs`): first word, then more letters of the slug (`cart-charges` → `CARTCH`); never a digit suffix. None free → `migrate` skips the item with a note, `migrate-ids` asks for `--key`.
+- `STATE.md` gains a `Slug` column after `Key`.
+
 ## 0.36.0 — 2026-11-22 (challenges: agents push back with evidence)
 
 - **Challenge in the QA-Fix loop** (`build-loop.js`, run-kit `qa-loop.md` § Challenges): a developer who can show a finding is wrong (its test asserts what no AC or spec says, out of scope, conflicts with the spec) returns it `challenged` with evidence instead of coding around it. Once per finding; without evidence it counts as fixed. The finder's next gate run concedes (→ `rejected`) or maintains; only a maintained one starts a read-only arbiter (`upheld` → `open`, `refuted` → `rejected`, `spec` → stop for the spec owner). No extra round; each outcome is a line in `decisions`.

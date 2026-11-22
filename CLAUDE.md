@@ -56,7 +56,7 @@ How the pieces connect (each needs several files to see):
 - **Workflows fall back to inline.** Commands call workflows by name (`technical-team:team-build-loop`, …); without the Workflow tool the lead runs the same steps inline from run-kit. Changing loop behaviour means updating both paths.
 - **Rules are enforced by hook, not only prose.** `guard.mjs` applies only to `technical-team:team-*` specialists (never the lead or user session): blocks `git commit`/`push`, blocks writes to `.team/items/`, rejects reports without a `### Handoff` (Status + Evidence); on any `.team/**` write it validates item JSON and spec rules (no Revision/Round headings, lines ≤300 chars, ≤4,000 words). A guard error must exit 0 (never block work).
 - **Personas** (emoji, name, vibe, badge colour) come from the target project's `.team/CREW.md` (template in `templates/core/CREW.md`); agent frontmatter keeps only `color:`.
-- **Agents declare no `tools` allowlist** so they inherit project MCP servers and skills; `disallowedTools` only removes what the role must not do (e.g. debugger has no `Edit`, doc roles have no `Bash`).
+- **Agents declare no `tools` allowlist** so they inherit project MCP servers and skills; `disallowedTools` only removes what the role must not do (e.g. debugger has no `Edit`, ba, pm, architect and designer have no `Bash`).
 
 ## Rules when changing the plugin
 

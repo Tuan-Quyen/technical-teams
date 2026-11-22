@@ -21,9 +21,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deriveKey as keyFromSlug } from './team-state.mjs';
 
 const KEY_RE = /^[A-Z][A-Z0-9]{1,5}$/;
 const SLUG = '[a-z0-9][a-z0-9-]*';
+// An optional [AREA] [FEATURE] label before the slug in a TASKS.md heading.
+const LABEL = '(?:\\[[A-Z0-9-]+\\] )*';
 // Old IDs, never glued to a letter or digit before them; an already migrated ID (CART-T1) is skipped in code.
 const B = '(?<![A-Za-z0-9])';
 const TYPES = {
@@ -49,16 +52,11 @@ const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((c) =
 const row = (cs) => `| ${cs.join(' | ')} |`;
 const posix = (p) => p.split(path.sep).join('/');
 
-// A key from the slug: its first word (4, then 6 letters), first word + second, initials, then a digit; never one taken.
+// A key from the slug, shared with team-state.mjs: readable, never taken, never a digit suffix.
 export const deriveKey = (slug, taken) => {
-  const words = slug.toUpperCase().split('-').map((w) => w.replace(/[^A-Z0-9]/g, '')).filter(Boolean);
-  const first = words[0] || 'ITEM';
-  const cands = [first.slice(0, 4), first.slice(0, 6), first.slice(0, 4) + (words[1] || '').slice(0, 2), words.map((w) => w[0]).join('').slice(0, 6)]
-    .map((c) => (/^[A-Z]/.test(c) ? c : `I${c}`).slice(0, 6));
-  for (const c of cands) if (KEY_RE.test(c) && !taken.has(c)) return c;
-  const base = (KEY_RE.test(cands[0]) ? cands[0] : 'ITEM').slice(0, 4);
-  for (let i = 2; i < 100; i++) { const c = `${base}${i}`.slice(0, 6); if (KEY_RE.test(c) && !taken.has(c)) return c; }
-  throw new Error(`no free key for ${slug}`);
+  const k = keyFromSlug(slug, taken);
+  if (!k) throw new Error(`no free key for ${slug} from its slug: pass --key ${slug}=<KEY>`);
+  return k;
 };
 
 // Which item a .team/ file belongs to: reports|archive/<slug>/…, requirements|system-design|frontend-design/<slug>.md.
@@ -73,7 +71,7 @@ const tasksSections = (text) => {
   const out = [];
   let cur = null;
   for (const line of text.split('\n')) {
-    const h = line.match(new RegExp(`^## (${SLUG})(?: · ([A-Z][A-Z0-9]{1,5}))? — `));
+    const h = line.match(new RegExp(`^## ${LABEL}(${SLUG})(?: · ([A-Z][A-Z0-9]{1,5}))? — `));
     if (h) { cur = { slug: h[1], key: h[2] || null, lines: [] }; out.push(cur); continue; }
     if (/^## /.test(line)) cur = null;
     if (cur) cur.lines.push(line);
@@ -264,8 +262,8 @@ export const migrate = (root, { write = false, all = false, keys: overrides = {}
   const migrateTasks = (text, left) => {
     let own = null;
     const lines = text.split('\n').map((line) => {
-      const h = line.match(new RegExp(`^## (${SLUG})(?: · ([A-Z][A-Z0-9]{1,5}))? — (.*)$`));
-      if (h) { own = h[1]; return `## ${h[1]} · ${keys[h[1]]} — ${h[3]}`; }
+      const h = line.match(new RegExp(`^## (${LABEL})(${SLUG})(?: · ([A-Z][A-Z0-9]{1,5}))? — (.*)$`));
+      if (h) { own = h[2]; return `## ${h[1]}${h[2]} · ${keys[h[2]]} — ${h[4]}`; }
       if (/^## /.test(line)) own = null;
       return own ? rewrite(line, own, left) : line;
     });

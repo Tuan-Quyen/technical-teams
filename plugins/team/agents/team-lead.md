@@ -32,7 +32,7 @@ Unsure between two → ask the user one short question. Then Read `${CLAUDE_PLUG
 
 ## 3. Bookkeeping
 
-- **Item** — a short kebab-case slug and a key (2–6 capitals, from the slug: `cart-checkout` → `CART`), then `.team/items/<slug>.json` (run-kit `workspace.md` § Item state). Before each spawn set `step`, `status`, `next`; after each handoff update it. The hook validates every save and regenerates `STATE.md`; fix what it sends back.
+- **Item** — a short kebab-case slug that starts with its module (`cart-checkout`), a key (2–6 capitals, from the slug: `CART`) and, when the slug does not start with the module, `area` (`STORE` for `banner-carousel`); people read it as `[CART] [CHECKOUT]`. Then `.team/items/<slug>.json` (run-kit `workspace.md` § Item state). Before each spawn set `step`, `status`, `next`; after each handoff update it. The hook validates every save and regenerates `STATE.md`; fix what it sends back.
 - **Keep it small** — `next` ≤30 words, a title ≤8 words, stored once; done steps go nowhere (git has them). A user question → `questions`, status `waiting-for-user`; their answer → `decisions`, verbatim.
 - **TASKS.md** — `team-pm`'s file; you only read it. Status changes go to pm in one brief per batch. A `fix`, `--small` or `infra` item has no tickets.
 - **ADR numbers** — the next number is the highest in `.team/adr/` + 1.
@@ -68,7 +68,7 @@ Route each handoff by its Status (run-kit §5). A developer handoff without buil
 2. Milestone close or a spec over budget → compaction (run-kit `workspace.md` § Compaction).
 3. Move the item's spec and report files (`requirements/`, `system-design/`, `frontend-design/` and their `<slug>-m<n>.md`, `reports/<slug>/`) to `.team/archive/<slug>/`; delete `.team/items/<slug>.json`.
 4. If the item has tickets, brief `technical-team:team-pm` to mark them `done`.
-5. Report to the user: what was done, files changed, test and review evidence, open risks.
+5. Report to the user, naming items by label (`[CART] [CHECKOUT]`): what was done, files changed, test and review evidence, open risks.
 
 ## Rules
 

@@ -6,7 +6,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
 - **9 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
-- **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
+- **13 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
 - **4 skill** nạp khi cần: `business-analysis` (spec), `technical-planning` (thiết kế + ticket), `development-process` (code + unit test + evidence), `test-process` (QA).
 
@@ -134,9 +134,9 @@ Agent không khai báo allowlist `tools`, nên kế thừa mọi MCP tool (Prism
 | Agent | Chặn | Nhận MCP + skill của project |
 |---|---|---|
 | `team-developer` · `team-dba` · `team-devops` · `team-qa` | không | ✅ |
-| `team-debugger` | `Edit` (chỉ chẩn đoán) | ✅ |
-| `team-code-reviewer` · `team-security` | `NotebookEdit` (vẫn ghi report của mình) | ✅ |
-| `team-ba` · `team-pm` · `team-architect` · `team-designer` · `team-writer` | `Bash` | ✅ |
+| `team-debugger` | `Edit`, `NotebookEdit` (chỉ chẩn đoán) | ✅ |
+| `team-code-reviewer` · `team-security` · `team-writer` | `NotebookEdit` (vẫn ghi report/docs của mình) | ✅ |
+| `team-ba` · `team-pm` · `team-architect` · `team-designer` | `Bash`, `NotebookEdit` | ✅ |
 
 - Lead ghi trong brief những MCP/skill bước đó cần và việc nào bên ngoài repo người dùng đã cho phép.
 - Mỗi bước, lead tự suy luận từ mục tiêu bước và stack để chọn skill/MCP agent cần (Figma MCP cho designer, database MCP cho dba, docs MCP cho architect/developer, issue tracker cho ba/pm, hosting/CI cho devops, browser/emulator MCP hoặc skill run/preview của project cho qa/developer/debugger…) rồi giao qua dòng `Tools:` trong brief. Agent dùng đúng tool đó; brief không ghi hoặc thiếu → tự chọn và ghi vào **Evidence**. Thiếu tool cần thiết → báo người dùng; bước kiểm tra không chạy được ghi là chưa chạy, không tính PASS.
@@ -185,7 +185,7 @@ Mỗi file (trừ `docs/**`) được viết theo template trong `plugins/team/t
 
 ```
 templates/
-├── core/          STATE.md · TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
+├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
 ├── requirements/  requirements.md
 ├── design/        system-design.md · DESIGN.md · frontend-design.md
 ├── adr/           adr.md
@@ -194,7 +194,7 @@ templates/
 
  agent đọc template trước rồi điền, không tự đặt cấu trúc. Spec chỉ ghi sự thật hiện hành: đổi gì thì viết lại mục đó, quyết định ghi một dòng dưới `## Decision log`. Report T2 chỉ tham chiếu finding theo ID của item. Khi đóng item, lead chuyển các file của item vào `archive/<slug>/` và xóa JSON của nó. Hết mỗi milestone (`new`), workflow `team-compact` viết gọn spec, một agent độc lập kiểm không mất gì.
 
-**ID dễ đọc:** mỗi item có một *key* ngắn lấy từ slug (`cart-checkout` → `CART`), ghi trong item JSON và tiêu đề của item trong `TASKS.md`. ID gắn key: `CART-T1` ticket · `CART-AC1` acceptance criterion · `CART-E1` edge case · `CART-M1` milestone; finding là `F1` trong item (`CART#F1` khi nhắc từ nơi khác). `BR-1`, `G-1` là quy tắc/mục tiêu của cả sản phẩm (`PRODUCT.md`), không cần key. Báo cáo gửi bạn luôn kèm tiêu đề ngắn bên cạnh ID, ví dụ `CART#F3 (lưu form lỗi lần 2)`.
+**ID dễ đọc:** mỗi item có một *key* ngắn lấy từ slug (`cart-checkout` → `CART`), ghi trong item JSON và tiêu đề của item trong `TASKS.md`. Người đọc thấy item qua **nhãn** `[AREA] [FEATURE]` (`[CART] [CHECKOUT]`, `[STORE] [BANNER]`) trong `STATE.md`, tiêu đề `TASKS.md` và báo cáo; `area` mặc định là chữ đầu của slug, đặt riêng khi slug không bắt đầu bằng module. Key không bao giờ thêm số (`CART2`): trùng thì lấy thêm chữ của slug (`cart-charges` → `CARTCH`), hết cách thì hỏi bạn. ID gắn key: `CART-T1` ticket · `CART-AC1` acceptance criterion · `CART-E1` edge case · `CART-M1` milestone; finding là `F1` trong item (`CART#F1` khi nhắc từ nơi khác). `BR-1`, `G-1` là quy tắc/mục tiêu của cả sản phẩm (`PRODUCT.md`), không cần key. Báo cáo gửi bạn luôn kèm tiêu đề ngắn bên cạnh ID, ví dụ `CART#F3 (lưu form lỗi lần 2)`.
 
 Dự án cũ còn `T-1`, `F-001`, `AC1` thì chuyển bằng script đi kèm plugin:
 

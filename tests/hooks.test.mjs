@@ -116,7 +116,7 @@ test('post-write: a valid item regenerates STATE.md; a bad one is sent back with
   fs.writeFileSync(f, JSON.stringify(item()));
   assert.equal(run('post-write', { tool_input: { file_path: f } }), null);
   const view = fs.readFileSync(path.join(dir, '.team', 'STATE.md'), 'utf8');
-  assert.match(view, /\| fix-discount \| CART \| fix · T1 \| qa \| running \| 1 of 3 \| F1 \| Retest F1 \|/);
+  assert.match(view, /\| \[FIX\] \[DISCOUNT\] \| CART \| fix-discount \| fix · T1 \| qa \| running \| 1 of 3 \| F1 \| Retest F1 \|/);
   fs.writeFileSync(f, JSON.stringify(item({ title: 'A title that is far too long for any view to show well', cap: 5, findings: [{ id: 'F1', title: 'x', by: 'qa', severity: 'major', blocking: true, status: 'open', test: '' }] })));
   const r = run('post-write', { tool_input: { file_path: f } });
   assert.equal(r.decision, 'block');
