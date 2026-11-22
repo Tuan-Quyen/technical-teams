@@ -116,7 +116,7 @@ test('compact: a file still over the word budget after a cut is not done; a spli
   assert.equal((await runCompact(v({ maxFileWords: 3000 }))).status, 'done', 'split parts may total more than the budget');
 });
 
-test('migrate: keys derived from slugs never collide with each other or with explicit keys', async () => {
+test('migrate: derived keys never collide, still read as the slug, and are never invented', async () => {
   const os = await import('node:os');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-key-'));
   const team = path.join(dir, '.team');
@@ -127,10 +127,13 @@ test('migrate: keys derived from slugs never collide with each other or with exp
     '| cart-checkout | – | feature | build | running | Build |',
     '| cart-charges | – | feature | build | running | Build |',
     '| cart-chosen | CARTCH2 | feature | build | running | Build |',
-    '| other | CARTC2 | feature | build | running | Build |', '',
+    '| other | CARCHA | feature | build | running | Build |',
+    '| ab | – | feature | build | running | Build |',
+    '| ab-x | AB | feature | build | running | Build |', '',
   ].join('\n'));
-  const keys = ts.migrateTeam(team).items.map((i) => i.key);
-  assert.equal(new Set(keys).size, keys.length, `unique keys: ${keys.join(', ')}`);
-  assert.ok(keys.includes('CARTCH') && keys.includes('CARTC2') && keys.includes('CARTC3'), keys.join(', '));
+  const res = ts.migrateTeam(team);
+  const keys = Object.fromEntries(res.items.map((i) => [i.slug, i.key]));
+  assert.deepEqual(keys, { 'cart-checkout': 'CARTCH', 'cart-charges': 'CACHAR', 'cart-chosen': 'CARCHO', other: 'CARCHA', 'ab-x': 'AB' });
+  assert.ok(res.notes.some((n) => /^ab: not migrated: every key from its slug is taken/.test(n)), 'no invented key');
   fs.rmSync(dir, { recursive: true, force: true });
 });

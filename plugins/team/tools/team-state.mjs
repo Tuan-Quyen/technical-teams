@@ -158,15 +158,16 @@ export function migrateTeam(teamDir, { write = false } = {}) {
   const slugs = [...new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.slug).filter((s) => SLUG_RE.test(s || '')))];
   const items = [];
   const notes = [];
-  // Keys must not collide: explicit ones are reserved first; a derived one gets a digit suffix when taken.
+  // Keys must not collide and must still read as the slug: explicit ones are reserved first; a derived one is the
+  // slug's first 6 letters, else fewer letters of the first word plus the start of the rest (cart-charges → CARCHA).
+  // None free → no key is invented: the item is skipped with a note to add a Key column.
   const used = new Set([...(active?.rows || []), ...(qafix?.rows || [])].map((r) => r.key).filter((k) => KEY_RE.test(k || '')));
   const freeKey = (slug) => {
-    const base = slug.replace(/[^a-z0-9]/g, '').slice(0, 6).toUpperCase().replace(/^[0-9]/, 'X').padEnd(2, 'X');
-    for (let n = 1; n < 1000; n++) {
-      const k = n === 1 ? base : `${base.slice(0, 6 - String(n).length)}${n}`;
-      if (!used.has(k)) return k;
-    }
-    return base;
+    const [first, ...rest] = slug.split('-').map((w) => w.replace(/[^a-z0-9]/g, '')).filter(Boolean);
+    const tail = rest.join('');
+    const tries = [slug.replace(/[^a-z0-9]/g, '').slice(0, 6).replace(/^[0-9]/, 'x').padEnd(2, 'x')];
+    for (let i = Math.min(4, first.length); i >= 1 && tail; i--) tries.push(first.slice(0, i) + tail.slice(0, 6 - i));
+    return tries.map((k) => k.toUpperCase()).find((k) => KEY_RE.test(k) && !used.has(k)) || null;
   };
   for (const slug of slugs) {
     const a = active?.rows.find((r) => r.slug === slug) || {};
@@ -195,6 +196,7 @@ export function migrateTeam(teamDir, { write = false } = {}) {
       findings, notes: [`migrated from 0.32 STATE.md${existsSync(fPath) ? ' and findings.md' : ''}`],
     };
     if (item.workflows === undefined) delete item.workflows;
+    if (!item.key) { notes.push(`${slug}: not migrated: every key from its slug is taken; add a Key column (2-6 capitals) to STATE.md`); continue; }
     used.add(item.key);
     const errs = validateItem(item);
     if (errs.length) { notes.push(`${slug}: not migrated: ${errs.join('; ')}`); continue; }
