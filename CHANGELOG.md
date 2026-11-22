@@ -2,6 +2,12 @@
 
 Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migration** when they apply. Public names and paths are pinned in `tests/contract.json`.
 
+## 0.39.0 — 2026-11-22 (the team looks back at its own sessions)
+
+- **`/technical-team:retrospect [days]`** (7–30, default 14): `tools/retrospect.mjs` reads the local Claude Code transcripts (`~/.claude/projects`, CLI and desktop, subagent and workflow runs included), keeps the sessions that used the plugin and writes a digest of signals — usage against what the plugin ships, cost and active time per specialist, guard firings, handoffs blocked / needs-input / missing, tool errors and permission denials per agent, re-spawns, the lead editing code itself, non-team agents, repeated shell commands, compactions, interrupts, plugin version per session. Every signal carries refs (`<project>/<session>.jsonl:L<n>`) and redacted snippets.
+- The lead turns the digest into ranked recommendations in `.team/retrospect/<date>.md` (template `core/RETROSPECT.md`): component, add / remove / merge / edit, evidence (≥2 refs from ≥2 sessions, else a hypothesis), the proposed text, impact and contract note. No item, no spawn, no edit to the plugin; you pick what to apply.
+- Local only: no network; sessions in this plugin repo itself are left out unless `--include-dev`; a project copied with its transcripts counts once.
+
 ## 0.38.0 — 2026-11-22 (an issue list with one home)
 
 - **`.team/ISSUES.md`** (template `core/ISSUES.md`): one ranked row per issue — `I<n>`, type, severity, priority, area, status, source, item. Owner qa; the lead only adds `new` rows and sets `status` / `item` (a deliberate exception to one-owner-per-file, so closing an item costs no extra spawn).

@@ -36,6 +36,10 @@
     "triage": {
       "status": "stable",
       "since": "0.38.0"
+    },
+    "retrospect": {
+      "status": "stable",
+      "since": "0.39.0"
     }
   },
   "agents": {
@@ -109,6 +113,11 @@
       "status": "stable",
       "since": "0.38.0",
       "role": "ranked issue list (qa; lead adds rows and sets status/item)"
+    },
+    ".team/retrospect/": {
+      "status": "stable",
+      "since": "0.39.0",
+      "role": "retrospect reports (lead, /retrospect), one per run"
     },
     ".team/requirements/": {
       "status": "stable",

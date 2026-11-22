@@ -51,6 +51,7 @@ Paths are under `.team/`. Only the agent in the Writes column writes a file; eve
 | `review` | code-reviewer ∥ security (∥ dba); no code changes |
 | `test` | qa writes missing tests |
 | `triage [list]` | qa ranks `ISSUES.md`; no item, you pick what to fix |
+| `retrospect [days]` | the lead mines the local transcripts of team sessions (`tools/retrospect.mjs`) and proposes plugin changes with evidence; no item, no spawn |
 | `infra` | devops proposal → devops → code-reviewer ∥ security → writer |
 | `release` | qa ∥ security ∥ devops (∥ dba) → writer: GO / NO-GO |
 | `new` | ba → architect ∥ designer → architect → pm → per milestone: build loop → compact → release |

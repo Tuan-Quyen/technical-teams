@@ -4,9 +4,9 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
 - **Tech lead (`team-lead`)**: orchestrator — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ trạng thái từng item trong `.team/items/<slug>.json` (`.team/STATE.md` được sinh ra từ đó) để làm tiếp được khi session bị limit hoặc mở session mới.
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
-- **10 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + `triage` (xếp hạng issue) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
+- **11 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + `triage` (xếp hạng issue) + `retrospect` (nhìn lại các phiên đã chạy, đề xuất sửa team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
-- **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
+- **15 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
 - **4 skill** nạp khi cần: `business-analysis` (spec), `technical-planning` (thiết kế + ticket), `development-process` (code + unit test + evidence), `test-process` (QA).
 
@@ -62,6 +62,7 @@ Lead phải chạy ở session chính: subagent không spawn được subagent k
 | `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO; issue mở blocker/critical/P1 → NO-GO trừ khi bạn chấp nhận; release notes có Known issues | qa ∥ security ∥ devops (∥ dba) → writer |
 | `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` (qa pre-check trước) → release |
 | `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` | qa |
+| `/technical-team:retrospect` | nhìn lại 7–30 ngày (mặc định 14) các phiên Claude Code có dùng team trên máy: script đọc transcript local, lead đề xuất thêm/bớt/sửa agent, skill, command, hook, workflow — mỗi đề xuất kèm evidence (`session.jsonl:L<n>`) và bản sửa; bạn chọn cái để áp dụng. Report `.team/retrospect/<ngày>.md`, không sửa plugin | không spawn ai |
 | `/technical-team:crew` | xem hoặc đổi emoji, biệt danh, vibe, màu badge | không spawn ai; lead ghi `.team/CREW.md` |
 
 `→` là tuần tự, `∥` là song song.
@@ -168,6 +169,7 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 ├── CREW.md                     lead tự tạo (mặc định), bạn tùy biến: emoji, biệt danh, vibe, màu badge
 ├── TASKS.md                    pm: ticket và trạng thái
 ├── ISSUES.md                   qa (`triage`): issue đã xếp hạng; lead thêm dòng mới, đặt status/item khi đóng item
+├── retrospect/<YYYY-MM-DD>.md  lead (`retrospect`): đề xuất sửa team kèm evidence từ transcript; chỉ để local
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
 ├── ARCHITECTURE.md             architect: tổng quan, trần ~200 dòng, trỏ sang ADR
 ├── requirements/<slug>.md      ba
@@ -187,7 +189,7 @@ Mỗi file (trừ `docs/**`) được viết theo template trong `plugins/team/t
 
 ```
 templates/
-├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md · ISSUES.md
+├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md · ISSUES.md · RETROSPECT.md
 ├── requirements/  requirements.md
 ├── design/        system-design.md · DESIGN.md · frontend-design.md
 ├── adr/           adr.md
@@ -227,6 +229,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 | `tests/build-loop.test.mjs` | chạy thật `build-loop.js` với agent giả: lô sửa, một bộ đếm, stall, cap, challenge (concede / trọng tài), câu brief giống hệt `run-kit` `qa-lines.md` |
 | `tests/team-state.test.mjs` | schema item JSON, view `STATE.md`, luật spec, `migrate` từ 0.32 |
 | `tests/hooks.test.mjs` | chặn commit/push của specialist, Handoff bắt buộc, ghi `.team/` |
+| `tests/retrospect.test.mjs` | `retrospect.mjs` trên transcript giả: lọc phiên plugin, cửa sổ ngày, usage, guard, handoff, evidence ref đúng dòng, che secret |
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |
 | `tests/commands.test.mjs` | bộ lệnh/agent/skill, file được nhắc tới tồn tại, layout `.team/`, README, manifest, `claude plugin validate --strict` |
 
@@ -243,9 +246,9 @@ technical-team/
 └── plugins/team/        plugin technical-team
     ├── .claude-plugin/plugin.json
     ├── agents/          team-lead + 12 agent
-    ├── commands/        run + crew + 7 pipeline
+    ├── commands/        run + crew + triage + retrospect + 7 pipeline
     ├── hooks/           guard.mjs: commit/push, Handoff, ghi .team/
-    ├── tools/           team-state.mjs (item JSON, view, migrate) · migrate-ids.mjs
+    ├── tools/           team-state.mjs (item JSON, view, migrate) · migrate-ids.mjs · retrospect.mjs (đọc transcript)
     ├── workflows/       build-loop · review · release · plan-tickets · compact
     ├── templates/       core · requirements · design · adr · reports
     └── skills/          run-kit · specialist-rules · business-analysis · technical-planning · development-process · test-process

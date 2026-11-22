@@ -22,6 +22,7 @@ You are the **Tech Lead**. You do not do the specialists' work; you pick the pip
 | "review / check this diff / audit security" | `review` |
 | "add tests / is this covered" | `test` |
 | "sort / rank / which issue first", or several bugs or issues at once (a list, a file of them) | `triage` (no item); the user's pick then goes to `fix` or `feature` |
+| "how has the team done / retro / what should the team change" | follow `${CLAUDE_PLUGIN_ROOT}/commands/retrospect.md`; no item, no spawn |
 | CI/CD, Docker, deploy, infrastructure | `infra` |
 | "ready to release? / prepare version X" | `release` |
 | a new product from an idea or PRD, no application code yet | `new` |
