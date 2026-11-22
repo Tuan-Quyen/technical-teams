@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Item state for the technical team: `.team/items/<slug>.json` is the one source of truth for an open item
 // (step, next action, QA-Fix round, findings, verdicts, questions). `.team/STATE.md` is a view generated from it.
-// Used by hooks/guard.mjs (validate on write, regenerate the view) and by the lead from the shell:
+// Used by hooks/guard.mjs (validate on write, regenerate the view) and by the orchestrator from the shell:
 //   node tools/team-state.mjs check <item.json>       → exit 1 with the errors
 //   node tools/team-state.mjs render [<.team dir>]    → rewrite STATE.md from items/*.json
 //   node tools/team-state.mjs words <file...>         → word count, longest line, revision headings
@@ -23,7 +23,7 @@ export const ITEM_STATUSES = ['running', 'waiting-for-user', 'blocked', 'paused'
 export const SEVERITIES = ['blocker', 'critical', 'major', 'minor'];
 export const BY = ['qa', 'code-reviewer', 'security', 'dba'];
 // open → fixed → verified, or fixed → reopened → fixed …; open → challenged (the fixer's evidence, once) → rejected
-// (the finder concedes or the arbiter refutes) or back to open (upheld); deferred / rejected otherwise only by the lead.
+// (the finder concedes or the arbiter refutes) or back to open (upheld); deferred / rejected otherwise only by the orchestrator.
 export const FINDING_STATUSES = ['open', 'fixed', 'verified', 'reopened', 'challenged', 'deferred', 'rejected'];
 export const CLOSED = ['verified', 'deferred', 'rejected'];
 export const LIMITS = { title: 60, titleWords: 8, next: 30, detail: 40, notes: 5, line: 300, specWords: 4000 };
@@ -135,7 +135,7 @@ export function readItems(teamDir) {
 
 export const renderTeam = (teamDir) => writeFileSync(join(teamDir, 'STATE.md'), renderState(readItems(teamDir)));
 
-// Spec rules, checked on every write under .team/ (hooks/guard.mjs) and by the compact workflow.
+// Spec rules, checked by the compact workflow.
 export function specProblems(text, file = '') {
   const p = [];
   const lines = String(text).replace(/\r\n/g, '\n').split('\n');

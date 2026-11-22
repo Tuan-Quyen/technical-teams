@@ -1,63 +1,89 @@
 ---
 name: business-analysis
-description: The business analyst's working method, adapted from the BABOK Guide (strategy analysis, elicitation and collaboration, requirements analysis, requirements life cycle) — guided elicitation for users who do not yet know their own requirements (question rounds with options, consequences and a recommended default; playback of the understanding as concrete scenarios the user confirms), the three contexts (greenfield product, change to an operating system with as-is and impact analysis, discovery of what to build next), the big-picture product baseline in `.team/PRODUCT.md` and the per-item spec in `.team/requirements/<slug>.md`, the ready-to-spec check, and the rule that business facts are confirmed, evidenced or marked as assumptions — never invented. ba loads it for a hard elicitation.
+description: "The business analyst's method (from BABOK): guided elicitation for users who do not yet know their requirements, the three contexts (greenfield, change, discovery), PRODUCT.md and per-item specs, the ready-to-spec check; facts confirmed, evidenced or marked as assumptions. ba loads it for a hard elicitation."
 ---
 
 # business-analysis — guide the user to requirements they can confirm
 
-The user often cannot state the requirements. Your job is not to wait for them: **propose, show the consequences, play back, and get a confirmation**. A spec is ready when the user has recognised their own business in it.
+The user often cannot state the requirements. Do not wait for them: **propose, show the consequences, play back, get a confirmation**. A spec is ready when the user recognises their own business in it.
 
-Read on demand (paths under `${CLAUDE_PLUGIN_ROOT}/skills/business-analysis/references/`):
+## When to load
 
-| File | When |
-|---|---|
-| `elicitation.md` | preparing a question round: the dimensions to cover, question forms, techniques (5 whys, example mapping, story mapping, context diagram), playback format |
-| `contexts.md` | the steps and outputs per context: greenfield, operating system (as-is, gap, impact), discovery (outcome → opportunities → options → ranked backlog) |
+ba, for a hard elicitation: a vague request, a new product, a change with wide impact, or "what should we build next". A clear request needs only `team-ba`.
 
-## Pick the context first
+## Principles
+
+### 1. Sources before questions
+
+**Never ask what a source already answers.**
+
+- Read the brief, the documents it names, `.team/` and the code first; cite where you read it.
+- Ask the user only what no other source gives.
+
+Test: does each question name why no source could answer it?
+
+### 2. Guide, do not interrogate
+
+**Every question carries options, consequences and your default.**
+
+- Each question: why it matters · 2–3 options with their consequence · your recommended default. No bare "what do you want?"
+- ≤5 questions a round, highest impact first, each **blocking** (no spec without it) or **default-able**.
+- Each round opens with a playback: the understanding as scenarios with concrete values ("a cashier refunds order #12 of 150 000 đ after 31 days → refused, message …"), so the user corrects examples, not abstract rules.
+- User may stop: "proceed" / "đủ rồi" → remaining defaults become assumptions; an open blocking question stays visible in the report.
+
+Test: could the user answer the whole round with "OK"?
+
+### 3. Facts are labelled
+
+**Confirmed, evidenced or assumed — never invented.**
+
+- **C** confirmed (user's words + date) · **E** evidence (file:line, section, URL) · **A** assumption (your default). Never present an A as a fact; list every A at the gate.
+- A value, reach or priority score carries C / E / A; no evidence → "assumption", never an invented number.
+
+Test: does every fact in the spec carry C, E or A?
+
+### 4. Stay in your lane
+
+**What and why — not how, not when.**
+
+- Rules and a priority proposal; not screens (designer), technology (architect) or estimates (pm). The user decides scope and priority.
+- Every item is placed in the capability map of `.team/PRODUCT.md` and traced to a business goal.
+
+Test: is anything in the spec a design, a stack or an estimate?
+
+## Method
+
+### Pick the context first
 
 | Context | Signal | Centre of the work |
 |---|---|---|
-| **Greenfield** | no application code; pipeline `new` | problem, users, goal + metric, big picture, MVP slice |
-| **Operating system** | the request changes something that exists | as-is from code and docs, gap to the to-be, impact on flows, roles, data, integrations, existing users |
-| **Discovery** | the user asks what to build, or how to grow a feature; `feature --discover` | outcome → opportunities → options, ranked with the basis of each score |
+| **Greenfield** | no application code; pipeline `new` | problem, users, goal + measure, capability map, MVP slice |
+| **Operating system** | the request changes something that exists | as-is from code and docs, the gap, impact on flows, roles, data, integrations, existing users |
+| **Discovery** | the user asks what to build next, or how to grow a feature | outcome → opportunities → options, ranked with the basis of each score |
 
-## The elicitation loop
+### The loop
 
-```mermaid
-flowchart LR
-  A[Sources: brief, docs, code, PRODUCT.md] --> B[Draft the understanding]
-  B --> C{Ready-to-spec?}
-  C -- yes --> S[Write requirements, update PRODUCT.md]
-  C -- no --> Q[Round: playback + questions with options and defaults]
-  Q --> U[User answers through the main session]
-  U --> B
-```
+1. Read the sources (brief, documents, `.team/`, code) and draft the understanding.
+2. Check ready-to-spec (§ Done when). Yes → write the spec and update `PRODUCT.md`.
+3. No → a round: your handoff with status `needs-input` carries the playback and the questions; the main session shows them and returns the answers verbatim. You never talk to the user directly. Back to 1.
 
-You never talk to the user directly: a round is your handoff (status `needs-input`) carrying the playback and the questions; the main session shows it and returns the answers verbatim.
+## Done when
 
-## Binding rules
+Ready-to-spec — all true, or the gap is a listed assumption:
 
-| Rule | |
+1. Goal and success measure in the user's terms.
+2. Every actor and what they may do.
+3. Main flow and each alternative or exception flow have an expected outcome.
+4. Business rules numbered, each with an example.
+5. Data: captured, required, validated, kept, shown to whom.
+6. Scope in / out explicit; on an operating system, the impact on existing behaviour, data and users known.
+7. No blocking question open.
+
+## References
+
+Under `${CLAUDE_PLUGIN_ROOT}/skills/business-analysis/references/`:
+
+| File | Read when |
 |---|---|
-| Sources before questions | never ask what the brief, a document, `.team/` or the code already answers; cite where you read it |
-| Guide, do not interrogate | every question: why it matters · 2–3 options with the consequence of each · your recommended default. No bare "what do you want?" |
-| Playback | each round starts with the understanding so far as scenarios with concrete values ("A cashier refunds order #12 of 150 000 đ after 31 days → refused, message …"), so the user corrects examples instead of abstract rules |
-| Round size | at most 5 questions (team-ba's rule), highest impact first, marked **blocking** (cannot spec without it) or **default-able** (proceeds on the default) |
-| Facts are labelled | **C** confirmed (user's words + date) · **E** evidence (file:line, document section, URL) · **A** assumption (your default, not yet confirmed). Never present an A as a fact; every A is listed at the gate |
-| User may stop | "proceed" / "đủ rồi" → remaining defaults become assumptions; a blocking question that is still open stays visible in the gate report, never hidden |
-| Big picture | keep `.team/PRODUCT.md` current: a work item is always placed in the capability map and traced to a business goal |
-| Scores need a basis | a value, reach or priority score states its basis (C / E / A). Without evidence say "assumption" — do not invent numbers |
-| Stay in your lane | what and why, rules, priority proposal. Not screens (designer), not technology (architect), not estimates (pm). The user decides scope and priority |
-
-## Ready-to-spec (all true, or the gap is a listed assumption)
-
-| # | Check |
-|---|---|
-| 1 | goal and success measure stated in the user's terms |
-| 2 | every actor and what they may do |
-| 3 | main flow and each alternative/exception flow has an expected outcome |
-| 4 | business rules numbered, each with an example |
-| 5 | data: what is captured, required, validated, kept, shown to whom |
-| 6 | scope in / out explicit; operating system: impact on existing behaviour, data and users known |
-| 7 | no blocking question open |
+| `elicitation.md` | preparing a question round: sources, dimensions, question form, techniques, playback, when the user does not know |
+| `contexts.md` | the steps and outputs of your context: greenfield, operating system (as-is, impact), discovery |

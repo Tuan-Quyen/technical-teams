@@ -1,4 +1,8 @@
-# run-kit §2 · Who owns which quality check
+# run-kit §2, §5 · Who owns which check, who decides which call
+
+> Used by: the orchestrating session, developer, code-reviewer, qa · Read when: a gap or duplicate check between developer, code-reviewer and qa; recording a verdict or decision
+
+## Quality checks
 
 One owner per check, no duplicate tests.
 
@@ -10,3 +14,20 @@ One owner per check, no duplicate tests.
 | AC review, checks, regression test, risk (T2: test plan, RTM) | reads them before coding | — | pre-check, before any code |
 | integration, E2E, acceptance, live preview, UX, exploratory, regression | — | — | execution, after review PASS |
 | PASS / FAIL of the product | never claims it | review verdict only | final verdict |
+
+## Who decides
+
+The orchestrator routes and records; each call below is its owner's, and the orchestrator writes it into the item verbatim.
+
+| Decision | Owner |
+|---|---|
+| ticket `done` / `blocked`, re-plan, a finding's owner ticket | pm (from the handoffs and gate verdicts in its brief) |
+| item closes | pm for an item with tickets; else its last gate (qa; code-reviewer for T0, infra) |
+| a finding's severity, blocking, `verified` / `reopened` | its finder (qa, code-reviewer, security, dba) |
+| challenge outcome | finder, else the arbiter (`qa-loop.md`) |
+| retest and regression scope | qa |
+| `ISSUES.md` rows, rank, status | qa |
+| what goes into `PRODUCT.md` | ba |
+| design, ADR content | architect; an ADR is accepted by the user |
+| defer / reject a finding, accept a not-run check, a round past the cap | the user |
+| pipeline, tier (ba or architect may raise it), who runs next | orchestrator |

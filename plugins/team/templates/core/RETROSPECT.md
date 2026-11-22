@@ -1,36 +1,58 @@
-# Retrospect — <YYYY-MM-DD>
+# Retrospect — <scope> — <window>
 
-> Owner: **the lead** (`/technical-team:retrospect`). One file per run in `.team/retrospect/`; never edited after the run. Facts come from the digest of `tools/retrospect.mjs`; every recommendation cites its refs (`<project>/<session>.jsonl:L<n>` under `~/.claude/projects`).
-> Local only: refs and snippets come from your own transcripts. Do not commit this file or paste it outside without reading it first.
-> **Budget:** ≤ 1,500 words; at most 8 recommendations; each field ≤ 40 words except Proposed change.
+> Owner: **team-retrospector** (`/technical-team:retrospect`, skill `technical-team:retrospect`). One folder per run: `.team/retrospect/<YYYY-MM-DD>/` with this file, `evidence/` (the digest; gitignored) and `drafts/`. Never edited after the run.
+> Written in the user's language; headings translated, order and fields kept. Each claim starts with "Data shows" or "Inference"; each section ends with its confidence (high / medium / low). Refs: `<project>/<session>.jsonl:L<n>`, `.team/...`, `<repo>@<sha>`, plugin file paths — always in full as the digest gives them, never shortened with `…`; in a table, a label `[E<n>]` that the Evidence list resolves.
+> **Keep it short:** no word cap, but every line must carry a decision, a fact or a ref — cut restated digest numbers, hedges and empty sections ("none" in one line). ≤ 5 new components; one row per agent in §3.
 
-Window: <N> days (<from> → <to>) · plugin <version> · sessions <n> (scanned <n>, plugin-repo excluded <n>) · older plugin versions: <list or "none">
+Sources: transcripts (<n> plugin sessions of <m> work sessions, <p> prompts) · `.team/` (<projects, or "no data">) · git (<repos, or "no data">) · definitions (plugin <version>, <n> agents) · claude.ai (no data) · excluded: <dev n, probes n, older versions n>
 
-## Metrics
+## 1. TL;DR
 
-| Metric | Value |
-|---|---|
-| Specialist runs | <n> (top: <agent n, agent n>) |
-| Cost-tokens, top agent | <agent: share %, avg> |
-| Lead context max | <tokens> (session <ref>) |
-| Guard firings | <rule n, rule n, or "none"> |
-| Handoffs blocked / needs-input / missing | <n / n / n> |
-| Compactions · interrupts | <n · n> |
+- <3–5 bullets: the decisions this audit supports>
 
-## Recommendations
+## 2. Work inventory
 
-### R1 · <component path, e.g. agents/team-qa.md> · <add / remove / merge / edit>
-- Problem: <what goes wrong, in one sentence>
-- Evidence: <signal id> — `<ref>`, `<ref>` (≥ 2 refs from ≥ 2 sessions, or 1 ref plus a metric)
-- Proposed change: <file — the current line or section → the new text; for add: the new file's purpose and frontmatter>
-- Impact / risk: <what it saves or fixes; what it may break; lead context size change>
-- Contract: <none, or: deprecate in tests/contract.json + CHANGELOG Deprecated>
-- Confidence: <high / medium / low>
+| Work type | Prompts | With team | Example (≤ 1 sentence + ref) | Team piece used | Outcome |
+|---|---|---|---|---|---|
 
-## Hypotheses
+## 3. Current agents and components
 
-- <a pattern with too little evidence to act on — what data would confirm it>
+| Component | Runs | Strengths | Repeated failure (ref) | Overlaps with | Proposal: keep / edit prompt / edit description / merge / remove |
+|---|---|---|---|---|---|
 
-## Not covered
+## 4. New components (≤ 5, by ROI)
 
-- <signals set aside and why: older plugin version, environment (API limits), outside the plugin>
+### <name> — ROI: high / medium
+- Evidence (≥ 2): <refs>
+- Problem and the saving (how it is estimated): <…>
+- Why an existing component cannot take it: <…>
+- Draft: `.team/retrospect/<YYYY-MM-DD>/drafts/<kind>/<name>.md`
+
+## 5. Changes to agents, skills, commands, hooks, workflows
+
+| # | Change (file) | Evidence | Replacement text / diff | Effort | Contract |
+|---|---|---|---|---|---|
+
+## 6. Action plan
+
+- Quick wins (≤ 1 hour): <R#…>
+- This week: <…>
+- This month: <…>
+
+## 7. Follow-up metrics (re-measure in 2–4 weeks with the same command)
+
+| Metric | Now | Target | How measured |
+|---|---|---|---|
+| promptsWithTeamPct | <n> | <n> | digest Follow-up metrics |
+
+## 8. Limits of this audit
+
+- <sources with no data, sample size, heuristics not verified>
+
+## Appendix: self-critique
+
+- <a proposal dropped or downgraded — the question it failed — its evidence>
+
+## Evidence
+
+- `[E1]` `<project>/<session>.jsonl:L<n>` — <what it shows, ≤ 10 words>

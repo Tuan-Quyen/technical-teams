@@ -1,69 +1,55 @@
-# UI/UX verification — does it match the design, and can users actually use it?
+# UI/UX verification — does it match the design, and can users use it?
 
-QA verifies **two** things on every screen/command the change touches, using the live preview evidence (screenshots, captures, transcripts) and the running product:
+> Used by: qa · Read when: UI is in scope at T1/T2
 
-1. **Conformance** — the implementation matches `.team/frontend-design/<slug>.md` (design system + the work item's section).
-2. **Usability** — independent of the design: a real user can complete the task efficiently and without errors. A deviation from usability that the design itself caused is still a defect; route it to the designer (escalation), not to the developer.
+On every screen or command the change touches, with live preview evidence (screenshots, captures, transcripts):
 
-## 1. Design conformance (against frontend design)
+1. **Conformance** — it matches `.team/frontend-design/<slug>.md` and the design system.
+2. **Usability** — independent of the design, a real user can finish the task. A usability problem the design caused is still a defect: route it to the designer, not the developer.
 
-| Area | Check | Defect when |
-|---|---|---|
-| Screens + flows | every screen and step of each designed flow exists; navigation between them as designed; URLs/deep links as listed | a screen, step or path is missing or different |
-| Primary action | one clear primary action per screen, where and as the design says | missing, hidden, or several competing primaries |
-| Content priority | order and hierarchy of content as specified (what is first/biggest) | important info buried, wrong emphasis |
-| **State matrix** | every state designed for the screen shows correctly: empty, loading, partial, success, validation error, system/offline error, no permission, edge content | a state is missing (blank screen, raw error, endless spinner) or differs |
-| Components | the named components/library are used (no look-alike custom widgets); component states: default, hover, focus, pressed, disabled, selected, error, loading | wrong component, missing state |
-| Tokens | colors by role, type scale, spacing scale, radius, elevation from the design system/theme; dark mode values if in scope | hard-coded or off-scale values that visibly differ (compare screenshots side by side; measure spacing/sizes in the capture when in doubt) |
-| Layout per form factor | each width/device/window size as designed: stacking, collapsing, navigation pattern | overflow, clipping, overlaps, horizontal scroll, layout of another form factor |
-| Copy | labels, button verbs, empty/error texts, confirmations as written; glossary terms consistent; language/locale | wrong, placeholder, untranslated, inconsistent wording |
-| Completeness | capabilities listed for the screen pattern (search, sort, filter, pagination, bulk actions, cancel, undo…) that frontend design marked as designed | designed capability not implemented |
-| Motion/feedback | pressed/pending feedback, transitions as specified | no feedback on actions |
+## 1. Conformance
 
-frontend design has no answer for what you see (an undesigned state, an ambiguous layout) → **design question**, not a defect: list it under "PASS pending design decision" (test-process §3).
-
-No frontend design for this work item (small mode, legacy screen) → conform to the existing design system and neighbouring screens; check usability below.
-
-## 2. Usability — Nielsen's 10 heuristics (inspect every changed flow)
-
-| # | Heuristic | What to look for in the running product |
-|---|---|---|
-| H1 | Visibility of system status | every action gives feedback within ~1 s (pressed, pending, progress); long tasks show progress; current location visible (active nav, title, breadcrumb, step x of y) |
-| H2 | Match between system and the real world | user's words, not developer terms ("Entity", "Submit", error codes); natural order of information; familiar formats for dates, money, phone in the user's locale |
-| H3 | User control and freedom | cancel, back, close, undo for reversible actions; leaving a flow does not lose data silently; no dead ends |
-| H4 | Consistency and standards | same term/icon/position for the same thing across screens; platform conventions (iOS HIG, Material, desktop menus/shortcuts, web link vs button, CLI flags `--help`/`-h`) |
-| H5 | Error prevention | constraints and defaults that prevent mistakes; disabled impossible actions with a reason; confirmation only for destructive irreversible actions, naming the object |
-| H6 | Recognition rather than recall | options visible; no need to remember values between screens; recent items, autocomplete, sensible prefill |
-| H7 | Flexibility and efficiency of use | frequent task in few steps; keyboard shortcuts, bulk actions, search for power users; no forced long paths |
-| H8 | Aesthetic and minimalist design | only relevant information; clear hierarchy; no clutter, no competing emphasis; whitespace used to group |
-| H9 | Help users recognize, diagnose, and recover from errors | plain-language messages that say what happened and how to fix, next to the cause, input kept, retry offered |
-| H10 | Help and documentation | contextual hints for non-obvious inputs; empty states that explain; help/docs reachable; CLI `--help` with examples |
-
-**First-time-user walkthrough** (cognitive walkthrough, per key task): at each step ask — will the user know what to do? will they see how to do it? will they understand the feedback? Note every step where the answer is "not sure".
-
-**Task metrics** (when comparing alternatives or for core flows): steps/clicks to complete, input fields required, time on the scripted path, number of error states a normal user hits.
-
-## 3. Accessibility (inclusivity) — WCAG 2.2 AA floor
-
-| Check | How |
+| Area | Defect when |
 |---|---|
-| Contrast | text ≥ 4.5:1 (large text ≥ 3:1), UI components and focus indicators ≥ 3:1 — check suspicious colors from the screenshot |
-| Keyboard | every control reachable and operable, order = visual order, visible focus, no traps, Esc closes overlays, focus returns after closing |
-| Names and roles | every control has an accessible name (labels, `aria-label`, `contentDescription`, `accessibilityLabel`, `Semantics`); headings structured; images have alt text or are decorative |
-| Status messages | errors and toasts announced (`role="alert"`/`status`, live regions, platform announcements) |
-| Zoom / font scale | 200 % zoom (web), largest system font (mobile/desktop) — no clipped or overlapping text |
-| Targets | ≥ 24×24 CSS px (WCAG 2.2), ≥ 44 pt / 48 dp on touch platforms |
-| Motion | respects reduced motion; nothing flashes |
-| Automated scan | run the project's tool if present (axe via Playwright, Lighthouse, Android Accessibility Scanner, `flutter test` semantics checks); automated scans find ~30–40 % of issues — manual checks above still required |
+| Screens, flows, links | a designed screen, step or path is missing or different |
+| Primary action | missing, hidden, or several competing primaries |
+| Content priority | important information buried, wrong emphasis |
+| **State matrix** — empty, loading, partial, success, validation error, system/offline error, no permission, edge content | a designed state is missing (blank screen, raw error, endless spinner) or differs |
+| Components and their states (default, hover, focus, pressed, disabled, selected, error, loading) | look-alike custom widget, missing state |
+| Tokens (color roles, type, spacing, radius, elevation, dark mode) | hard-coded or off-scale values that visibly differ |
+| Layout per form factor | overflow, clipping, overlap, horizontal scroll, another form factor's layout |
+| Copy | wrong, placeholder, untranslated or inconsistent wording |
+| Designed capabilities (search, sort, filter, paging, bulk, cancel, undo) and feedback | a designed capability or pressed/pending feedback missing |
 
-## 4. Severity of UX defects
+The design has no answer for what you see → a **design question**, not a defect: "PASS pending design decision". No frontend design for the item → conform to the design system and neighbouring screens.
 
-| Severity | UX examples |
+## 2. Usability — Nielsen's 10 heuristics, on every changed flow
+
+Visibility of status (feedback within ~1 s, progress, where am I) · real-world words and formats, not developer terms · control and freedom (cancel, back, undo; no silent data loss, no dead ends) · consistency and platform conventions · error prevention (constraints, defaults, confirm only destructive actions, naming the object) · recognition over recall · efficiency (few steps for frequent tasks, keyboard, bulk) · minimalist design · error messages that say what happened and how to fix it, next to the cause, input kept · help where input is not obvious, empty states that explain, CLI `--help` with examples.
+
+**First-time-user walkthrough** per key task: at each step, will the user know what to do, see how, and understand the feedback? Note every "not sure".
+
+## 3. Accessibility — WCAG 2.2 AA floor
+
+| Check | Pass when |
 |---|---|
-| Blocker | user cannot complete a core task; data loss; inaccessible core control (no keyboard/screen-reader path) |
-| Critical | task completable only with a workaround most users won't find; misleading UI causing wrong actions (e.g. destructive button styled as primary without confirmation) |
-| Major | designed state missing (blank empty state, raw error), broken layout on a required form factor, contrast failure on body text, H9 errors with no recovery |
-| Minor | inconsistency with tokens/components, unclear copy, small misalignment, missing shortcut |
-| Trivial | polish that does not affect use |
+| Contrast | text ≥4.5:1 (large ≥3:1); UI components and focus ≥3:1 |
+| Keyboard | every control reachable and operable, order = visual order, visible focus, no trap, Esc closes overlays, focus returns |
+| Names and roles | every control has an accessible name; headings structured; images have alt text or are decorative |
+| Status messages | errors and toasts announced (live region, platform announcement) |
+| Zoom / font scale | 200% zoom or largest system font: no clipped or overlapping text |
+| Targets | ≥24×24 CSS px; ≥44 pt / 48 dp on touch |
+| Motion | reduced motion respected; nothing flashes |
+| Automated scan | the project's tool if present (axe, Lighthouse, platform scanners); it finds a third of issues, so the checks above still run |
 
-Blocking follows `SKILL.md` § Severity and blocking: blocker/critical → FAIL; major → FAIL only when it breaks the frontend design or an AC with user impact (or design escalation if the design caused it). Minor/trivial → listed for the main session; a taste preference is not a defect.
+## 4. UX severity
+
+| Severity | Examples |
+|---|---|
+| blocker | a core task cannot be finished; data loss; a core control with no keyboard or screen-reader path |
+| critical | only a workaround most users won't find; UI that misleads into a wrong action |
+| major | a designed state missing, broken layout on a required form factor, body-text contrast failure, an error with no recovery |
+| minor | token or component inconsistency, unclear copy, small misalignment |
+| trivial | polish |
+
+Blocking follows SKILL.md § Severity and blocking. A taste preference is not a defect.

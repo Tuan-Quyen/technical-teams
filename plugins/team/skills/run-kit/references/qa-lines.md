@@ -1,5 +1,7 @@
 # run-kit §3 · QA brief lines (inline runs)
 
+> Used by: the orchestrating session · Read when: writing an inline qa, reviewer or fix brief
+
 Only for a step you brief yourself; a `build-loop.js` run appends the same text. Put each line verbatim under **Constraints**.
 
 - **Every qa and reviewer brief**, then the item's known findings, one per line (`F1 fixed major blocking src/cart.js <test> <title>`):

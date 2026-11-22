@@ -76,7 +76,7 @@ test('a qa blocker with a test: one fix batch, review and qa retest, verified; r
   assert.deepEqual(validateItem(result.item), []);
 });
 
-test('finding = failing test: a blocking claim without a test is non-blocking, and a FAIL resting on it stops for the lead', async () => {
+test('finding = failing test: a blocking claim without a test is non-blocking, and a FAIL resting on it stops for the orchestrator', async () => {
   const { result, labels, logs } = await run(baseArgs(), (c) => (c.label === 'qa' ? { ...ok('qa'), verdict: 'FAIL', findings: [bug({ test: '' })] } : undefined));
   assert.equal(result.status, 'stopped');
   assert.equal(result.needsUser[0].status, 'fail-without-blocker');
@@ -187,7 +187,7 @@ test('a fixed blocker the retest skips is never assumed fixed', async () => {
   assert.deepEqual(result.needsUser[0].findings, ['F1']);
 });
 
-test('a finding no ticket owns stops for the lead instead of guessing a fixer', async () => {
+test('a finding no ticket owns stops for the orchestrator instead of guessing a fixer', async () => {
   const args = baseArgs({ groups: [[ticket('CART-T1', ['src/cart.js']), ticket('CART-T2', ['src/money.js'])]] });
   const { result, labels } = await run(args, (c) => (c.label === 'qa' ? { ...ok('qa'), verdict: 'FAIL', findings: [bug({ file: 'src/other.js' })] } : undefined));
   assert.equal(result.status, 'stopped');

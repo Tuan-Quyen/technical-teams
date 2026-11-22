@@ -35,7 +35,7 @@ test('pre-shell denies git commit/push for specialists only', () => {
     assert.equal(run('pre-shell', { agent_type: dev, tool_input: { command } }), null, command);
   }
   assert.equal(run('pre-shell', { tool_input: { command: 'git push' } }), null, 'user session untouched');
-  assert.equal(run('pre-shell', { agent_type: 'technical-team:team-lead', tool_input: { command: 'git push' } }), null, 'lead untouched');
+  assert.equal(run('pre-shell', { agent_type: 'technical-team:team-orchestrator', tool_input: { command: 'git push' } }), null, 'orchestrator untouched');
   assert.equal(run('pre-shell', { agent_type: 'other-plugin:x', tool_input: { command: 'git push' } }), null, 'other agents untouched');
 });
 
@@ -46,7 +46,7 @@ test('subagent-stop sends a prose reply without Handoff back once, and never blo
   assert.equal(run('subagent-stop', { agent_type: qa, stop_hook_active: true, last_assistant_message: 'x' }), null, 'no loop');
   assert.equal(run('subagent-stop', { agent_type: qa, last_assistant_message: '{"status":"done"}' }), null, 'workflow structured output');
   assert.equal(run('subagent-stop', { agent_type: qa, last_assistant_message: '' }), null, 'empty');
-  assert.equal(run('subagent-stop', { agent_type: 'technical-team:team-lead', last_assistant_message: 'hi' }), null, 'lead untouched');
+  assert.equal(run('subagent-stop', { agent_type: 'technical-team:team-orchestrator', last_assistant_message: 'hi' }), null, 'orchestrator untouched');
   assert.equal(run('subagent-stop', 'not json'), null, 'bad input is ignored');
 });
 
@@ -55,7 +55,7 @@ test('pre-handback refuses a specialist report without its Handoff block', () =>
   const call = (agent_type, message) => run('pre-handback', { agent_type, tool_name: 'SubagentHandback', tool_input: { message } });
   assert.equal(call(qa, 'ok')?.hookSpecificOutput?.permissionDecision, 'deny');
   assert.equal(call(qa, 'ok\n### Handoff\n- Status: blocked\n- Files: none\n- Evidence: npm test failed'), null);
-  assert.equal(call('technical-team:team-lead', 'ok'), null, 'lead untouched');
+  assert.equal(call('technical-team:team-orchestrator', 'ok'), null, 'orchestrator untouched');
   assert.equal(call(undefined, 'ok'), null, 'non-team subagents untouched');
 });
 
@@ -88,58 +88,29 @@ const tmpTeam = () => {
 };
 const item = (o = {}) => ({ v: 1, slug: 'fix-discount', key: 'CART', title: 'Fix full discount total', pipeline: 'fix', tier: 'T1', step: 'qa', status: 'running', next: 'Retest F1', round: 1, findings: [{ id: 'F1', title: 'Full discount adds one cent', by: 'qa', severity: 'major', blocking: true, status: 'fixed', test: 'test/cart.test.js::100% off', reopened: 0 }], ...o });
 
-test('hooks.json wires the .team/ write guards', () => {
+test('hooks.json wires only the STATE.md regeneration for .team/ writes', () => {
   const h = JSON.parse(fs.readFileSync(path.join(ROOT, 'hooks/hooks.json'), 'utf8')).hooks;
-  const pre = h.PreToolUse.find((e) => /guard\.mjs" pre-write$/.test(e.hooks[0].command));
-  assert.ok(pre && /Write/.test(pre.matcher) && /Edit/.test(pre.matcher));
+  assert.ok(!h.PreToolUse.some((e) => /pre-write/.test(e.hooks[0].command)), 'no pre-write guard');
   assert.match(h.PostToolUse[0].matcher, /Write\|Edit/);
   assert.match(h.PostToolUse[0].hooks[0].command, /guard\.mjs" post-write$/);
 });
 
-test('pre-write: specialists never write item state; nobody hand-writes a generated STATE.md', () => {
-  const dir = tmpTeam();
-  const deny = (r) => r?.hookSpecificOutput?.permissionDecision === 'deny';
-  assert.ok(deny(run('pre-write', { agent_type: dev, tool_input: { file_path: `${dir}/.team/items/fix-discount.json` } })));
-  assert.ok(deny(run('pre-write', { agent_type: 'technical-team:team-qa', tool_input: { file_path: `${dir}\\.team\\STATE.md` } })), 'Windows paths too');
-  assert.ok(deny(run('pre-write', { tool_input: { file_path: `${dir}/.team/STATE.md` } })), 'STATE.md is generated once items/ exists');
-  assert.equal(run('pre-write', { tool_input: { file_path: `${dir}/.team/items/fix-discount.json` } }), null, 'the orchestrating session writes items');
-  assert.equal(run('pre-write', { agent_type: dev, tool_input: { file_path: `${dir}/src/cart.js` } }), null);
-  assert.equal(run('pre-write', { agent_type: 'technical-team:team-qa', tool_input: { file_path: `${dir}/.team/reports/x/qa.md` } }), null);
-  const legacy = fs.mkdtempSync(path.join(os.tmpdir(), 'tt-hook-'));
-  made.push(legacy);
-  assert.equal(run('pre-write', { tool_input: { file_path: `${legacy}/.team/STATE.md` } }), null, 'a project without items/ keeps its hand-written STATE.md');
-});
-
-test('post-write: a valid item regenerates STATE.md; a bad one is sent back with the errors', () => {
+test('post-write: saving an item JSON regenerates STATE.md; other .team/ files and bad JSON are left alone', () => {
   const dir = tmpTeam();
   const f = path.join(dir, '.team', 'items', 'fix-discount.json');
   fs.writeFileSync(f, JSON.stringify(item()));
   assert.equal(run('post-write', { tool_input: { file_path: f } }), null);
   const view = fs.readFileSync(path.join(dir, '.team', 'STATE.md'), 'utf8');
   assert.match(view, /\| \[FIX\] \[DISCOUNT\] \| CART \| fix-discount \| fix · T1 \| qa \| running \| 1 of 3 \| F1 \| Retest F1 \|/);
-  fs.writeFileSync(f, JSON.stringify(item({ title: 'A title that is far too long for any view to show well', cap: 5, findings: [{ id: 'F1', title: 'x', by: 'qa', severity: 'major', blocking: true, status: 'open', test: '' }] })));
-  const r = run('post-write', { tool_input: { file_path: f } });
-  assert.equal(r.decision, 'block');
-  for (const m of [/title/, /cap: not part/, /blocking finding needs test/]) assert.match(r.reason, m);
+  for (const p of [f.replace(/\\/g, '/'), f.replace(/\//g, '\\')]) {
+    fs.rmSync(path.join(dir, '.team', 'STATE.md'));
+    assert.equal(run('post-write', { tool_input: { file_path: p } }), null);
+    assert.ok(fs.existsSync(path.join(dir, '.team', 'STATE.md')), `regenerated for ${p}`);
+  }
   fs.writeFileSync(f, '{ not json');
-  assert.match(run('post-write', { tool_input: { file_path: f } }).reason, /not valid JSON/);
-});
-
-test('post-write: spec rules — revision headings and long lines are sent back; an old long file only gets a note', () => {
-  const dir = tmpTeam();
-  const f = path.join(dir, '.team', 'requirements', 'x.md');
-  fs.mkdirSync(path.dirname(f), { recursive: true });
-  fs.writeFileSync(f, '# X\n\n## Revision 2 — QA feedback\n\nok\n');
-  assert.match(run('post-write', { tool_input: { file_path: f } }).reason, /revision heading/);
-  fs.writeFileSync(f, `# X\n\n${'a'.repeat(301)}\n`);
-  assert.match(run('post-write', { tool_input: { file_path: f } }).reason, /301 chars \(max 300\)/);
-  fs.writeFileSync(f, '# X\n\n```\n## Round 3 inside a code block is fine\n```\n');
-  assert.equal(run('post-write', { tool_input: { file_path: f } }), null);
-  fs.writeFileSync(f, `# X\n\n${'word '.repeat(4100).replace(/((?:word ){50})/g, '$1\n')}`);
-  const big = run('post-write', { tool_input: { file_path: f, old_string: 'x', new_string: 'a short new line' } });
-  assert.match(big.hookSpecificOutput.additionalContext, /words \(max 4000\): do not grow it/);
-  const arch = path.join(dir, '.team', 'archive', 'old.md');
-  fs.mkdirSync(path.dirname(arch), { recursive: true });
-  fs.writeFileSync(arch, '## Revision 9\n');
-  assert.equal(run('post-write', { tool_input: { file_path: arch } }), null, 'archive/ is not checked');
+  assert.equal(run('post-write', { tool_input: { file_path: f } }), null, 'bad JSON never blocks');
+  const spec = path.join(dir, '.team', 'requirements', 'x.md');
+  fs.mkdirSync(path.dirname(spec), { recursive: true });
+  fs.writeFileSync(spec, '# X\n\n## Revision 2\n');
+  assert.equal(run('post-write', { tool_input: { file_path: spec } }), null, 'spec files are not checked by the hook');
 });

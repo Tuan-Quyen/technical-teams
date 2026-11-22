@@ -9,12 +9,12 @@
 //   startAt?: 'plan'|'build'|'review'|'qa' (default 'plan' with a qaPlanBrief, else 'build'), fromGroup?, root?,
 //   date?            // today, YYYY-MM-DD: stamped on the decisions a challenge outcome writes
 // }
-// Every result carries `item`: the lead writes it back to .team/items/<slug>.json verbatim (the hook validates it and
+// Every result carries `item`: the orchestrator writes it back to .team/items/<slug>.json verbatim (the hook validates it and
 // regenerates STATE.md) and passes it on the next call. One round counter for review and qa fixes; the cap is code.
 export const meta = {
   name: 'team-build-loop',
   description: 'qa pre-check, build tickets, review (code-reviewer, security, dba), qa and docs, fixing each round\'s blocking findings in one batch until PASS, a stalled finding, or the round cap',
-  whenToUse: 'Internal step of /technical-team:feature, fix, infra and new — needs lead-written briefs in args; run one of those commands instead of invoking this directly.',
+  whenToUse: 'Internal step of /technical-team:feature, fix, infra and new — needs orchestrator-written briefs in args; run one of those commands instead of invoking this directly.',
   phases: [
     { title: 'Plan', detail: 'qa pre-check before any build' },
     { title: 'Build', detail: 'tickets by group; group check; fix batches' },
@@ -74,7 +74,7 @@ const short = (s, max) => clean(s, 400).split(' ').slice(0, max).join(' ')
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
 const HOW = 'run /technical-team:feature (or fix, infra, new) instead'
@@ -125,7 +125,7 @@ const set = (step, status, next) => { item.step = step; item.status = status; it
 const out = (status, extra = {}) => ({ status, ...extra, item, round: item.round, cap: ROUND_CAP, handoffs, needsUser })
 const stop = (stage, entry, next) => {
   needsUser.push({ stage, round: item.round, ...entry })
-  set(stage.toLowerCase(), 'waiting-for-user', next || `Lead: settle ${entry.status} at ${stage}, then re-run`)
+  set(stage.toLowerCase(), 'waiting-for-user', next || `Orchestrator: settle ${entry.status} at ${stage}, then re-run`)
   log(`${stage}: ${entry.status}`)
   return out('stopped', { stoppedAt: stage })
 }
@@ -136,7 +136,7 @@ const check = (res, label, stage) => {
   if (res.status !== 'done') { needsUser.push({ role: label, stage, status: res.status, handoff: clean(res.handoff, 1500) }); return false }
   return true
 }
-const halted = (stage) => { set(stage.toLowerCase(), 'waiting-for-user', `Lead: answer ${needsUser.map((n) => `${n.role} ${n.status}`).join(', ')}`); return out('stopped', { stoppedAt: stage }) }
+const halted = (stage) => { set(stage.toLowerCase(), 'waiting-for-user', `Orchestrator: answer ${needsUser.map((n) => `${n.role} ${n.status}`).join(', ')}`); return out('stopped', { stoppedAt: stage }) }
 const withBits = (brief, extra) => [brief, a.context ? `Round context: ${a.context}` : '', ...extra, CONTRACT].filter(Boolean).join('\n')
 const known = (bys, statuses) => {
   const rows = item.findings.filter((f) => bys.includes(f.by) && statuses.includes(f.status))
@@ -158,7 +158,7 @@ const register = (by, findings) => {
     const e = f.id ? item.findings.find((x) => x.id === f.id) : null
     if (e) {
       seen.push(e)
-      if (CLOSED.includes(e.status) && e.status !== 'verified') continue // deferred / rejected: the lead's call stands
+      if (CLOSED.includes(e.status) && e.status !== 'verified') continue // deferred / rejected: the user's call stands
       if (e.status === 'challenged') {
         // Only the finder answers a challenge; anything but a concession goes to the arbiter with its counter-evidence.
         if (e.by !== by) continue
@@ -338,7 +338,7 @@ for (;;) {
     if (!gate) return halted('Review')
     if (gate.spec.length) return stop('Review', { role: 'arbiter', status: 'spec-issue', findings: gate.spec }, specNext(gate.spec))
     if (gate.left.length) return stop('Review', { role: 'review', status: 'retest-incomplete', findings: gate.left.map((f) => f.id) })
-    if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Review', { role: 'review', status: 'fail-without-blocker', note: 'review FAIL with no blocking finding that has a test; the lead decides' })
+    if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Review', { role: 'review', status: 'fail-without-blocker', note: 'review FAIL with no blocking finding that has a test; send it back to the gate for the test or a PASS' })
   }
   skipReview = false
   if (!openBlocking().some((f) => !PENDING.includes(f.status)) && a.qaBrief) {
@@ -347,14 +347,14 @@ for (;;) {
     if (!gate) return halted('Test')
     if (gate.spec.length) return stop('Test', { role: 'arbiter', status: 'spec-issue', findings: gate.spec }, specNext(gate.spec))
     if (gate.left.length) return stop('Test', { role: 'qa', status: 'retest-incomplete', findings: gate.left.map((f) => f.id) })
-    if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Test', { role: 'qa', status: 'fail-without-blocker', note: 'qa FAIL with no blocking finding that has a test; the lead decides' })
+    if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Test', { role: 'qa', status: 'fail-without-blocker', note: 'qa FAIL with no blocking finding that has a test; send it back to qa for the test or a PASS' })
     // Not run is never PASS: a PASS that lists unrun checks stops for the user instead of closing the item.
     if (gate.verdict === 'PASS' && gate.notRun.length) return stop('Test', { role: 'qa', status: 'not-run', checks: gate.notRun }, `Ask the user: run ${gate.notRun.join(', ')}, or accept them as not run (a line in decisions), then close`)
   }
   const batch = openBlocking().filter((f) => !PENDING.includes(f.status))
   if (!batch.length) break
   const stalled = batch.filter((f) => (f.reopened || 0) >= STALL)
-  if (stalled.length) return stop('Test', { role: 'lead', status: 'stalled', findings: stalled.map((f) => f.id) }, `Ask the user: ${stalled.map((f) => f.id).join(', ')} reopened ${STALL} times; same fix keeps failing`)
+  if (stalled.length) return stop('Test', { role: 'orchestrator', status: 'stalled', findings: stalled.map((f) => f.id) }, `Ask the user: ${stalled.map((f) => f.id).join(', ')} reopened ${STALL} times; same fix keeps failing`)
   if (item.round >= ROUND_CAP) {
     set('blocked', 'blocked', `Ask the user: ${batch.map((f) => f.id).join(', ')} still fail after round ${ROUND_CAP}`)
     needsUser.push({ stage: 'Fix', round: item.round, status: 'BLOCKED_PENDING_USER_DECISION', findings: batch.map((f) => ({ id: f.id, title: f.title, test: f.test, severity: f.severity })) })
@@ -362,7 +362,7 @@ for (;;) {
   }
   phase('Build')
   const fixed = await fixBatch(batch)
-  if (fixed.unowned) return stop('Fix', { role: 'lead', status: 'unowned', findings: fixed.unowned }, `Lead: set owner (a ticket) on ${fixed.unowned.join(', ')}, then re-run`)
+  if (fixed.unowned) return stop('Fix', { role: 'pm', status: 'unowned', findings: fixed.unowned }, `pm: name the owner ticket of ${fixed.unowned.join(', ')}, then re-run`)
   if (!fixed.ok) return halted('Build')
 }
 
@@ -373,6 +373,6 @@ if (a.writerBrief) {
   const notes = await agent(withBits(a.writerBrief, []), { label: 'writer', phase: 'Docs', agentType: agentType('writer'), schema: RESULT })
   if (!check(notes, 'writer', 'Docs')) return halted('Docs')
 }
-set('done', 'done', 'Lead: report to the user and close the item (archive, delete the item JSON)')
+set('done', 'done', 'Orchestrator: report to the user and close the item (archive, delete the item JSON)')
 log(`done at round ${item.round} of ${ROUND_CAP}`)
 return out('done')

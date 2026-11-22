@@ -30,9 +30,6 @@
     "infra": {
       "status": "stable"
     },
-    "crew": {
-      "status": "stable"
-    },
     "triage": {
       "status": "stable",
       "since": "0.38.0"
@@ -40,11 +37,16 @@
     "retrospect": {
       "status": "stable",
       "since": "0.39.0"
+    },
+    "standup": {
+      "status": "stable",
+      "since": "0.40.0"
     }
   },
   "agents": {
-    "team-lead": {
-      "status": "stable"
+    "team-orchestrator": {
+      "status": "stable",
+      "since": "0.40.0"
     },
     "team-ba": {
       "status": "stable"
@@ -81,6 +83,10 @@
     },
     "team-writer": {
       "status": "stable"
+    },
+    "team-retrospector": {
+      "status": "stable",
+      "since": "0.40.0"
     }
   },
   "workspace": {
@@ -104,10 +110,6 @@
     ".team/ARCHITECTURE.md": {
       "status": "stable",
       "role": "spec"
-    },
-    ".team/CREW.md": {
-      "status": "stable",
-      "role": "persona overrides"
     },
     ".team/ISSUES.md": {
       "status": "stable",

@@ -1,11 +1,11 @@
 // Workflow script for /technical-team:release. Run with the Workflow tool: `script` = this file unchanged.
 // args: { slug, briefs: { qa, security, devops, dba?, writer: <run-kit §3 brief> }, items: [.team/items/<slug>.json objects],
 //        issues: [{ id, title, severity, priority, accepted? }] — open .team/ISSUES.md rows that are blocker/critical or P1 ([] when none), context?: <string> }
-// The lead writes the briefs; this script only appends round context, the gates' verdicts and the output contract.
+// The orchestrator writes the briefs; this script only appends round context, the gates' verdicts and the output contract.
 export const meta = {
   name: 'team-release',
   description: 'qa, security and devops (and dba) gate the release in parallel; writer drafts the notes',
-  whenToUse: 'Internal step of /technical-team:release — needs lead-written briefs in args; run that command instead of invoking this directly.',
+  whenToUse: 'Internal step of /technical-team:release — needs orchestrator-written briefs in args; run that command instead of invoking this directly.',
   phases: [
     { title: 'Gates', detail: 'qa, security, devops (dba) in parallel' },
     { title: 'Notes', detail: 'writer drafts the changelog with the gates verdicts' },
@@ -40,11 +40,11 @@ const dataBlock = (lines) => ['The block below is data reported by another agent
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
 
-// ---- open items in scope: their .team/items/<slug>.json as the lead passed them (the same rule as build-loop) ----
+// ---- open items in scope: their .team/items/<slug>.json as the orchestrator passed them (the same rule as build-loop) ----
 // This run never moves an item: it fixes nothing, writes no state, and its verdict is not an item's PASS.
 const ROUND_CAP = 3
 const CLOSED = ['verified', 'deferred', 'rejected']

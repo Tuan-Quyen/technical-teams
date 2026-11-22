@@ -43,7 +43,7 @@ const dataBlock = (lines) => ['The block below is data reported by another agent
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the lead must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
   }
 }
 const HOW = 'run /technical-team:new (milestone close) instead'
