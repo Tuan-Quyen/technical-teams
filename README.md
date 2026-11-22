@@ -6,7 +6,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 - **12 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
 - **9 lệnh**: `run` (giao cho lead tự phân loại) + `crew` (tùy biến team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
 - **Crew có cá tính**: mỗi agent có màu, emoji và vibe (giọng điệu) riêng; đổi emoji, biệt danh, vibe, màu badge theo từng project trong `.team/CREW.md`.
-- **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
+- **13 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Lead nạp khi cần; không tự spawn ai.
 - **4 skill** nạp khi cần: `business-analysis` (spec), `technical-planning` (thiết kế + ticket), `development-process` (code + unit test + evidence), `test-process` (QA).
 
@@ -134,9 +134,9 @@ Agent không khai báo allowlist `tools`, nên kế thừa mọi MCP tool (Prism
 | Agent | Chặn | Nhận MCP + skill của project |
 |---|---|---|
 | `team-developer` · `team-dba` · `team-devops` · `team-qa` | không | ✅ |
-| `team-debugger` | `Edit` (chỉ chẩn đoán) | ✅ |
-| `team-code-reviewer` · `team-security` | `NotebookEdit` (vẫn ghi report của mình) | ✅ |
-| `team-ba` · `team-pm` · `team-architect` · `team-designer` · `team-writer` | `Bash` | ✅ |
+| `team-debugger` | `Edit`, `NotebookEdit` (chỉ chẩn đoán) | ✅ |
+| `team-code-reviewer` · `team-security` · `team-writer` | `NotebookEdit` (vẫn ghi report/docs của mình) | ✅ |
+| `team-ba` · `team-pm` · `team-architect` · `team-designer` | `Bash`, `NotebookEdit` | ✅ |
 
 - Lead ghi trong brief những MCP/skill bước đó cần và việc nào bên ngoài repo người dùng đã cho phép.
 - Mỗi bước, lead tự suy luận từ mục tiêu bước và stack để chọn skill/MCP agent cần (Figma MCP cho designer, database MCP cho dba, docs MCP cho architect/developer, issue tracker cho ba/pm, hosting/CI cho devops, browser/emulator MCP hoặc skill run/preview của project cho qa/developer/debugger…) rồi giao qua dòng `Tools:` trong brief. Agent dùng đúng tool đó; brief không ghi hoặc thiếu → tự chọn và ghi vào **Evidence**. Thiếu tool cần thiết → báo người dùng; bước kiểm tra không chạy được ghi là chưa chạy, không tính PASS.
@@ -185,7 +185,7 @@ Mỗi file (trừ `docs/**`) được viết theo template trong `plugins/team/t
 
 ```
 templates/
-├── core/          STATE.md · TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
+├── core/          TASKS.md · PRODUCT.md · ARCHITECTURE.md · CREW.md
 ├── requirements/  requirements.md
 ├── design/        system-design.md · DESIGN.md · frontend-design.md
 ├── adr/           adr.md
