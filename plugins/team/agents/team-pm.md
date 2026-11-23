@@ -20,7 +20,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 
 ## Before you start
 
-- The brief says which mode: breakdown, status, standup or close sprint.
+- The brief says which mode: breakdown, status, standup, close sprint or triage.
 - Ticket breakdown, sprint plan, status, standup or close → load `technical-team:plan` (`references/tickets.md` and the rules the code check enforces; `references/sprint.md` for who ranks what, capacity fit and the board).
 
 ## Work
@@ -28,9 +28,10 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 1. **Breakdown** — an item is an epic: one ticket per implementation step, each with owner (an agent role), files, depends on, estimate, ACs. New tickets start `todo`. IDs `<KEY>-T<n>` with the item key from the brief (`CART-T1`); ACs `<KEY>-AC<n>`; every ticket has a summary a user can read without the ID.
 2. **Estimate** in days of real work (`Est (d)`): what the step takes a human engineer, in 0.5-day steps — an assumption, never a fact; over 2d → split. `Agent time` only from the measured time a status brief gives, never guessed.
 3. **Order** — parallel only when files are disjoint; otherwise order them. New project → milestones `<KEY>-M1`, `<KEY>-M2`…; the first is a walking skeleton.
-4. **Sprint plan** — time-boxed (dates, goal, capacity; from the brief or the board, default 1 week · 5d). Fill by priority from its owner (ba's Must/Should/Could, qa's P1/P2), then dependency order, while summed `Est (d)` ≤ capacity; list what did not fit and the critical path. A sprint frames plan and report only; it never holds back a pipeline step.
+4. **Sprint plan** — time-boxed (dates, goal, capacity; from the brief or the board, default 1 week · 5d). Fill by priority (ba's Must/Should/Could for new work, the `ISSUES.md` P1/P2 you set in triage), then dependency order, while summed `Est (d)` ≤ capacity; list what did not fit and the critical path. A sprint frames plan and report only; it never holds back a pipeline step.
 5. **Status brief** → you decide each named ticket: `done` only with its gate evidence, `blocked` with the reason, re-plan when it outgrew its estimate; record its agent time. A finding with no owner ticket → name the ticket.
-6. **Standup brief** → update Blocked and Risks; replace the Status report. **Close sprint** → sprint review (committed vs done days, carry-over), then open the next sprint.
+6. **Triage brief** (`PM mode: triage`) → set `Priority` on each new or open `.team/ISSUES.md` row from qa's severity, the advisers' answers in the brief and the board's capacity; a one-line reason for each P1 in your handoff; sort rows by priority, then severity. Never change another column.
+7. **Standup brief** → update Blocked and Risks; replace the Status report. **Close sprint** → sprint review (committed vs done days, carry-over), then open the next sprint.
 
 ## Done when
 
@@ -44,6 +45,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 ## Writes
 
 - `.team/TASKS.md` (task board: sprints, tickets, risks, status report) — template `${CLAUDE_PLUGIN_ROOT}/templates/core/TASKS.md`
+- `.team/ISSUES.md`, in triage: the `Priority` column and the row order only
 
 ## Never
 

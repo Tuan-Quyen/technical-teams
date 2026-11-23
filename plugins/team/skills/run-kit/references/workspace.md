@@ -11,7 +11,7 @@ Spec files and their owners: run-kit §1 Writes; templates under `requirements/`
 | `items/<slug>.json` — step, next action, round, findings, verdicts, questions | state | the orchestrating session (§ Item state) |
 | `STATE.md` — open items, resume point | view, generated from `items/` | nobody writes it |
 | `reports/<slug>/qa.md`, `review.md`, `security.md`, `debug.md` | T2 only | qa, code-reviewer, security, debugger |
-| `ISSUES.md` — the project's issue list (bugs, enhancements, debt), ranked | backlog, template `core/ISSUES.md` | qa (triage, test, an item's final qa run); the orchestrator sets only `item` and `in-progress` when an item starts from a row |
+| `ISSUES.md` — the project's issue list (bugs, enhancements, debt), ranked | backlog, template `core/ISSUES.md` | qa (triage, test, an item's final qa run); pm sets only `Priority` and the order (triage); the orchestrator sets only `item` and `in-progress` when an item starts from a row |
 | `archive/<slug>/` — files of a closed item; agents never read it unless a brief names it | — | orchestrator |
 
 Evidence (test output, repro steps, round details) lives in handoffs and test files, never in a `.team/` document.

@@ -61,7 +61,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 | `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
 | `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO; issue mở blocker/critical/P1 → NO-GO trừ khi bạn chấp nhận; release notes có Known issues | qa ∥ security ∥ devops (∥ dba) → writer |
 | `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` (qa pre-check trước) → release |
-| `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` | qa |
+| `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` | qa (severity) → ba ∥ architect (∥ security) tư vấn → pm (priority) |
 | `/technical-team:retrospect` | nhìn lại 7–30 ngày (mặc định 14) các phiên Claude Code dùng **phiên bản plugin hiện tại** (bản cũ bị bỏ qua): `team-retrospector` đọc transcript local, đối chiếu với file của plugin, so metric với lần retro trước (Δ theo version) rồi đề xuất thêm/bớt/sửa agent, skill, command, hook, workflow kèm evidence; bạn chọn cái để áp dụng. Report ngắn (≤ 600 từ, paste được vào prompt) `.team/retrospect/<ngày>/retrospect.md`: đề xuất new / update / delete chia theo Agents · Skills · Commands, mỗi đề xuất có Why · Improves which part · Workflow · Committed improvement (metric hiện tại → mục tiêu); draft đầy đủ ở `drafts/`, diff ở `changes.md`; không sửa plugin | retrospector |
 | `/technical-team:standup` | báo cáo trạng thái trên Task board `.team/TASKS.md`: việc xong / đang làm, blocker, rủi ro, burn của sprint. `close` = đóng sprint (review ngày cam kết vs xong, carry-over), `plan [<tuần> <ngày>] [<mục tiêu/epic>]` = lập sprint theo skill `plan` (ba spec + Must/Should/Could → architect → pm chia ticket, xếp theo priority vừa capacity, critical path) và chỉ mở sprint khi bạn OK. Chỉ chạy khi bạn yêu cầu | pm (`plan`: + ba, designer, architect) |
 
@@ -153,7 +153,7 @@ Gate không đổi: code của agent project vẫn qua code-reviewer, qa, securi
 ├── items/<slug>.json           session điều phối (orchestrator, hoặc session tự gọi agent): bước, việc tiếp, round, finding, verdict, câu hỏi
 ├── STATE.md                    sinh tự động từ items/ (điểm resume), không ai ghi tay
 ├── TASKS.md                    pm: Task board — sprint, ticket (ước tính ngày công, thời gian agent chạy), rủi ro, status report
-├── ISSUES.md                   qa (`triage`): issue đã xếp hạng; orchestrator thêm dòng mới, đặt status/item khi đóng item
+├── ISSUES.md                   qa (`triage`): issue, severity; pm: priority; orchestrator thêm dòng mới, đặt status/item khi đóng item
 ├── retrospect/<YYYY-MM-DD>/    retrospector (`retrospect`): `retrospect.md` (≤ 600 từ, ngôn ngữ của bạn), `changes.md` (diff), `drafts/<agents|skills|commands>/` (file đầy đủ), `evidence/` (digest, gitignore), `drafts/`
 ├── PRODUCT.md                  ba: sự thật hiện hành của sản phẩm
 ├── ARCHITECTURE.md             architect: tổng quan, trần ~200 dòng, trỏ sang ADR

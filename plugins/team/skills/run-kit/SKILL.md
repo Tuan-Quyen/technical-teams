@@ -17,7 +17,7 @@ Running a pipeline, writing a brief or reading a handoff; before spawning team a
 | `team-ba` | cyan | requirements: stories, Given/When/Then ACs, edge cases, open questions | `requirements/<slug>.md`, `PRODUCT.md` |
 | `team-designer` | pink | design system, flows, screens, every state, copy | `frontend-design/DESIGN.md`, `frontend-design/<slug>.md` |
 | `team-architect` | blue | solution + implementation plan, architecture overview, ADRs | `system-design/<slug>.md`, `ARCHITECTURE.md`, `adr/` |
-| `team-pm` | yellow | PM / Scrum Master: tickets with day estimates, dependencies, owners, parallel groups, milestones, sprints, progress, risks, status report | `TASKS.md` (task board) |
+| `team-pm` | yellow | PM / Scrum Master: tickets with day estimates, dependencies, owners, parallel groups, milestones, sprints, progress, risks, status report | `TASKS.md` (task board); `ISSUES.md` priority (triage) |
 | `team-developer` | green | code changes per ticket or debug report, unit/component tests, self-check with evidence | source code, config, unit/component tests |
 | `team-debugger` | orange | reproduce, root cause with evidence, fix direction | handoff; `reports/<slug>/debug.md` at T2 |
 | `team-code-reviewer` | red | review the diff, PASS / FAIL | findings in its result; `reports/<slug>/review.md` at T2 |
@@ -44,7 +44,7 @@ The orchestrator picks the command from the request; `/technical-team:<command>`
 | a bug, an error, a failing test, wrong behaviour | `fix` | T1: debugger → developer (regression test first, then the fix) → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
 | review / check this diff / audit security | `review` | code-reviewer ∥ security (∥ dba); no code changes |
 | add tests / is this covered | `test` | qa writes missing tests |
-| sort / rank issues, or several bugs or issues at once | `triage [list]` | qa ranks `ISSUES.md`; no item; the pick goes to `fix` or `feature` |
+| sort / rank issues, or several bugs or issues at once | `triage [list]` | qa assesses `ISSUES.md` → ba ∥ architect (∥ security) advise → pm sets priority; no item; the pick goes to `fix` or `feature` |
 | standup / status / progress / sprint / risks / plan a sprint | `standup [close · plan [<weeks> <days>] [<goal or epic>]]` | pm writes the status report on `TASKS.md`; `close` ends the sprint; `plan` runs the plan skill's sprint steps (ba → architect → pm → your OK); no item unless a new epic |
 | how has the team done / retro / what should the team change | `retrospect [days]` | retrospector audits the team (skill `retrospect`) and proposes plugin changes; no item |
 | CI/CD, Docker, deploy, infrastructure | `infra` | devops proposal → devops → code-reviewer ∥ security → writer |

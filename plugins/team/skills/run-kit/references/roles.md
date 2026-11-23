@@ -26,7 +26,8 @@ The orchestrator routes and records; each call below is its owner's, and the orc
 | a finding's severity, blocking, `verified` / `reopened` | its finder (qa, code-reviewer, security, dba) |
 | challenge outcome | finder, else the arbiter (`qa-loop.md`) |
 | retest and regression scope | qa |
-| `ISSUES.md` rows, rank, status | qa |
+| `ISSUES.md` rows, type, severity, status, duplicates | qa |
+| `ISSUES.md` priority and order | pm (from qa's severity and ba's, architect's, security's advice) |
 | what goes into `PRODUCT.md` | ba |
 | design, ADR content | architect; an ADR is accepted by the user |
 | defer / reject a finding, accept a not-run check, a round past the cap | the user |

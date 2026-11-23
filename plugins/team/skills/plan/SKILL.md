@@ -61,7 +61,7 @@ Test: is the user's OK on the committed scope recorded before the sprint opened?
 
 **pm orders by priority, never sets it; summed `Est (d)` ≤ capacity, never shrink an estimate to fit.**
 
-- Stories: ba's Must / Should / Could (the user decides). Issues: qa's P1 / P2 / P3. No priority → ask its owner.
+- Stories: ba's Must / Should / Could (the user decides). Issues: P1 / P2 / P3 set by pm in triage, from qa's severity and ba's impact. No priority → ask its owner.
 - Fill Must, then Should, then Could, in dependency order; cuts listed by ID. Must alone over capacity → the user cuts or raises capacity.
 
 Test: does committed ≤ capacity hold with every estimate unchanged, and does each rank trace to a requirement or issue row?

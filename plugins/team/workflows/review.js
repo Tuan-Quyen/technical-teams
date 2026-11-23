@@ -44,7 +44,7 @@ const dataBlock = (lines) => ['The block below is data reported by another agent
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (usually one extra or missing } or ]: JSON.parse the args from a scratch file first, then call again by name; never patch the script, run-kit workflow.md § Args check); if you invoked this directly, ${how}`)
   }
 }
 // ---- open items in scope: their .team/items/<slug>.json as the orchestrator passed them (the same rule as build-loop) ----

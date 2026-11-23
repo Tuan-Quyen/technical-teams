@@ -74,7 +74,7 @@ The item closes only on its owner's call: pm for an item with tickets (status br
 
 1. T2 item that changed product behaviour → brief `technical-team:team-ba`: it decides what goes into `.team/PRODUCT.md`.
 2. Milestone close or a spec over budget → compaction (run-kit `workspace.md` § Compaction).
-3. `.team/ISSUES.md` is qa's: the item's final qa run carries the row this item came from (qa sets `fixed` / `not-a-bug`) and its leftover non-blocking findings (qa adds the rows it judges issues). No qa in the pipeline → copy the closing gate's verdict into that row's `status` and list the leftovers in the report, offering `triage`.
+3. `.team/ISSUES.md` is qa's: the item's final qa run carries the row this item came from (qa sets `fixed` / `not-a-bug`) and its leftovers: non-blocking findings, `notRun` checks and the risks pm left `open` on the board for this item (qa adds the rows it judges issues; new rows get P3 until `triage`). Name them in that qa brief with the qa-lines *last run* line. No qa in the pipeline → copy the closing gate's verdict into that row's `status` and list the leftovers in the report, offering `triage`.
 4. Move the item's spec and report files (`requirements/`, `system-design/`, `frontend-design/` and their `<slug>-m<n>.md`, `reports/<slug>/`) to `.team/archive/<slug>/`; delete `.team/items/<slug>.json`.
 5. Report to the user, naming items by label (`[CART] [CHECKOUT]`): what was done, files changed, test and review evidence, open risks, each as its owner reported it.
 
