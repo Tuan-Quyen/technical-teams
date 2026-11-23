@@ -1,6 +1,6 @@
 # Issues
 
-> Owner: **team-qa** — type, severity, priority, area, duplicates and order. qa adds rows and sets every status (triage, test, an item's final qa run); the orchestrator only sets `item` and `in-progress` when an item starts from a row. Everyone else reads it.
+> Owner: **team-qa** — type, severity, area, duplicates; qa adds rows and sets every status (triage, test, an item's final qa run). **team-pm** sets only `Priority` and the row order (triage, from qa's severity and the advisers' answers). The orchestrator only sets `item` and `in-progress` when an item starts from a row. Everyone else reads it.
 > IDs: `I<n>`, project-wide, never reused: take the `Next ID` line below and raise it; it survives compaction, so a removed row's ID is never handed out again. Elsewhere write the ID with its title: `I3 (double charge on retry)`.
 > Severity: blocker · critical · major · minor · trivial (`test-process` defects-and-reports). Priority: P1 next · P2 this milestone · P3 backlog.
 > Status: new · open · needs-info · in-progress · fixed · duplicate · not-a-bug · wontfix.

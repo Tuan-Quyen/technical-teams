@@ -114,7 +114,7 @@
     ".team/ISSUES.md": {
       "status": "stable",
       "since": "0.38.0",
-      "role": "ranked issue list (qa; lead adds rows and sets status/item)"
+      "role": "ranked issue list (qa rows and severity; pm priority; lead sets status/item)"
     },
     ".team/retrospect/": {
       "status": "stable",

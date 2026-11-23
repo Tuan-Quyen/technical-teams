@@ -18,7 +18,7 @@ Output: the Sprints, Risks and Status report sections of `.team/TASKS.md` from `
 
 - **Who does the work** — ticket owners are `developer`, `dba` or `devops` only (`tickets.md`). Requirements, design, review, security, qa and docs are pipeline steps of the item, not tickets: their roles join when the item runs.
 - **Critical path** — the longest chain of `Depends on` in summed days; it sets the earliest finish. Longer than the sprint → a risk.
-- **Issues** — a P1/P2 row enters the sprint as its item (`fix I<n>` or `feature I<n>`) with one ticket estimate; qa keeps the row.
+- **Issues** — a P1/P2 row enters the sprint as its item (`fix I<n>` or `feature I<n>`) with one ticket estimate; qa keeps the row, pm its priority.
 - After the OK, `/technical-team:run` or the item's command builds; a sprint never holds back a pipeline step.
 
 ## Sprints

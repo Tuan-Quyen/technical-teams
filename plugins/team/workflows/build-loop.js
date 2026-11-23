@@ -63,6 +63,7 @@ const CONTRACT = 'Return your result through the structured output: status, verd
 const FINDING_RULE = 'Findings: each defect is a failing test or a one-line repro command (test), title at most 8 words, no report prose. Known findings are listed below by ID: re-check each one you are shown and return it with that id and result verified or failing; never give a known defect a new finding. A new one has id "" and result new. Blocking means it breaks an AC, is a regression, or is a critical risk; a blocking finding without a test counts as non-blocking.'
 const QA_PRECHECK = 'QA mode: pre-check. No code exists yet: review the ACs for gaps and contradictions and list the checks you will run. A fix: run the reproduction and write the regression test now, failing on the unfixed code. A spec issue that needs a decision is a blocking finding with test "spec: <what conflicts>"; never invent the expected behaviour.'
 const QA_FIRST = 'QA mode: execution. Run the test suite and the regression test, check every AC at the item tier, live-check user-facing changes. List what you could not check in notRun: not run is never PASS.'
+const QA_LEFTOVERS = 'Leftovers: if your verdict is PASS, add each non-blocking finding and notRun check you report, and each risk left open for this item in .team/TASKS.md, that you judge an issue as a .team/ISSUES.md row (Source <slug>#F<n>, qa run or risk R<n>; Priority P3 until triage); the row this item came from gets fixed or not-a-bug.'
 const QA_RETEST = 'QA mode: retest. Re-check only the findings listed below and re-run the test suite; no new exploratory scope. A new finding only for a regression the fix caused.'
 const NO_REPORT = 'Write no report file at this tier, even if a Write line above names one: the verdict and findings go in the structured output only.'
 const FIX_RULE = 'Fix: fix the cause, never special-case a test, its data or its input. Return each finding below by its id with result fixed, or challenged when you can show it is wrong (its test asserts what no AC or spec says, it is out of scope, or it conflicts with the spec), with the evidence in detail: the AC or spec line, or a command and its output. One marked "challenged before" can no longer be challenged. Challenge on evidence, never to skip work.'
@@ -74,7 +75,7 @@ const short = (s, max) => clean(s, 400).split(' ').slice(0, max).join(' ')
 const parseArgs = (raw, who, how) => {
   if (typeof raw !== 'string') return raw
   try { return JSON.parse(raw) } catch (e) {
-    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (check brackets and quotes); if you invoked this directly, ${how}`)
+    throw new Error(`${who}: args arrived as a string that is not valid JSON — the orchestrator must pass args as a JSON object (usually one extra or missing } or ]: JSON.parse the args from a scratch file first, then call again by name; never patch the script, run-kit workflow.md § Args check); if you invoked this directly, ${how}`)
   }
 }
 const HOW = 'run /technical-team:feature (or fix, infra, new) instead'
@@ -251,7 +252,7 @@ let qaRuns = item.findings.some((f) => f.by === 'qa') || /^(PASS|FAIL)/.test(ite
 const qaRound = async () => {
   const retest = qaRuns++ > 0
   const res = await agent(withBits(a.qaBrief, [
-    `Item tier: ${tier}. Round ${item.round} of ${ROUND_CAP}.`, retest ? QA_RETEST : QA_FIRST, FINDING_RULE, replyLine(['qa']), tier === 'T2' ? '' : NO_REPORT,
+    `Item tier: ${tier}. Round ${item.round} of ${ROUND_CAP}.`, retest ? QA_RETEST : QA_FIRST, QA_LEFTOVERS, FINDING_RULE, replyLine(['qa']), tier === 'T2' ? '' : NO_REPORT,
     known(Object.values(ORIGIN), retest ? ['open', 'fixed', 'reopened', 'challenged'] : ['open', 'reopened', 'challenged']),
   ]), { label: 'qa', phase: 'Test', agentType: agentType('qa'), schema: RESULT })
   if (!check(res, 'qa', 'Test')) return null
