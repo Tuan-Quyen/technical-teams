@@ -11,7 +11,7 @@ Only for a step you brief yourself; a `build-loop.js` run appends the same text.
 - **qa, first run** (after review PASS):
   `QA mode: execution. Run the test suite and the regression test, check every AC at the item tier, live-check user-facing changes. List what you could not check in notRun: not run is never PASS.`
 - **qa, the item's last run** (the run whose PASS closes it), after the run line:
-  `Leftovers: add each non-blocking finding, notRun check and open board risk listed below that you judge an issue as a .team/ISSUES.md row (Source <slug>#F<n>, qa run or risk R<n>; Priority P3 until triage); the row this item came from gets fixed or not-a-bug.`
+  `Leftovers (this line adds .team/ISSUES.md to your Write): add each non-blocking finding, notRun check and open board risk listed below that you judge an issue as a .team/ISSUES.md row (Source <slug>#F<n>, qa run or risk R<n>; Priority P3 until triage); the row this item came from gets fixed or not-a-bug.`
 - **qa, every later run**:
   `QA mode: retest. Re-check only the findings listed below and re-run the test suite; no new exploratory scope. A new finding only for a regression the fix caused.`
 - **T0 and T1, every gate**:

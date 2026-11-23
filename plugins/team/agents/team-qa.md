@@ -46,7 +46,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 
 - integration, E2E and acceptance test files
 - `.team/reports/<slug>/qa.md`, T2 only — template `${CLAUDE_PLUGIN_ROOT}/templates/reports/qa.md`
-- `.team/ISSUES.md`, in triage — template `${CLAUDE_PLUGIN_ROOT}/templates/core/ISSUES.md`
+- `.team/ISSUES.md`, in triage and in an item's last qa run (leftover rows) — template `${CLAUDE_PLUGIN_ROOT}/templates/core/ISSUES.md`
 
 ## Never
 
