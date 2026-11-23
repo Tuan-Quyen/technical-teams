@@ -7,12 +7,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { collect, parseArgs, normBash, redact, renderDigest, show, workType, promptKey, DAYS } from '../plugins/team/skills/retrospect/scripts/retro-miner.mjs';
+import { collect, parseArgs, normBash, redact, renderDigest, show, workType, promptKey, previousDigest, inventory, DAYS } from '../plugins/team/skills/retrospect/scripts/retro-miner.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TOOL = path.join(REPO, 'plugins/team/skills/retrospect/scripts/retro-miner.mjs');
 const NOW = '2026-11-22T12:00:00.000Z';
 const at = (daysAgo) => new Date(Date.parse(NOW) - daysAgo * 864e5).toISOString();
+const SINCE = at(10);
 const usage = { input_tokens: 10, cache_creation_input_tokens: 100, cache_read_input_tokens: 1000, output_tokens: 20 };
 const HINT = 'technical-team: end with your Handoff block from specialist-rules (### Handoff, then - Status: done | blocked | needs-input, - Files, - Evidence, - Next).';
 
@@ -93,7 +94,7 @@ test('normBash keys a command by its plain leading words; redact hides secrets',
 
 test('collect keeps plugin sessions in the window, once, with usage and signals', () => {
   const root = fixture();
-  const d = collect({ root, now: NOW, days: 14 });
+  const d = collect({ root, now: NOW, days: 14, since: SINCE });
   assert.equal(d.meta.pluginSessions, 1, 'plain, old and copied sessions do not count');
   const s = d.sessions[0];
   assert.equal(s.ref, 'projA/s1.jsonl');
@@ -133,14 +134,14 @@ test('collect keeps plugin sessions in the window, once, with usage and signals'
 
 test('collect skips the excluded session and other projects on --project', () => {
   const root = fixture();
-  assert.equal(collect({ root, now: NOW, excludeSession: 's1' }).meta.pluginSessions, 1, 'the copy in projC remains');
-  assert.equal(collect({ root, now: NOW, project: 'projB' }).meta.pluginSessions, 0);
+  assert.equal(collect({ root, now: NOW, since: SINCE, excludeSession: 's1' }).meta.pluginSessions, 1, 'the copy in projC remains');
+  assert.equal(collect({ root, now: NOW, since: SINCE, project: 'projB' }).meta.pluginSessions, 0);
 });
 
 test('CLI writes digest.md and digest.json', () => {
   const root = fixture();
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-out-'));
-  const r = spawnSync(process.execPath, [TOOL, '--root', root, '--now', NOW, '--out', out], { encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [TOOL, '--root', root, '--now', NOW, '--since', SINCE, '--out', out], { encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /1 plugin sessions/);
   assert.match(fs.readFileSync(path.join(out, 'digest.md'), 'utf8'), /^# Retrospect digest/);
@@ -158,4 +159,49 @@ test('workType, promptKey and --show', () => {
   assert.match(out, /L3 assistant.*\[Workflow\]/);
   assert.doesNotMatch(out, /abcd1234secret/);
   assert.match(show('../../etc/passwd.jsonl:L1', { root }), /outside|cannot read/);
+});
+
+test('only the audited plugin version counts; the last retro gives the Δ column', () => {
+  const root = fixture();
+  const cur = inventory().version;
+  const ts = at(1);
+  // A cache run of an older version and one of the current version (before the version start: still current by path).
+  write(path.join(root, 'projV', 'old.jsonl'), [user('<command-name>/technical-team:run</command-name>', ts, { uuid: 'v-1' }),
+    tool('Read', { file_path: '/u/.claude/plugins/cache/m/technical-team/0.1.0/agents/team-qa.md' }, ts)]);
+  write(path.join(root, 'projV', 'cur.jsonl'), [user('<command-name>/technical-team:run</command-name>', at(12), { uuid: 'v-2' }),
+    tool('Read', { file_path: `/u/.claude/plugins/cache/m/technical-team/${cur}/agents/team-qa.md` }, at(12))]);
+  const d = collect({ root, now: NOW, days: 14, since: SINCE, project: 'projV' });
+  assert.deepEqual(d.sessions.map((s) => s.id), ['cur'], 'the older version is out, the current one in');
+  assert.equal(d.meta.olderVersionSessionsExcluded, 1);
+  assert.equal(collect({ root, now: NOW, days: 14, since: SINCE, project: 'projV', allVersions: true }).meta.pluginSessions, 2);
+  // A session without a released version before the version start is an older run.
+  assert.equal(collect({ root, now: NOW, days: 14, since: at(1.5), project: 'projA' }).meta.pluginSessions, 0);
+
+  const retro = fs.mkdtempSync(path.join(os.tmpdir(), 'retro-runs-'));
+  fs.mkdirSync(path.join(retro, '2026-11-01', 'evidence'), { recursive: true });
+  fs.writeFileSync(path.join(retro, '2026-11-01', 'evidence', 'digest.json'), JSON.stringify({ meta: { generated: '2026-11-01T00:00:00Z', pluginVersion: '0.39.0' }, signals: { metrics: { promptsWithTeamPct: 20 } } }));
+  const prev = previousDigest(path.join(retro, '2026-11-22', 'evidence'));
+  assert.equal(prev.version, '0.39.0');
+  assert.equal(previousDigest(path.join(retro, 'elsewhere')), null, 'only beside an evidence/ folder');
+  const md = renderDigest({ ...collect({ root, now: NOW, since: SINCE }), previous: prev });
+  assert.match(md, /vs last retro 2026-11-01 \(0\.39\.0\)/);
+  assert.match(md, /\| promptsWithTeamPct \| 20 \| \d+ \| -?\d+/);
+});
+
+test('the report groups proposals by Agents, Skills, Commands, each in the four-heading frame', () => {
+  const read = (p) => fs.readFileSync(path.join(REPO, 'plugins/team', p), 'utf8').replace(/\r\n/g, '\n');
+  const tpl = read('templates/core/RETROSPECT.md');
+  const h2 = [...tpl.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  assert.deepEqual(h2, ['Verdict', 'Agents', 'Skills', 'Commands', 'Since the last retro', 'Not acted on', 'Evidence']);
+  const frame = ['Why <new | update | delete>?', 'Improves which part?', 'Workflow', 'Committed improvement'];
+  assert.deepEqual([...tpl.matchAll(/^#### (.+)$/gm)].map((m) => m[1]), frame, 'a proposal has the four headings in order');
+  assert.match(tpl, /^### A1 · <new \| update \| delete> `agents\/<name>\.md` · signal/m, 'a proposal names its action, file and signal');
+  assert.match(tpl, /## Skills\n\nnone\n/, 'an empty group is "none"');
+  assert.match(tpl, /Draft: `drafts\/agents\/<name>\.md` · Diff: `changes\.md#a1`/);
+  const skill = read('skills/retrospect/SKILL.md');
+  for (const h of ['Why new / update / delete?', 'Improves which part?', 'Workflow', 'Committed improvement']) assert.ok(skill.includes(`| ${h} |`), `skill Method §5 defines "${h}"`);
+  assert.match(skill, /≥2 real examples from ≥2 sessions/);
+  const drafts = read('skills/retrospect/references/drafts.md');
+  for (const k of ['| new |', '| update |', '| delete |', 'tests/contract.json']) assert.ok(drafts.includes(k), `drafts.md covers ${k}`);
+  assert.match(read('agents/team-retrospector.md'), /four-heading frame/);
 });

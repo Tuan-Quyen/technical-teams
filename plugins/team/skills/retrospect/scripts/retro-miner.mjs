@@ -6,7 +6,11 @@
 // writes only to --out.
 //   node retro-miner.mjs [--days 14] [--out <dir>] [--project <substr>] [--exclude-project <substr>]...
 //                       [--exclude-session <id>] [--root <projects dir>] [--plugin technical-team] [--plugin-root <dir>]
-//                       [--include-dev] [--include-probes] [--now <ISO>]
+//                       [--include-dev] [--include-probes] [--since <ISO>] [--all-versions] [--now <ISO>]
+// Only sessions on the plugin version being audited count (older versions are not this plugin any more): a session
+// whose cache path shows the current version, or one with no released version (a --plugin-dir run) that started on or
+// after the version's start (--since, else the plugin.json install time). The previous digest next to --out
+// (.team/retrospect/<date>/evidence/) gives the "last retro" column, so each version is compared with the one before.
 //   node retro-miner.mjs --show <project>/<session>.jsonl:L<n> [--radius 4]   → the context of one evidence item
 // → <out>/digest.md (short, for the retrospector) and <out>/digest.json (everything).
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -77,6 +81,8 @@ export function parseArgs(argv) {
     else if (a === '--include-dev') o.includeDev = true;
     else if (a === '--include-probes') o.includeProbes = true;
     else if (a === '--now') o.now = v();
+    else if (a === '--since') o.since = v();
+    else if (a === '--all-versions') o.allVersions = true;
     else if (a === '--show') o.show = v();
     else if (a.startsWith('--show=')) o.show = a.slice(7);
     else if (a === '--radius') o.radius = Number(v());
@@ -170,6 +176,10 @@ export function collect(opts = {}) {
     // --plugin-dir: a working copy, no version in the path.
     dev: /plugins[\\/]+team[\\/]+(agents|commands|skills|workflows|hooks|tools|templates)[\\/]/,
   };
+  // When the audited version started: --since, else when its plugin.json was written (install or version bump).
+  let versionSince = opts.since ? Date.parse(opts.since) : NaN;
+  let versionSinceSource = opts.since ? '--since' : 'plugin.json mtime';
+  if (!Number.isFinite(versionSince)) { try { versionSince = statSync(join(inv.root, '.claude-plugin', 'plugin.json')).mtimeMs; } catch { versionSince = cutoff; versionSinceSource = 'window start'; } }
   const ev = (file, n, ts, text) => ({ ref: `${relative(root, file).split(sep).join('/')}:L${n}`, ts: ts || null, snippet: snip(text) });
   const ctx = { cutoff, P, re, ev, inv };
 
@@ -196,15 +206,22 @@ export function collect(opts = {}) {
   const kept = unique.filter((s) => !s.dev || opts.includeDev);
   const probes = kept.filter((s) => s.probe && !opts.includeProbes);
   const work = kept.filter((s) => !(s.probe && !opts.includeProbes));
-  const used = work.filter((s) => s.usesPlugin);
+  // Only the audited version: a released older version → out; no released version (dev, unknown) → by start time.
+  const released = (s) => s.pluginVersions.filter((v) => v !== 'dev');
+  const onCurrent = (s) => opts.allVersions || (released(s).length ? released(s).includes(inv.version) : Date.parse(s.start || 0) >= versionSince);
+  const older = work.filter((s) => !onCurrent(s));
+  const current = work.filter(onCurrent);
+  const used = current.filter((s) => s.usesPlugin);
   // A forked or resumed session repeats its parent's prompts: count each (time, text) once.
   const seenPrompt = new Set();
   let dupPrompts = 0;
-  for (const s of work) s.prompts = s.prompts.filter((p) => { const k = `${p.ts}|${p.text.slice(0, 200)}`; if (seenPrompt.has(k)) { dupPrompts++; return false; } seenPrompt.add(k); return true; });
+  for (const s of current) s.prompts = s.prompts.filter((p) => { const k = `${p.ts}|${p.text.slice(0, 200)}`; if (seenPrompt.has(k)) { dupPrompts++; return false; } seenPrompt.add(k); return true; });
   const meta = { generated: new Date(now).toISOString(), days, from: new Date(cutoff).toISOString(), root: '~/.claude/projects', plugin, pluginVersion: inv.version, pluginRoot: inv.root,
-    scanned: scannedList.length, copiesMerged: scannedList.length - unique.length, devSessionsExcluded: dev.length, probeSessionsExcluded: probes.length, workSessions: work.length,
+    scanned: scannedList.length, copiesMerged: scannedList.length - unique.length, devSessionsExcluded: dev.length, probeSessionsExcluded: probes.length, olderVersionSessionsExcluded: older.length,
+    versionSince: new Date(versionSince).toISOString(), versionSinceSource, allVersions: !!opts.allVersions, workSessions: current.length,
     pluginSessions: used.length, duplicatePrompts: dupPrompts, notes: opts.notes || [] };
-  return { meta, inventory: inv, sessions: used, signals: signals(used, inv, P, work), excluded: { dev: dev.map((s) => s.ref), probes: probes.map((s) => s.ref) } };
+  return { meta, inventory: inv, sessions: used, signals: signals(used, inv, P, current), previous: opts.previous || null,
+    excluded: { dev: dev.map((s) => s.ref), probes: probes.map((s) => s.ref), olderVersions: older.map((s) => s.ref) } };
 }
 
 function scanSession({ project, id, file, subs, cutoff, P, re, ev }) {
@@ -484,8 +501,6 @@ export function signals(sessions, inv, P, work = sessions) {
   const api = sessions.flatMap((s) => s.apiErrors);
   if (api.length) add({ id: 'api-errors', kind: 'environment', component: '-', action: 'none', summary: `${api.length} API errors (limits, network): not a plugin defect`, metric: { count: api.length }, evidence: top(api) }, api);
   const released = (s) => s.pluginVersions.filter((v) => v !== 'dev');
-  const old = sessions.filter((s) => released(s).length && inv.version && !released(s).includes(inv.version));
-  if (old.length) add({ id: 'old-versions', kind: 'version', component: 'plugin', action: 'discount-evidence', summary: `${old.length} sessions ran another plugin version (${[...new Set(old.flatMap(released))].join(', ')}); current ${inv.version}`, metric: { count: old.length }, evidence: old.slice(-3).map((s) => ({ ref: s.ref, ts: s.start, snippet: s.pluginVersions.join(', ') })) });
   const devRuns = sessions.filter((s) => s.pluginVersions.includes('dev') && !released(s).length);
   const unknownVer = sessions.filter((s) => !s.pluginVersions.length);
 
@@ -504,7 +519,7 @@ export function signals(sessions, inv, P, work = sessions) {
     invalidNext: handoffRuns.filter((a) => a.next && !validNext.has(a.next)).length,
     toolErrorsPerRun: handoffRuns.length ? +(handoffRuns.reduce((x, a) => x + a.toolErrors.length, 0) / handoffRuns.length).toFixed(2) : 0,
   };
-  const versions = { current: inv.version, dev: devRuns.length, unknown: unknownVer.length, older: old.length };
+  const versions = { current: inv.version, released: sessions.length - devRuns.length - unknownVer.length, dev: devRuns.length, unknown: unknownVer.length };
   return { usage, neverUsed, inventory: inventoryRows.map(({ example, ...r }) => ({ ...r, example: example ? { ref: example.ref, snippet: example.snippet } : null })), health, cost, adoption, metrics, versions, list: out };
 }
 
@@ -515,13 +530,19 @@ export function renderDigest(d) {
   L.push(`# Retrospect digest — ${meta.plugin} ${meta.pluginVersion || ''}`, '');
   L.push(`Window: last ${meta.days} days (${meta.from.slice(0, 10)} → ${meta.generated.slice(0, 10)}) · transcripts scanned ${meta.scanned} · work sessions ${meta.workSessions} · plugin sessions ${meta.pluginSessions}`);
   L.push(`Excluded: plugin-repo sessions ${meta.devSessionsExcluded} · probe sessions ${meta.probeSessionsExcluded} (run from a scratchpad, or < ${PROBE_COST} cost-tokens with ≤1 agent run and no command) · copied sessions ${meta.copiesMerged} · duplicate prompts ${meta.duplicatePrompts}`);
-  L.push(`Plugin versions: current ${sg.versions.current} · older ${sg.versions.older} sessions · working copy (dev, version unknown) ${sg.versions.dev} · unknown ${sg.versions.unknown}`);
+  L.push(meta.allVersions ? `Versions: all (--all-versions)` : `Version: ${sg.versions.current} only, since ${meta.versionSince.slice(0, 10)} (${meta.versionSinceSource}) · older-version sessions excluded ${meta.olderVersionSessionsExcluded} · kept: released ${sg.versions.released}, working copy ${sg.versions.dev}, unknown ${sg.versions.unknown}`);
   for (const n of meta.notes) L.push(`Note: ${n}`);
   if (meta.pluginSessions < 10) L.push(`Note: fewer than 10 plugin sessions — every conclusion is low confidence.`);
   L.push('', 'Every count is a keyword heuristic: `node retro-miner.mjs --show <ref>` before citing it. Refs are `<project>/<session>.jsonl:L<line>` under ~/.claude/projects. Cost-tokens = input + 1.25×cache write + 0.1×cache read + 5×output.', '');
 
-  L.push('## Follow-up metrics', '', '| Metric | Now |', '|---|---|');
-  for (const [k, v] of Object.entries(sg.metrics)) L.push(`| ${k} | ${v} |`);
+  // An empty sample compares with nothing: no Δ against zeros.
+  const prev = meta.pluginSessions ? d.previous : null;
+  if (!meta.pluginSessions) L.push(`No plugin sessions on ${meta.pluginVersion} in the window: nothing to audit or compare yet.`, '');
+  L.push(`## Follow-up metrics${prev ? ` — vs last retro ${prev.date} (${prev.version})` : ' — no earlier retro next to --out'}`, '', prev ? '| Metric | Last | Now | Δ |' : '| Metric | Now |', prev ? '|---|---|---|---|' : '|---|---|');
+  for (const [k, v] of Object.entries(sg.metrics)) {
+    const was = prev?.metrics?.[k];
+    L.push(prev ? `| ${k} | ${was ?? '–'} | ${v} | ${typeof was === 'number' ? +(v - was).toFixed(2) : '–'} |` : `| ${k} | ${v} |`);
+  }
   L.push('', `Adoption: first use ${sg.adoption.firstUse?.slice(0, 10) || '–'} · ${sg.adoption.withTeam}/${sg.adoption.prompts} prompts in ${sg.adoption.sessions} sessions used the team since then`, '');
 
   L.push('## Work inventory (all work sessions)', '', '| Type | Prompts | With team | Sessions | Example |', '|---|---|---|---|---|');
@@ -570,12 +591,30 @@ export function show(ref, { root = join(homedir(), '.claude', 'projects'), radiu
   return out.join('\n');
 }
 
+// The latest earlier digest beside this run: <retrospect dir>/<date>/evidence/digest.json, other than <out> itself.
+export function previousDigest(out) {
+  const dir = resolve(out);
+  if (!/[\\/]evidence$/.test(dir)) return null;
+  const retro = dirname(dirname(dir));
+  let best = null;
+  for (const d of (existsSync(retro) ? readdirSync(retro, { withFileTypes: true }) : []).filter((e) => e.isDirectory())) {
+    const f = join(retro, d.name, 'evidence', 'digest.json');
+    if (resolve(dirname(f)) === dir || !existsSync(f)) continue;
+    try {
+      const j = JSON.parse(readFileSync(f, 'utf8'));
+      const at = j.meta?.generated || '';
+      if (!best || at > best.generated) best = { generated: at, date: d.name, version: j.meta?.pluginVersion || '?', metrics: j.signals?.metrics || {} };
+    } catch { /* unreadable: skip */ }
+  }
+  return best;
+}
+
 const isMain = process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === resolve(process.argv[1]).toLowerCase();
 if (isMain) {
   const o = parseArgs(process.argv.slice(2));
   if (o.show) { console.log(show(o.show, { root: o.root, radius: Number.isFinite(o.radius) ? o.radius : 4 })); process.exit(0); }
-  const d = collect(o);
   const out = o.out || join(tmpdir(), `${o.plugin || 'technical-team'}-retrospect`);
+  const d = collect({ ...o, previous: previousDigest(out) });
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'digest.json'), JSON.stringify(d, null, 1));
   writeFileSync(join(out, 'digest.md'), renderDigest(d));

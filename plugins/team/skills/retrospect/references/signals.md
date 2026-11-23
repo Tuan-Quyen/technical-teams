@@ -18,5 +18,5 @@
 | `cost-<role>` | one role ≥30% of specialist cost over ≥3 calls | the agent's `model`, the size of its prompt and references | one huge run (open it) |
 | `orchestrator-edits`, `other-agent-*` | ≥3 edits / ≥2 spawns of a non-team agent in plugin sessions | the orchestrator's rules; the roster gap the agent filled | sessions developing the plugin itself |
 | `unused-*` | a component never used in ≥5 plugin sessions **and** a second signal (overlap, or its work done another way) | its description, the routing table | a pipeline the window simply never needed |
-| `unknown-*`, `old-versions` | – | – | evidence for a renamed or removed piece: discount it unless the cause is still in the current file |
+| `unknown-*` | – | – | a working-copy run naming a piece this version renamed or removed: noise |
 | `compactions`, `api-errors`, `hook-errors` | compactions in ≥2 sessions | the orchestrator's context: run-kit and its references | API limits and network: never a plugin defect |

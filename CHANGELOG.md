@@ -2,6 +2,12 @@
 
 Format: each release lists **Breaking**, **Deprecated**, **Removed**, **Migration** when they apply. Public names and paths are pinned in `tests/contract.json`.
 
+## Unreleased (retrospect: short report, current version only)
+
+- **Report fits in a prompt, proposals by group**: `retrospect.md` is ≤ 600 words without its Evidence list — Sample line, Verdict (≤ 3 bullets), then **Agents · Skills · Commands** ("none" for an empty group), Since the last retro, Not acted on, Evidence (`[E<n>]` → full ref). The retrospector works as the AI agent engineer who improves the plugin each version: each proposal is new / update / delete with four headings — *Why new / update / delete?* (the problem, with refs), *Improves which part?*, *Workflow* (who does what after the change), *Committed improvement* (a Follow-up metric, now → target). New and update come with the full file in its skeleton under `drafts/<agents|skills|commands>/`; update and delete with the exact diff in `changes.md`; delete or rename names its contract and README entries. Every new needs ≥ 2 real examples from ≥ 2 sessions.
+- **Current version only**: the miner keeps a session only if its cache path shows the audited version, or it has no released version (a `--plugin-dir` run) and started after that version did (`--since`, default the `plugin.json` write time). Older versions are excluded and counted; the `old-versions` signal is gone. `--all-versions` keeps them for a comparison only.
+- **Version over version**: the miner reads the previous digest beside `--out` and adds Last / Δ columns to Follow-up metrics; the retrospector reports whether each change of the last retro was applied and moved its metric (applied with no effect → candidate to revert).
+
 ## 0.40.0 — 2026-11-23 (orchestrator, pm as Scrum Master, one home per rule)
 
 ### Breaking

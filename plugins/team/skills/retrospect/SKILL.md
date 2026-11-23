@@ -1,11 +1,11 @@
 ---
 name: retrospect
-description: The retrospector's audit playbook for the technical team itself — evidence from the user's real work history (local Claude Code transcripts mined by `scripts/retro-miner.mjs`, the target projects' `.team/` artifacts, git history, the plugin's own definitions) to find missing, weak, overlapping or unused agents, skills, commands, hooks and workflows, and the smallest change that fixes each. team-retrospector loads it for every `/technical-team:retrospect`.
+description: The retrospector's audit playbook for the technical team itself — evidence from the user's real work history (local Claude Code transcripts mined by `scripts/retro-miner.mjs`, the target projects' `.team/` artifacts, git history, the plugin's own definitions) on the current plugin version only, to find missing, weak, overlapping or unused agents, skills, commands, hooks and workflows, the smallest change that fixes each, and whether the last retro's changes helped. team-retrospector loads it for every `/technical-team:retrospect`.
 ---
 
 # retrospect — an audit of the team you can act on
 
-The goal is a **decision-ready audit backed by real evidence**: every claim cites a source, anything the data does not back is labelled an inference, and a source that could not be read is reported as "no data" and lowers the confidence of everything that depends on it.
+You work as the AI agent engineer who makes the plugin better each version. The goal is a **short, decision-ready audit of the current version, backed by real evidence**, ending in new / update / delete proposals for its Agents, Skills and Commands: every claim cites a source, anything the data does not back is labelled an inference, a source that could not be read is "no data", and each version is compared with the one the last retro saw.
 
 ## When to load
 
@@ -18,9 +18,9 @@ team-retrospector, at the start of every `/technical-team:retrospect`. The agent
 **Every claim cites a ref; everything else is labelled an inference.**
 
 - Cite as `` `<project>/<session>.jsonl:L<n>` ``, `` `.team/...` ``, `` `<repo>@<sha>` `` or a plugin file path. Quote at most one sentence, redacted.
-- Write every ref in full, exactly as the digest gives it, so it pastes into `--show` — never shortened with `…` or a partial id. Too long for a table → a label `[E<n>]` in the cell and the full ref under the report's Evidence list.
+- In the report a ref is a label `[E<n>]`; the Evidence list gives it in full, exactly as the digest does, so it pastes into `--show` — never shortened with `…` or a partial id.
 - Prefix each claim with "Data shows" or "Inference" (in the report's language).
-- Rate each section's confidence (high / medium / low) from source coverage and sample size; under ~10 plugin sessions, say so first.
+- One confidence for the sample (coverage and size; under ~10 plugin sessions, say so) and one per change.
 
 Test: does every ref paste into `--show` (or open as a file) and show what the claim says?
 
@@ -29,14 +29,14 @@ Test: does every ref paste into `--show` (or open as a file) and show what the c
 **Open an item with `--show` before you cite it; drop the false positives.**
 
 - Every count in the digest is a keyword match: a "correction" may be a follow-up question, a "by hand" prompt may be a chat, a guard firing may be a probe.
-- Evidence from an older plugin version counts only if the current file still has the cause; name that line. A working-copy run (`dev`) has no version: check the current file the same way.
+- The miner keeps only sessions on the audited version (its cache path, or a working-copy run started after the version did); older versions are not this plugin any more. Too few sessions left → say so and propose less; never pull older evidence back in (`--all-versions` is for a comparison only).
 - Probe, smoke and plugin-repo sessions are left out by the miner; any that slipped through are noise.
 
 Test: was every cited item opened with `--show` or its file?
 
 ### 3. Smallest change first
 
-**Never propose a new agent, command or hook without ≥2 real examples.**
+**Never propose anything new without ≥2 real examples from ≥2 sessions.**
 
 - Prefer, in order: a brief line or a rule → a description (the trigger) → a skill reference → merging or narrowing a component → a new one.
 - Every new component adds routing ambiguity and always-on tokens; say what it adds to the orchestrator's context.
@@ -44,14 +44,15 @@ Test: was every cited item opened with `--show` or its file?
 
 Test: would a smaller change in an existing file solve it?
 
-### 4. Write for the user, in the user's language
+### 4. Short, paste-ready, in the user's language
 
-**The report is written in the language the user writes in; technical terms, paths and IDs stay as they are.**
+**The report fits in a prompt: ≤ 600 words without the Evidence list, ≤ 5 proposals, only the template's sections, in the language the user writes in.**
 
-- The language comes from the brief or the user's prompts in the transcripts; unsure → English.
-- The template's headings are translated with the rest; its order and fields stay.
+- Proposals sit in three groups — Agents, Skills, Commands — each in the four-heading frame (Method §5); a group with none that passed the self-critique is "none" in one line.
+- Drafts and diffs live beside the report (`drafts/`, `changes.md`), never in it. No restated digest numbers, no per-agent tables.
+- The language comes from the brief or the user's prompts; unsure → English. Headings are translated, their order and fields stay; terms, paths and IDs stay as they are.
 
-Test: could the user act on the report without translating it?
+Test: could the user paste the report into a prompt and act on it without editing or translating it?
 
 ## Method
 
@@ -79,14 +80,31 @@ Before anything else, make sure `.team/retrospect/.gitignore` holds `*/evidence/
 
 Each signal → open the component file it names in the plugin root and find the line that causes it, or call it noise. Thresholds and noise patterns per signal: `references/signals.md`.
 
-### 3. Self-critique, before the report
+### 3. Since the last retro
 
-For every proposal: ≥2 independent examples, opened with `--show`? Would a description, a rule line or a reference solve it without a new component? Does it overlap an existing one (merge instead)? Is the saving bigger than the routing cost? A proposal that fails is removed or downgraded and listed in the appendix with the reason.
+The digest's Follow-up metrics compare with the previous digest beside `--out` (its date and version). Read that run's `retrospect.md`: for each proposal it made, is it in the current plugin file (applied) and did its metric move? Report it in one line per change; a change that was applied and moved nothing is a candidate to revert.
+
+### 4. Self-critique, before the report
+
+For every proposal: ≥2 independent examples, opened with `--show`? Would a description, a rule line or a reference solve it without a new component? Does it overlap an existing one (merge instead)? Is the saving bigger than the routing cost? A proposal that fails is removed or downgraded and listed under Not acted on with the reason.
+
+### 5. Write each proposal
+
+Group by the file it changes: `agents/` → Agents, `skills/` (references and scripts too) → Skills, `commands/` → Commands; a hook, workflow or template change goes with the agent, skill or command that owns it. Each proposal is `### <A|S|C><n> · <new | update | delete> <path> · signal <id> · confidence <level>`, then four headings, each ≤ 3 lines:
+
+| Heading | Holds |
+|---|---|
+| Why new / update / delete? | the problem the team hits now, with its `[E<n>]` refs |
+| Improves which part? | the component and the team behaviour that get better |
+| Workflow | the flow after the change: who does what, in which order, with what in and out |
+| Committed improvement | a Follow-up metric (or a signal's count) from the digest: now → target, re-measured at the next retro |
+
+New and update → the full file in `drafts/<agents|skills|commands>/<name>.md`, in its type's skeleton (the plugin's CLAUDE.md § Document format); update and delete → the exact diff in `changes.md`; delete or rename → the `tests/contract.json` entry and README table it touches. How: `references/drafts.md`.
 
 ## Done when
 
-- `.team/retrospect/<YYYY-MM-DD>/retrospect.md` follows the template, in the user's language, every proposal with refs and its exact replacement text; new-component drafts under `drafts/`, never in the plugin.
-- The follow-up metrics table holds the digest's numbers now, so the next run with the same command can compare.
+- `.team/retrospect/<YYYY-MM-DD>/retrospect.md` follows the template, ≤ 600 words without Evidence, in the user's language: Agents, Skills, Commands, each proposal in the four-heading frame with refs and a committed metric; every new/update drafted in full, every update/delete diffed in `changes.md`; nothing written in the plugin.
+- Since the last retro holds the digest's metrics with their Δ and the fate of each earlier change, so the next version can be compared the same way.
 
 ## References
 
@@ -96,4 +114,4 @@ Under `${CLAUDE_PLUGIN_ROOT}/skills/retrospect/references/`:
 |---|---|
 | `sources.md` | running the miner: flags, exclusions, `--show`, what each digest section counts and what it cannot see |
 | `signals.md` | judging a signal: its threshold, the plugin file to open, the usual noise |
-| `drafts.md` | writing a replacement text or a new-component draft |
+| `drafts.md` | writing a proposal's draft (the full file in its skeleton) or its diff in `changes.md` |

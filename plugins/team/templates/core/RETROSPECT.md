@@ -1,58 +1,52 @@
-# Retrospect — <scope> — <window>
+# Retrospect — <plugin> <version> — <window>
 
-> Owner: **team-retrospector** (`/technical-team:retrospect`, skill `technical-team:retrospect`). One folder per run: `.team/retrospect/<YYYY-MM-DD>/` with this file, `evidence/` (the digest; gitignored) and `drafts/`. Never edited after the run.
-> Written in the user's language; headings translated, order and fields kept. Each claim starts with "Data shows" or "Inference"; each section ends with its confidence (high / medium / low). Refs: `<project>/<session>.jsonl:L<n>`, `.team/...`, `<repo>@<sha>`, plugin file paths — always in full as the digest gives them, never shortened with `…`; in a table, a label `[E<n>]` that the Evidence list resolves.
-> **Keep it short:** no word cap, but every line must carry a decision, a fact or a ref — cut restated digest numbers, hedges and empty sections ("none" in one line). ≤ 5 new components; one row per agent in §3.
+> Owner: **team-retrospector** (`/technical-team:retrospect`, skill `technical-team:retrospect`), as the AI agent engineer who makes the plugin better each version. Folder `.team/retrospect/<YYYY-MM-DD>/`: this file, `changes.md` (exact diffs for update and delete), `drafts/<agents|skills|commands>/<name>.md` (the full file for new and update), `evidence/` (the digest; gitignored). Never edited after the run.
+> **Paste-ready:** ≤ 600 words without the Evidence list, ≤ 5 proposals, each frame heading ≤ 3 lines; in the user's language (headings too); no sections beyond these. A fact starts with "Data shows", a guess with "Inference". Refs as `[E<n>]`, resolved in full under Evidence.
+> A proposal sits in the group of the file it changes; a hook, workflow, template or miner change goes with the agent, skill or command that owns it.
 
-Sources: transcripts (<n> plugin sessions of <m> work sessions, <p> prompts) · `.team/` (<projects, or "no data">) · git (<repos, or "no data">) · definitions (plugin <version>, <n> agents) · claude.ai (no data) · excluded: <dev n, probes n, older versions n>
+Sample: <n> plugin sessions on <version> (since <date>) of <m> work sessions · excluded: older versions <n>, plugin dev <n>, probes <n> · confidence: <high / medium / low — why in ≤ 8 words>
 
-## 1. TL;DR
+## Verdict
 
-- <3–5 bullets: the decisions this audit supports>
+- <≤ 3 bullets: what is working, what is not, the one decision to make>
 
-## 2. Work inventory
+## Agents
 
-| Work type | Prompts | With team | Example (≤ 1 sentence + ref) | Team piece used | Outcome |
-|---|---|---|---|---|---|
+### A1 · <new | update | delete> `agents/<name>.md` · signal `<digest id or audit>` · confidence <high / medium / low>
 
-## 3. Current agents and components
+#### Why <new | update | delete>?
+<the problem the team hits now, with [E1] [E2]>
 
-| Component | Runs | Strengths | Repeated failure (ref) | Overlaps with | Proposal: keep / edit prompt / edit description / merge / remove |
-|---|---|---|---|---|---|
+#### Improves which part?
+<which component and which team behaviour get better>
 
-## 4. New components (≤ 5, by ROI)
+#### Workflow
+<after the change: who does what, in which order, with what in and out — one line per step>
 
-### <name> — ROI: high / medium
-- Evidence (≥ 2): <refs>
-- Problem and the saving (how it is estimated): <…>
-- Why an existing component cannot take it: <…>
-- Draft: `.team/retrospect/<YYYY-MM-DD>/drafts/<kind>/<name>.md`
+#### Committed improvement
+<metric from the digest's Follow-up metrics (or a signal's count): now <n> → target <n>, re-measured at the next retro>
 
-## 5. Changes to agents, skills, commands, hooks, workflows
+Draft: `drafts/agents/<name>.md` · Diff: `changes.md#a1` · Contract: <none, or the `tests/contract.json` entry and README table a delete or rename touches>
 
-| # | Change (file) | Evidence | Replacement text / diff | Effort | Contract |
-|---|---|---|---|---|---|
+## Skills
 
-## 6. Action plan
+none
 
-- Quick wins (≤ 1 hour): <R#…>
-- This week: <…>
-- This month: <…>
+## Commands
 
-## 7. Follow-up metrics (re-measure in 2–4 weeks with the same command)
+none
 
-| Metric | Now | Target | How measured |
+## Since the last retro
+
+| Metric | <last version> | <this version> | Δ |
 |---|---|---|---|
-| promptsWithTeamPct | <n> | <n> | digest Follow-up metrics |
 
-## 8. Limits of this audit
+- Last retro's proposals: <A1 applied → <metric> moved <Δ> · C1 not applied · "first retro" when none>
 
-- <sources with no data, sample size, heuristics not verified>
+## Not acted on
 
-## Appendix: self-critique
-
-- <a proposal dropped or downgraded — the question it failed — its evidence>
+- <one line each: `signal id` — noise or a hypothesis — why>
 
 ## Evidence
 
-- `[E1]` `<project>/<session>.jsonl:L<n>` — <what it shows, ≤ 10 words>
+- [E1] `<project>/<session>.jsonl:L<n>` — <≤ 8 words>

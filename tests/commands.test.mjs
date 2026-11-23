@@ -39,7 +39,7 @@ const REPO_URL = 'https://github.com/Tuan-Quyen/technical-teams';
 
 // The .team/ layout documented in the README; `<slug>` and `NNNN-<…>` are placeholders.
 const LAYOUT = [
-  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/ISSUES\.md$/, /^\.team\/retrospect\/(<YYYY-MM-DD>\/((retrospect\.md|evidence\/?|drafts\/.*))?|\.gitignore)?$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
+  /^\.team\/?$/, /^\.team\/STATE\.md$/, /^\.team\/items\/(<slug>\.json|\*\.json)?$/, /^\.team\/ISSUES\.md$/, /^\.team\/retrospect\/(<YYYY-MM-DD>\/((retrospect\.md|changes\.md|evidence\/?|drafts\/.*))?|\.gitignore)?$/, /^\.team\/TASKS\.md$/, /^\.team\/PRODUCT\.md$/, /^\.team\/ARCHITECTURE\.md$/,
   /^\.team\/requirements\/(<slug>\.md)?$/, /^\.team\/system-design\/(<slug>\.md)?$/,
   /^\.team\/frontend-design\/(DESIGN\.md|<slug>\.md)?$/, /^\.team\/adr\/(NNNN-<[a-z-]+>\.md)?$/,
   /^\.team\/reports\/<slug>\/((qa|review|security|debug)\.md)?$/, /^\.team\/docs\/.*$/, /^\.team\/archive\/(<slug>\/)?$/,
