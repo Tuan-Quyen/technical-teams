@@ -32,7 +32,7 @@ reviewers re-check their findings · qa retests the listed ones + suite ──�
 
 ## Board sync
 
-`TASKS.md` is a view of the item for people; the item's `findings` and `verdicts` are the truth. Only for an item with tickets on the board (feature T2, new); fix, T0, T1 and infra have none and skip it. pm writes the statuses below; nobody re-decides them.
+`TASKS.md` is a view of the item for people; the item's `findings` and `verdicts` are the truth. Only for an item with tickets on the board: feature T2, new, and a fix with a `ticket` (`fix.md` § Board ticket). A fix without a ticket, T0, T1 and infra have none and skip it. pm writes the statuses below; nobody re-decides them.
 
 | When | Who runs it | Ticket status |
 |---|---|---|
