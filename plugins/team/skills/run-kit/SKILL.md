@@ -39,17 +39,17 @@ The orchestrator picks the command from the request; `/technical-team:<command>`
 | The request is… | Command | Pipeline |
 |---|---|---|
 | anything; empty = resume from `STATE.md` | `run <request>` | the orchestrator classifies it into a row below |
-| a new capability, or a change to how the product behaves | `feature` | T1: ba → developer → code-reviewer (∥ security, dba) → qa · T2: ba → (designer) → architect → pm → qa pre-check → developer → review → qa → writer |
+| a new capability, or a change to how the product behaves | `feature` | T1: ba → developer → [`review` → `test` → `fix`]* · T2: ba → (designer) → architect → pm → `test` pre-check → developer ⟳ → [`review` ⟳ → `test` ⟳ → `fix`]* → writer |
 | small and in existing patterns (the user's flag only; the orchestrator may suggest it, never choose it) | `feature --small` | T0: developer → code-reviewer |
-| a bug, an error, a failing test, wrong behaviour | `fix` | T1: debugger → developer (regression test first, then the fix) → code-reviewer (∥ security) → qa · T2 adds a qa pre-check |
+| a bug, an error, a failing test, wrong behaviour | `fix` | T1: debugger → developer (regression test first, then the fix) → [`review` → `test` → fix]* · T2 adds a `test` pre-check; ⟳ when the bug is in a board ticket |
 | review / check this diff / audit security | `review` | code-reviewer ∥ security (∥ dba); no code changes |
 | add tests / is this covered | `test` | qa writes missing tests |
 | sort / rank issues, or several bugs or issues at once | `triage [list]` | qa assesses `ISSUES.md` → ba ∥ architect (∥ security) advise → pm sets priority; no item; the pick goes to `fix` or `feature` |
 | standup / status / progress / sprint / risks / plan a sprint | `standup [close · plan [<weeks> <days>] [<goal or epic>]]` | pm writes the status report on `TASKS.md`; `close` ends the sprint; `plan` runs the plan skill's sprint steps (ba → architect → pm → your OK); no item unless a new epic |
 | how has the team done / retro / what should the team change | `retrospect [days]` | retrospector audits the team (skill `retrospect`) and proposes plugin changes; no item |
-| CI/CD, Docker, deploy, infrastructure | `infra` | devops proposal → devops → code-reviewer ∥ security → writer |
+| CI/CD, Docker, deploy, infrastructure | `infra` | devops proposal → devops → [`review` → fix]* → writer |
 | ready to release? / prepare version X | `release` | qa ∥ security ∥ devops (∥ dba) → writer: GO / NO-GO |
-| a new product from an idea or PRD, no application code yet | `new` | ba → architect ∥ designer → architect → pm → per milestone: build loop → compact → release |
+| a new product from an idea or PRD, no application code yet | `new` | ba → architect ∥ designer → architect → pm → per milestone: `feature` steps 5–9 → compact → `infra` → `release` |
 | record an architecture decision | – | brief `team-architect` for an ADR; no pipeline |
 | a question, or one small task for one role | – | answer it, or brief that one agent; no item |
 
@@ -60,9 +60,11 @@ A bug that matches an open `.team/ISSUES.md` row → `fix I<n>` on that row, nev
 - **Who runs it** — the session running a command is the orchestrator: follow `${CLAUDE_PLUGIN_ROOT}/agents/team-orchestrator.md` §3–§6, Read it if you are not already the orchestrator. `triage`, `standup` and `retrospect` open no item (a new epic in `standup plan` opens its item as `feature`): only its Rules and §4 apply.
 - **Issue ID** — a request that is `I<n>` → that `.team/ISSUES.md` row is the request; set its `status` to `in-progress` and `item` to this item's slug.
 - **Tier** (`feature`, `fix`; written in the item; the user forces one with `--tier`) — **T2**: new screen flow, new contract or module, auth or permissions, payment processing (charging, refunds, payouts), schema migrations, or deleting or rewriting stored data; calculation logic that tests cover (prices, totals, tax) is not T2. **T1**: everything else. **T0**: `feature --small` only. Raise a tier at any step when the work turns out bigger; lowering one needs the reason in the item's `notes`.
+- **Board sync** (`⟳` above; an item with tickets on `TASKS.md` only) — after the build, after each review and qa round, at PASS and at a stall or the round cap: `standup` as a step (`sync`), statuses derived from the item by `references/qa-loop.md` § Board sync. The build-loop workflow runs the in-loop syncs; you run the last one, and every sync of an inline run.
 - **Task list** — before the first spawn, put the command's steps on the session's task list (orchestrator §3 *Task list*). No task tool → carry on: the item is the truth.
 - **Workflow opt-in** — the Workflow tool is available (also if deferred) AND the user typed a slash command of this plugin for this item (the command itself, or `/technical-team:run`, which hands the chosen pipeline to the orchestrator) → run the command's workflow step (§6). Otherwise (no tool, or the orchestrator was started without a slash command) → run the command's steps inline.
-- **Check-only** (`review`, `test`) — close by deleting the command's own item JSON and moving its `reports/<slug>/` (if any) to `.team/archive/<slug>/`. A build-loop item in scope (it has `.team/items/<slug>.json`) is never changed, closed or reported PASS or ready by them: only its own pipeline closes it.
+- **Composing commands** — `run`, `feature` and `new` are parents; `fix`, `review`, `test`, `infra`, `release` and `standup` are blocks that also run alone. A step that names a block (`` `review` (as a step: gate) ``) → Read `${CLAUDE_PLUGIN_ROOT}/commands/<block>.md` and run the rows its `## As a step` names for that mode. As a step a block opens, closes and archives nothing and seeds no task list: it works in the parent's item (findings, round, verdicts), keeps the parent's tier and workflow choice, asks its own user gates, and ends by handing its verdict back to the parent's next step. A build-loop workflow runs the review, test, fix and sync steps itself.
+- **Check-only** (`review`, `test`, alone) — close by deleting the command's own item JSON and moving its `reports/<slug>/` (if any) to `.team/archive/<slug>/`. A build-loop item in scope (it has `.team/items/<slug>.json`) is never changed, closed or reported PASS or ready by them: only its own pipeline closes it.
 - **Outside changes** — never commit, push, tag, deploy or publish unless the user asks; give the user the exact commands.
 
 ## 3. Writing a brief
@@ -94,7 +96,7 @@ Reply ending: the Handoff block of §5.
 
 ## 4. Workspace `.team/`
 
-One owner per file (§1 Writes; `items/<slug>.json` is the orchestrating session's, `STATE.md` is generated from it); templates under `${CLAUDE_PLUGIN_ROOT}/templates/`. Item schema, readable IDs, spec rules, compaction: `references/workspace.md`.
+One owner per file (§1 Writes; `items/<slug>.json` is the orchestrating session's, `STATE.md` is generated from it); `items/<slug>.json` is the truth of an item's step, round, findings and verdicts, and `STATE.md` and the ticket statuses in `TASKS.md` are views of it: when they disagree, read the item, never the view. Templates under `${CLAUDE_PLUGIN_ROOT}/templates/`. Item schema, readable IDs, spec rules, compaction: `references/workspace.md`.
 
 ### Orchestrating without the orchestrator
 

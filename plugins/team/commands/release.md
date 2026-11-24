@@ -16,6 +16,12 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 - Range = last tag (`git describe --tags --abbrev=0`) → `HEAD`; no tag yet → all history.
 - **Version** — resolve it before step 1; the slug is `release-<version>`. Given → use it. No tag → `0.1.0`. Else propose the next semver from the range's commits (any breaking → major, else any `feat` → minor, else patch) and use it.
 
+## As a step
+
+| Mode | Parent step | Runs | Hands back |
+|---|---|---|---|
+| `gate` | `new` 5 (version from the parent) | steps 1–3 with the parent item in `items`; only the gates whose code changed since the last milestone passed | GO / NO-GO with its reasons to the parent; no own item, no close |
+
 ## Steps
 
 | # | Step | Agent | Gate / verify |
@@ -34,3 +40,4 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 ## Done when
 
 - A GO / NO-GO with its reasons and the user's exact commands. Nothing tagged, pushed or deployed.
+- As a step: the verdict is back with the parent.

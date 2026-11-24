@@ -28,12 +28,15 @@ test('agents: one title, a bold mission line, then the agent sections in order',
   }
 });
 
-test('commands: title is the slash command; When to use, Steps, Workflow (only with a workflow), Done when', () => {
+// Blocks run alone or as a step of a parent pipeline (run-kit §2 Composing commands); only they have `## As a step`.
+const BLOCKS = ['fix', 'infra', 'release', 'review', 'standup', 'test'];
+
+test('commands: title is the slash command; When to use, As a step (blocks only), Steps, Workflow (only with a workflow), Done when', () => {
   for (const f of md('commands')) {
     const s = read(`commands/${f}`);
     const name = f.slice(0, -3);
     assert.deepEqual(h1(s), [`/technical-team:${name}`], `${f}: title`);
-    const want = ['When to use', 'Steps', ...(s.includes('workflows/') ? ['Workflow'] : []), 'Done when'];
+    const want = ['When to use', ...(BLOCKS.includes(name) ? ['As a step'] : []), 'Steps', ...(s.includes('workflows/') ? ['Workflow'] : []), 'Done when'];
     assert.deepEqual(h2(s), want, `${f}: sections`);
     if (name !== 'run') assert.match(s, /\n## Steps\n\n\| # \| Step \| Agent[^|]*\| Gate \/ verify \|/, `${f}: steps table`);
   }
@@ -76,4 +79,26 @@ test('every skill reference opens with its title and a "Used by · Read when" li
       assert.match(lines[2], /^> Used by: .+ · Read when: .+/, `${k}/${f}: Used by · Read when`);
     }
   }
+});
+
+test('blocks: an As a step table of modes; every "<block> (as a step: <mode>)" a command uses names a mode the block defines', () => {
+  const modes = {};
+  for (const b of BLOCKS) {
+    const sec = body(read(`commands/${b}.md`)).split('\n## As a step\n')[1].split('\n## ')[0];
+    assert.match(sec, /^\| Mode \| Parent step \| Runs \| Hands back \|$/m, `${b}: As a step table`);
+    modes[b] = [...sec.matchAll(/^\| `([\w-]+)` \|/gm)].map((m) => m[1]);
+    assert.ok(modes[b].length, `${b}: at least one mode`);
+    assert.match(read(`commands/${b}.md`), /^- As a step[^\n]*$/m, `${b}: Done when says what a step hands back`);
+  }
+  let uses = 0;
+  for (const f of md('commands')) {
+    for (const m of read(`commands/${f}`).matchAll(/`([\w-]+)` \(as a step: ([\w-]+)\)/g)) {
+      uses++;
+      assert.ok(BLOCKS.includes(m[1]), `${f}: ${m[1]} is not a block`);
+      assert.ok(modes[m[1]].includes(m[2]), `${f}: ${m[1]} has no mode ${m[2]}`);
+    }
+  }
+  assert.ok(uses >= 10, 'parents compose blocks');
+  for (const p of ['feature', 'new']) assert.match(read(`commands/${p}.md`), /`review` \(as a step: gate\)|`feature\.md`/, `${p}: composes review`);
+  assert.match(read('skills/run-kit/SKILL.md'), /\*\*Composing commands\*\*/, 'run-kit §2 holds the composition rule');
 });

@@ -15,6 +15,12 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*. No 
 - "Standup / status / progress / sprint / risks", only when the user asks.
 - "Plan a sprint / sprint planning / what goes in the next sprint" → `plan`.
 
+## As a step
+
+| Mode | Parent step | Runs | Hands back |
+|---|---|---|---|
+| `sync` | each board sync of `feature`, `new` and `fix` (run-kit §2 **Board sync**) | step 2 only, with Read and Write `.team/TASKS.md`, the qa-lines board-sync line and one line per ticket derived from the item (run-kit `qa-loop.md` § Board sync), with measured agent time; skip when no status changed | the board matches the item; at PASS pm's handoff is the closing call |
+
 ## Steps
 
 | # | Step | Agent | Gate / verify |
@@ -34,4 +40,5 @@ Under **Constraints** give each ticket's measured agent time you have from this 
 ## Done when
 
 - The board's Status report is current and shown; no ticket status changed without evidence.
+- As a step (`sync`): every listed ticket shows the status the item gives it; nothing else changed.
 - `plan`: the sprint is open on the board with the user's OK, per plan § The sprint is ready when; no build started.

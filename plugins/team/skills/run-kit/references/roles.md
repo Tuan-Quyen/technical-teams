@@ -21,7 +21,8 @@ The orchestrator routes and records; each call below is its owner's, and the orc
 
 | Decision | Owner |
 |---|---|
-| ticket `done` / `blocked`, re-plan, a finding's owner ticket | pm (from the handoffs and gate verdicts in its brief) |
+| ticket status during a build loop | the board-sync table (`qa-loop.md` § Board sync), from the item; pm writes it |
+| ticket `done` / `blocked` outside a build loop, re-plan, a finding's owner ticket | pm (from the handoffs and gate verdicts in its brief) |
 | item closes | pm for an item with tickets; else its last gate (qa; code-reviewer for T0, infra) |
 | a finding's severity, blocking, `verified` / `reopened` | its finder (qa, code-reviewer, security, dba) |
 | challenge outcome | finder, else the arbiter (`qa-loop.md`) |
