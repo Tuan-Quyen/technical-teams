@@ -31,13 +31,13 @@ color: purple
 
 ### 2. Classify
 
-Load `technical-team:run-kit` with the Skill tool if this session has not yet, then pick the row of its §2 table that fits the request. A pipeline row → Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow it with run-kit §2 *Running a pipeline*. Record in the item whether it was opted into workflows (`workflows: yes|no` → `"workflows": true|false`, run-kit §2 **Workflow opt-in**): a resumed item keeps its choice.
+Load `technical-team:run-kit` with the Skill tool if this session has not yet, then pick the row of its §2 table that fits the request. A pipeline row → Read `${CLAUDE_PLUGIN_ROOT}/commands/<pipeline>.md` and follow it with run-kit §2 *Running a pipeline*; a step that names another command runs it as a step (run-kit §2 **Composing commands**). Record in the item whether it was opted into workflows (`workflows: yes|no` → `"workflows": true|false`, run-kit §2 **Workflow opt-in**): a resumed item keeps its choice.
 
 ### 3. Bookkeeping
 
 - **Item** — a short kebab-case slug that starts with its module (`cart-checkout`), a key (2–6 capitals, from the slug: `CART`) and, when the slug does not start with the module, `area` (`STORE` for `banner-carousel`); people read it as `[CART] [CHECKOUT]`. Then `.team/items/<slug>.json` (run-kit `workspace.md` § Item state). Before each spawn set `step`, `status`, `next`; after each handoff update it. Each save regenerates `STATE.md`; check a save with `team-state.mjs check` and fix what it reports.
 - **Keep it small** — `next` ≤30 words, a title ≤8 words, stored once; done steps go nowhere (git has them). A user question → `questions`, status `waiting-for-user`; their answer → `decisions`, verbatim.
-- **TASKS.md** — `team-pm`'s task board; you only read it. After each batch send pm the handoffs and gate verdicts verbatim, with each ticket's measured agent time (spawn → passed handoff, e.g. `25m`); pm decides every ticket's status, you never name one. A standup only when the user asks (`standup`). A `fix`, `--small` or `infra` item has no tickets.
+- **TASKS.md** — `team-pm`'s task board, a view of the items; you only read it, and the item wins when they disagree. Ticket statuses reach it through the board sync (run-kit §2 **Board sync**): you derive them from the item by its table and send them with each ticket's measured agent time (spawn → passed handoff, e.g. `25m`); never choose a status yourself. A standup only when the user asks (`standup`). A `--small` or `infra` item, or a `fix` without a `ticket`, has no tickets.
 - **ADR numbers** — the next number is the highest in `.team/adr/` + 1.
 
 #### Task list
@@ -70,7 +70,7 @@ Spawn it by its bare `name`; brief it per run-kit §3 *Briefing a project specia
 
 ### 6. Close an item
 
-The item closes only on its owner's call: pm for an item with tickets (status brief with the final gate verdicts → `Next: orchestrator — close`), else the item's last gate (qa; code-reviewer for T0 and infra). A call that names work left → route that work, do not close.
+The item closes only on its owner's call: pm for an item with tickets (the PASS board sync, every ticket `done` → `Next: orchestrator — close`), else the item's last gate (qa; code-reviewer for T0 and infra). A call that names work left → route that work, do not close.
 
 1. T2 item that changed product behaviour → brief `technical-team:team-ba`: it decides what goes into `.team/PRODUCT.md`.
 2. Milestone close or a spec over budget → compaction (run-kit `workspace.md` § Compaction).

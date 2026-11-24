@@ -30,6 +30,23 @@ reviewers re-check their findings · qa retests the listed ones + suite ──�
 - **Findings are work items** — no fix tickets in `TASKS.md`, no report prose. T2 adds `reports/<slug>/qa.md` (test plan, RTM with one status column) and the reviewers' reports.
 - **Spec issues** from the pre-check go to their owner (ba, designer, architect) or the user; no developer starts before.
 
+## Board sync
+
+`TASKS.md` is a view of the item for people; the item's `findings` and `verdicts` are the truth. Only for an item with tickets on the board: feature T2, new, and a fix with a `ticket` (`fix.md` § Board ticket). A fix without a ticket, T0, T1 and infra have none and skip it. pm writes the statuses below; nobody re-decides them.
+
+| When | Who runs it | Ticket status |
+|---|---|---|
+| after the build | build-loop (inline: you) | built → `review`; not built → `todo` |
+| after a review round (FAIL, or PASS with qa next) and a qa FAIL | build-loop (inline: you) | an open or reopened blocking finding → `doing`; its findings all `fixed`, `challenged` or closed → `review` |
+| PASS (workflow `done`) | the session, with agent time | every ticket `done`, collapsed into `Done:` |
+| round cap (`blocked`) or `stalled` | the session, with agent time | a ticket holding a stuck finding → `blocked` + a Risks row; the rest as above |
+
+- **Finding → ticket** — its `owner` (a ticket ID); else the ticket whose `Files` hold its `file`; else the only ticket; else `unassigned` → a Risks row (owner pm) until pm names the ticket (the loop stops `unowned` at the next fix anyway).
+- **Brief** — head (Item, Key, Read and Write `.team/TASKS.md`, User's language), the qa-lines board-sync line, then one line per ticket. A workflow sends it only when a status changed; it returns `board` (`{tickets: [{ticket, status, findings}], unassigned}`) in every result, which the session's last sync uses.
+- **Agent time** — measured, never guessed: spawn → passed handoff for each of the ticket's build and fix agents, summed (inline: your clock; workflow: the first → last timestamp of each `<role>:<ticket>` and `fix:<ticket>:r<n>` agent in the run's transcripts). Unmeasured → no value; pm keeps the cell.
+- **Cost** — one pm spawn on `effort: low` with a ~15-line brief and one Edit of `TASKS.md`, at most 2 per round. pm deciding from the handoffs instead needs every handoff verbatim and the plan skill each round, costs more, and can disagree with the item: two truths.
+- A sync that fails never stops the loop; the next one carries the whole board.
+
 ## Challenges
 
 A fixer who can show a finding is wrong returns it `challenged` with evidence instead of coding around it; the finder's next gate run settles it, with no extra round.

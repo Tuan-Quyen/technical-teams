@@ -213,7 +213,7 @@ test('reviewers and qa write no report file below T2; titles are capped at 8 wor
 
 test('inline runs use the same brief lines: each is verbatim in run-kit qa-lines.md', () => {
   const doc = read('skills/run-kit/references/qa-lines.md');
-  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT', 'FIX_RULE', 'CHALLENGE_REPLY']) assert.ok(doc.includes(constant(n)), `qa-lines.md carries ${n} verbatim`);
+  for (const n of ['FINDING_RULE', 'QA_PRECHECK', 'QA_FIRST', 'QA_RETEST', 'NO_REPORT', 'FIX_RULE', 'CHALLENGE_REPLY', 'BOARD_SYNC']) assert.ok(doc.includes(constant(n)), `qa-lines.md carries ${n} verbatim`);
   assert.match(SRC, /^const ROUND_CAP = 3$/m);
   assert.equal(ROUND_CAP, 3, 'team-state.mjs and build-loop.js share the cap');
 });
@@ -339,4 +339,48 @@ test('not run is never PASS: a qa PASS listing unrun checks stops for the user i
   assert.ok(!labels.includes('writer'), 'no docs before the user decides');
   assert.match(result.item.verdicts.qa, /^PASS · r0 · not-run: AC3 live check$/);
   assert.match(result.item.next, /^Ask the user/);
+});
+
+// ---- board sync (run-kit qa-loop § Board sync): statuses derived from the item; pm only writes them ----
+const five = () => [[ticket('CART-T1', ['src/a']), ticket('CART-T2', ['src/b'])], [ticket('CART-T3', ['src/c'])], [ticket('CART-T4', ['src/d']), ticket('CART-T5', ['src/e.js'])]];
+const syncData = (calls) => calls.filter((c) => c.label.startsWith('board-sync')).map((c) => c.prompt.split('<finding-data>\n')[1].split('\n</finding-data>')[0]);
+
+test('board sync walk-through: build → review FAIL on T3 and T5 → fix → PASS; pm gets the derived statuses, the session gets the last board', async () => {
+  let reviews = 0;
+  const { result, labels, calls } = await run(baseArgs({ groups: five(), boardBrief: 'Item: fix-discount · Key: CART · Step: board sync' }), (c) => {
+    if (c.label === 'review:code-reviewer' && ++reviews === 1) return { ...ok(c.label), verdict: 'FAIL', findings: [bug({ file: 'src/c/cart.js' }), bug({ title: 'Total ignores tax', file: 'src/e.js', test: 'test/e.test.js::tax' })] };
+    return undefined;
+  });
+  assert.equal(result.status, 'done');
+  assert.deepEqual(labels.filter((l) => l.startsWith('board-sync')), ['board-sync:r0', 'board-sync:r0', 'board-sync:r1']);
+  assert.ok(labels.indexOf('board-sync:r1') < labels.lastIndexOf('qa'), 'the r1 sync runs before qa');
+  assert.deepEqual(syncData(calls), [
+    'CART-T1 review\nCART-T2 review\nCART-T3 review\nCART-T4 review\nCART-T5 review',
+    'CART-T1 review\nCART-T2 review\nCART-T3 doing · F1\nCART-T4 review\nCART-T5 doing · F2',
+    'CART-T1 review\nCART-T2 review\nCART-T3 review\nCART-T4 review\nCART-T5 review',
+  ]);
+  for (const c of calls.filter((x) => x.label.startsWith('board-sync'))) {
+    assert.equal(c.agentType, 'technical-team:team-pm');
+    assert.ok(c.prompt.includes(constant('BOARD_SYNC')));
+  }
+  assert.deepEqual(result.board.tickets.map((t) => t.status), ['done', 'done', 'done', 'done', 'done'], 'PASS: the session runs the last sync with every ticket done');
+});
+
+test('board sync: no boardBrief (fix, T0/T1) spawns no pm; the result still carries the board', async () => {
+  const { result, labels } = await run(baseArgs());
+  assert.ok(!labels.some((l) => l.startsWith('board-sync')));
+  assert.deepEqual(result.board, { tickets: [{ ticket: 'CART-T1', status: 'done', findings: [] }], unassigned: [] });
+});
+
+test('board sync: a finding maps by owner, then by file; none → unassigned; at the cap its ticket is blocked', async () => {
+  const item = baseItem({ round: ROUND_CAP, findings: [
+    { id: 'F1', title: 'Saves twice', by: 'qa', severity: 'major', blocking: true, status: 'open', test: 't::a', owner: 'CART-T2', file: '' },
+    { id: 'F2', title: 'Loses tax', by: 'qa', severity: 'major', blocking: true, status: 'reopened', test: 't::b', file: 'src/a/x.js' },
+    { id: 'F3', title: 'Breaks config', by: 'qa', severity: 'major', blocking: true, status: 'open', test: 't::c', file: 'config/z.js' },
+  ] });
+  const { result, labels } = await run(baseArgs({ item, startAt: 'review', groups: [[ticket('CART-T1', ['src/a']), ticket('CART-T2', ['src/b'])]], boardBrief: 'Item: fix-discount' }));
+  assert.equal(result.status, 'blocked');
+  assert.deepEqual(labels, [], 'blocked at the cap before any agent');
+  assert.deepEqual(result.board.tickets.map((t) => [t.ticket, t.status, t.findings.join(' ')]), [['CART-T1', 'blocked', 'F2'], ['CART-T2', 'blocked', 'F1']]);
+  assert.deepEqual(result.board.unassigned, [{ id: 'F3', file: 'config/z.js' }]);
 });

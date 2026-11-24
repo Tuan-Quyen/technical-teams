@@ -15,6 +15,15 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 - "Add tests / is this covered". No production code changes.
 - Scope: an item slug, a path, or the current changes (`git diff --stat`). Criteria: `.team/requirements/<slug>.md` if it exists, else documented or current behaviour (qa lists what it assumed).
 
+## As a step
+
+| Mode | Parent step | Runs | Hands back |
+|---|---|---|---|
+| `pre-check` | `feature` 5 (T2), `fix` 3 (T2), `new` 4 | step 2 before any code, with the qa-lines pre-check line | checks and the regression test; a spec issue stops the parent for its owner |
+| `gate` | `feature` 8, `fix` 6, `new` 4 | step 2 on the parent item: the qa-lines execution line the first time, then the retest line with the known findings; the run whose PASS closes the item adds the leftovers line | the verdict (`verdicts.qa`, with not-run), findings and leftovers in the parent item; FAIL → the parent's `fix` (findings) |
+
+Steps 3–4 do not run as a step; no `ISSUES.md` rows except the leftovers line's.
+
 ## Steps
 
 | # | Step | Agent | Gate / verify |
@@ -29,4 +38,5 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 
 ## Done when
 
+- As a step: the verdict, findings and not-run checks are in the parent item.
 - The missing tests exist and ran; every failure is an `ISSUES.md` row or a finding for developer.

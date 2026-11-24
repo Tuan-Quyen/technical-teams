@@ -1,9 +1,9 @@
 # Task board
 
-> Owner: **team-pm** — sprints, tickets, estimates, progress, risks, status report. Everyone else reads it. Status: todo · doing · blocked · review · done.
+> Owner: **team-pm** — sprints, tickets, estimates, progress, risks, status report. Everyone else reads it. Status: todo · doing · blocked · review · done — during a build loop derived from `.team/items/<slug>.json` at each board sync; the item wins when they disagree.
 > Item = epic: one `##` section per item. Tickets that run in parallel must have disjoint `Files`.
 > IDs: `<KEY>-T<n>` ticket · `<KEY>-AC<n>` acceptance criterion; KEY is the item's `key`; the heading starts with the item's label (`[CART] [CHECKOUT]`, see STATE.md) · `S<n>` sprint · `R<n>` risk. Findings (`F1`) live in `.team/items/<slug>.json`, never as tickets. Write an ID with its summary the first time in a line: `CART-T2 (save button)`.
-> `Est (d)` is days of real work for a human engineer (an assumption, 0.5-day steps, ≤ 2d per ticket); `Agent time` only from measured time in a status brief (`25m`), `–` until then. Sprint days count `Est (d)`.
+> `Est (d)` is days of real work for a human engineer (an assumption, 0.5-day steps, ≤ 2d per ticket); `Agent time` only from measured time in a status or board-sync brief (`25m`), `–` until then. Sprint days count `Est (d)`.
 > **Budget:** open tickets only, one row each, `Summary` ≤ 12 words. Done tickets collapse into one `Done:` line per item (ID ranges, with their days); closed sprints into one line under Sprints; their detail stays in git.
 
 ## Sprints

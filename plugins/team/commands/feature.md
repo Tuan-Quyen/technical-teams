@@ -26,10 +26,10 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 | 2 | Design | `technical-team:team-designer` → `.team/frontend-design/<slug>.md` | every AC has a screen |
 | 3 | System design | `technical-team:team-architect` → `.team/system-design/<slug>.md` (+ `technical-team:team-dba` for schema) | show a summary, wait for the user's OK |
 | 4 | Tickets | `technical-team:team-pm` → `.team/TASKS.md` | the plan-tickets code check |
-| 5 | QA pre-check | `technical-team:team-qa` (qa-lines pre-check line) | a spec issue stops the build |
-| 6 | Build | `technical-team:team-developer` per ticket (migrations → `technical-team:team-dba`) | build, lint and test evidence in the Handoff |
-| 7 | Review | `technical-team:team-code-reviewer`; ∥ `technical-team:team-security` when the diff touches auth, user input, secrets, payments or personal data; ∥ `technical-team:team-dba` when it touches schema or queries | PASS, or blocking findings → step 6 |
-| 8 | Test | `technical-team:team-qa` (qa-lines execution line, then retest) | PASS, or blocking findings → step 6 |
+| 5 | QA pre-check | `test` (as a step: pre-check) | a spec issue stops the build |
+| 6 | Build | `technical-team:team-developer` per ticket (migrations → `technical-team:team-dba`) | build, lint and test evidence in the Handoff; board sync |
+| 7 | Review | `review` (as a step: gate): code-reviewer; ∥ security when the diff touches auth, user input, secrets, payments or personal data; ∥ dba when it touches schema or queries | PASS, or blocking findings → `fix` (as a step: findings); board sync |
+| 8 | Test | `test` (as a step: gate) | PASS, or blocking findings → `fix` (as a step: findings), then 7 and 8 again; board sync |
 | 9 | Docs | `technical-team:team-writer` if usage, API or operations changed | – |
 | 10 | Close | orchestrator §6 | the owner's closing call |
 
@@ -48,13 +48,13 @@ Load `technical-team:run-kit` and run this per its §2 *Running a pipeline*.
 | 9 | — | if needed | if needed |
 
 - With `--small`: exactly one ticket (one developer, `groups: [[one item]]`), no parallel groups, no ticket split by the orchestrator.
-- Blocking findings from step 7 or 8 → step 6 as one batch, then review and retest (run-kit `qa-loop.md`); unclear cause → `technical-team:team-debugger`.
+- Blocking findings from step 7 or 8 → `fix` (as a step: findings) as one batch, then review and retest (run-kit `qa-loop.md`); unclear cause → `fix` (as a step: symptom). Board sync only at T2 (tickets on the board).
 
 ## Workflow
 
 **Tickets (T2, step 4)** — **Workflow** (run-kit §2 opt-in): call Workflow with `name: 'technical-team:team-plan-tickets'` (`${CLAUDE_PLUGIN_ROOT}/workflows/plan-tickets.js`) and `args` = `{slug, key, pmBrief, maxRounds, context, root}` (tickets are `<KEY>-T<n>`; ask pm for a `group` number per ticket). It checks ids, roles, files, ACs, dependencies and overlap in code and sends violations back to pm (up to `maxRounds`, default 2). `done` → `groups` (add one brief per ticket) is the build loop's `groups`. Route the rest per run-kit §6.
 
-**Build loop (steps 5–9)** — **Workflow** (run-kit §2 opt-in): call Workflow with `name: 'technical-team:team-build-loop'` (`${CLAUDE_PLUGIN_ROOT}/workflows/build-loop.js`) and `args` = `{item, groups, reviewBriefs, qaPlanBrief, qaBrief, writerBrief, startAt, fromGroup, root, context, date}`, the briefs only for the steps the tier runs:
+**Build loop (steps 5–9)** — **Workflow** (run-kit §2 opt-in): call Workflow with `name: 'technical-team:team-build-loop'` (`${CLAUDE_PLUGIN_ROOT}/workflows/build-loop.js`) and `args` = `{item, groups, reviewBriefs, qaPlanBrief, qaBrief, writerBrief, boardBrief, startAt, fromGroup, root, context, date}`, the briefs only for the steps the tier runs (`boardBrief`: T2, run-kit `qa-loop.md` § Board sync):
 - `item`: `.team/items/<slug>.json` as it is. `groups`: `[[{ticket, role, brief, files}]]` in dependency order; disjoint files share a group; `role` is `developer` or `dba`.
 - `reviewBriefs`: `{"code-reviewer": …, "security": …, "dba": …}` as step 7 says. `qaPlanBrief` (T2), `qaBrief` (T1, T2), `writerBrief` (step 9). `root`: the repo's absolute path. `date`: today (`YYYY-MM-DD`), stamped on the loop's `decisions`. The script appends the qa-loop lines and runs the group check.
 - It returns `{status, item, round, cap, handoffs, needsUser}`: write `item` back first, then route per run-kit §6.

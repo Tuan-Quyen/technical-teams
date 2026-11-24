@@ -69,7 +69,7 @@ Every prompt file follows the skeleton of its type; `tests/structure.test.mjs` c
 | Type | Skeleton |
 |---|---|
 | Agent (`agents/*.md`) | `# <Role>` · bold one-line mission · `## Inputs` · `## Before you start` · `## Work` (numbered steps, `→ verify:` where a step has a check) · `## Done when` · `## Stop and report` · `## Writes` · `## Never` |
-| Command (`commands/*.md`) | `# /technical-team:<name>` · request + run-kit line · `## When to use` · `## Steps` (table `\| # \| Step \| Agent \| Gate / verify \|`) · `## Workflow` (only with a workflow) · `## Done when` |
+| Command (`commands/*.md`) | `# /technical-team:<name>` · request + run-kit line · `## When to use` · `## As a step` (blocks only: fix, infra, release, review, standup, test — table `\| Mode \| Parent step \| Runs \| Hands back \|`) · `## Steps` (table `\| # \| Step \| Agent \| Gate / verify \|`) · `## Workflow` (only with a workflow) · `## Done when` |
 | Method skill (`SKILL.md`) | `# <skill> — purpose` · `## When to load` · `## Principles` (each `### n. title` → bold rule → bullets → `Test:` line) · `## Method` · `## Done when` · `## References` (table) |
 | Reference (`references/*.md`) | `# <title>` · `> Used by: <role> · Read when: <step>` · its sections |
 

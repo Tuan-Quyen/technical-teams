@@ -6,11 +6,14 @@
 //   groups: [[{ticket, role: 'developer'|'dba'|'devops', brief, files: [paths]}]],  // dependency order; a group runs in parallel
 //   reviewBriefs: {'code-reviewer', security?, dba?},
 //   qaPlanBrief?, qaBrief?, writerBrief?, context?,
+//   boardBrief?,     // an item with tickets on .team/TASKS.md: the head of pm's board-sync brief (Item, Key, Read/Write TASKS.md, language)
 //   startAt?: 'plan'|'build'|'review'|'qa' (default 'plan' with a qaPlanBrief, else 'build'), fromGroup?, root?,
 //   date?            // today, YYYY-MM-DD: stamped on the decisions a challenge outcome writes
 // }
 // Every result carries `item`: the orchestrator writes it back to .team/items/<slug>.json verbatim (the hook validates it and
 // regenerates STATE.md) and passes it on the next call. One round counter for review and qa fixes; the cap is code.
+// `board` is each ticket's status derived from the item (run-kit qa-loop § Board sync). With a boardBrief, pm writes it into
+// TASKS.md after the build and after each gate round; the last sync (done, cap, stall) is the session's, with agent time.
 export const meta = {
   name: 'team-build-loop',
   description: 'qa pre-check, build tickets, review (code-reviewer, security, dba), qa and docs, fixing each round\'s blocking findings in one batch until PASS, a stalled finding, or the round cap',
@@ -67,6 +70,7 @@ const QA_LEFTOVERS = 'Leftovers (this line adds .team/ISSUES.md to your Write): 
 const QA_RETEST = 'QA mode: retest. Re-check only the findings listed below and re-run the test suite; no new exploratory scope. A new finding only for a regression the fix caused.'
 const NO_REPORT = 'Write no report file at this tier, even if a Write line above names one: the verdict and findings go in the structured output only.'
 const FIX_RULE = 'Fix: fix the cause, never special-case a test, its data or its input. Return each finding below by its id with result fixed, or challenged when you can show it is wrong (its test asserts what no AC or spec says, it is out of scope, or it conflicts with the spec), with the evidence in detail: the AC or spec line, or a command and its output. One marked "challenged before" can no longer be challenged. Challenge on evidence, never to skip work.'
+const BOARD_SYNC = 'PM mode: board sync. Set each ticket listed below to the status it names and change nothing else: no re-plan, no estimate, no other column, no status report. done: collapse it into the item\'s Done: line (ID ranges with their Est (d) sum), but keep its row while a ticket not done depends on it; the current sprint\'s done is the Est (d) sum of its done tickets. A ticket on a Done: line listed with another status gets its row back. blocked: put it on the Blocked: line with its findings and add one open Risks row (Source <slug>#F<n>, Owner orchestrator); a ticket no longer blocked leaves that line. unassigned: one open Risks row for that finding (Owner pm). Agent time: the value after the status, else leave the cell as it is.'
 const CHALLENGE_REPLY = 'Challenged findings are listed below with the fixer\'s evidence. Return each one of yours by its id with result conceded when the evidence holds, or maintained with your counter-evidence in detail. Concede only on evidence, never to end the loop; maintain only on evidence, never to win. Your verdict counts only the findings you maintain.'
 
 const clean = (v, max = 300) => String(v == null ? '' : v).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max)
@@ -123,12 +127,13 @@ const needsUser = []
 let nextNo = Math.max(0, ...item.findings.map((f) => Number(f.id.slice(1)))) + 1
 const openBlocking = () => item.findings.filter((f) => f.blocking && !CLOSED.includes(f.status))
 const set = (step, status, next) => { item.step = step; item.status = status; item.next = short(next, 30) }
-const out = (status, extra = {}) => ({ status, ...extra, item, round: item.round, cap: ROUND_CAP, handoffs, needsUser })
+const out = (status, extra = {}) => ({ status, board: board(), ...extra, item, round: item.round, cap: ROUND_CAP, handoffs, needsUser })
 const stop = (stage, entry, next) => {
   needsUser.push({ stage, round: item.round, ...entry })
   set(stage.toLowerCase(), 'waiting-for-user', next || `Orchestrator: settle ${entry.status} at ${stage}, then re-run`)
   log(`${stage}: ${entry.status}`)
-  return out('stopped', { stoppedAt: stage })
+  // A stalled finding blocks its ticket on the board, as the cap does.
+  return out('stopped', { stoppedAt: stage, ...(entry.status === 'stalled' ? { board: board(entry.findings) } : {}) })
 }
 // Records an agent result; false = the loop stops here (nothing is guessed).
 const check = (res, label, stage) => {
@@ -209,6 +214,38 @@ const arbitrate = async (bys, phaseName) => {
   return spec
 }
 
+// ---- board sync: each ticket's status derived from the item; pm only writes it (run-kit qa-loop § Board sync) ----
+// A finding's ticket: its owner, the ticket whose files hold its file, or the only ticket; none → unassigned.
+const ownerOf = (f) => {
+  const file = safePath(f.file)
+  return tickets.find((x) => x.ticket === f.owner) || (file && tickets.find((x) => owns(x, file))) || (tickets.length === 1 ? tickets[0] : null)
+}
+const built = new Set(startAt === 'review' || startAt === 'qa' ? tickets : groups.slice(0, a.fromGroup || 0).flat())
+const board = (stuck = [], done = false) => {
+  const rows = new Map(tickets.map((t) => [t, { ticket: t.ticket, status: done ? 'done' : built.has(t) ? 'review' : 'todo', findings: [] }]))
+  const unassigned = []
+  if (!done) for (const f of openBlocking()) {
+    const t = ownerOf(f)
+    if (!t) { unassigned.push({ id: f.id, file: f.file || '' }); continue }
+    const r = rows.get(t)
+    r.findings.push(f.id)
+    if (stuck.includes(f.id)) r.status = 'blocked'
+    else if (!PENDING.includes(f.status) && r.status !== 'blocked') r.status = 'doing'
+  }
+  return { tickets: [...rows.values()], unassigned }
+}
+const boardLines = (b) => [...b.tickets.map((r) => `${r.ticket} ${r.status}${r.findings.length ? ` · ${r.findings.join(' ')}` : ''}`), ...b.unassigned.map((u) => `unassigned ${u.id} ${u.file || '-'}`)]
+let synced = ''
+// A board sync never stops the loop: the board is a view and the item the truth; a missed sync is carried by the next one.
+const sync = async (phaseName) => {
+  if (!a.boardBrief) return
+  const lines = boardLines(board())
+  if (lines.join('\n') === synced) return
+  const res = await agent([a.boardBrief, BOARD_SYNC, dataBlock(lines), CONTRACT].join('\n'), { label: `board-sync:r${item.round}`, phase: phaseName, agentType: agentType('pm'), effort: 'low', schema: RESULT })
+  if (res && res.status === 'done') { synced = lines.join('\n'); handoffs['board-sync'] = clean(res.handoff, 800) }
+  else log('board-sync: pm did not confirm; the next sync carries the whole board')
+}
+
 // ---- stages ----
 const dev = (label, prompt, role = 'developer') => agent(prompt, { label, phase: 'Build', agentType: agentType(role), schema: RESULT })
 const mini = (goal, files) => [
@@ -273,8 +310,7 @@ const fixBatch = async (batch) => {
   const per = new Map()
   const unowned = []
   for (const f of batch) {
-    const file = safePath(f.file)
-    const t = tickets.find((x) => x.ticket === f.owner) || (file && tickets.find((x) => owns(x, file))) || (tickets.length === 1 ? tickets[0] : null)
+    const t = ownerOf(f)
     if (!t) unowned.push(f.id)
     else per.set(t, [...(per.get(t) || []), f])
   }
@@ -310,7 +346,7 @@ const specNext = (ids) => `Route ${ids.join(', ')} to the spec owner (ba, design
 const blockers0 = openBlocking()
 if (item.round >= ROUND_CAP && blockers0.some((f) => !PENDING.includes(f.status))) {
   set('blocked', 'blocked', `Ask the user: ${blockers0.map((f) => f.id).join(', ')} still fail after round ${ROUND_CAP}`)
-  return out('blocked', { blockers: blockers0 })
+  return out('blocked', { blockers: blockers0, board: board(blockers0.map((f) => f.id)) })
 }
 
 if (startAt === 'plan') {
@@ -327,7 +363,9 @@ if (startAt === 'plan' || startAt === 'build') {
     if (i < (a.fromGroup || 0)) continue
     log(`build group ${i + 1}/${groups.length}: ${group.map((t) => t.ticket).join(', ')}`)
     if (!(await buildGroup(group))) return halted('Build')
+    group.forEach((t) => built.add(t))
   }
+  await sync('Build')
 }
 
 let skipReview = startAt === 'qa'
@@ -337,6 +375,7 @@ for (;;) {
     phase('Review')
     gate = await reviewRound()
     if (!gate) return halted('Review')
+    if (gate.verdict === 'FAIL' || a.qaBrief) await sync('Review')
     if (gate.spec.length) return stop('Review', { role: 'arbiter', status: 'spec-issue', findings: gate.spec }, specNext(gate.spec))
     if (gate.left.length) return stop('Review', { role: 'review', status: 'retest-incomplete', findings: gate.left.map((f) => f.id) })
     if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Review', { role: 'review', status: 'fail-without-blocker', note: 'review FAIL with no blocking finding that has a test; send it back to the gate for the test or a PASS' })
@@ -346,6 +385,7 @@ for (;;) {
     phase('Test')
     gate = await qaRound()
     if (!gate) return halted('Test')
+    if (gate.verdict === 'FAIL') await sync('Test')
     if (gate.spec.length) return stop('Test', { role: 'arbiter', status: 'spec-issue', findings: gate.spec }, specNext(gate.spec))
     if (gate.left.length) return stop('Test', { role: 'qa', status: 'retest-incomplete', findings: gate.left.map((f) => f.id) })
     if (gate.verdict === 'FAIL' && !openBlocking().length) return stop('Test', { role: 'qa', status: 'fail-without-blocker', note: 'qa FAIL with no blocking finding that has a test; send it back to qa for the test or a PASS' })
@@ -359,7 +399,7 @@ for (;;) {
   if (item.round >= ROUND_CAP) {
     set('blocked', 'blocked', `Ask the user: ${batch.map((f) => f.id).join(', ')} still fail after round ${ROUND_CAP}`)
     needsUser.push({ stage: 'Fix', round: item.round, status: 'BLOCKED_PENDING_USER_DECISION', findings: batch.map((f) => ({ id: f.id, title: f.title, test: f.test, severity: f.severity })) })
-    return out('blocked', { blockers: batch })
+    return out('blocked', { blockers: batch, board: board(batch.map((f) => f.id)) })
   }
   phase('Build')
   const fixed = await fixBatch(batch)
@@ -376,4 +416,4 @@ if (a.writerBrief) {
 }
 set('done', 'done', 'Orchestrator: report to the user and close the item (archive, delete the item JSON)')
 log(`done at round ${item.round} of ${ROUND_CAP}`)
-return out('done')
+return out('done', { board: board([], true) })

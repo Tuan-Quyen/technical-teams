@@ -35,6 +35,7 @@ Output: the Sprints, Risks and Status report sections of `.team/TASKS.md` from `
 
 ## Status updates
 
+- A board-sync brief carries statuses derived from the item: apply them as its mode line says, nothing more. A standup that finds `TASKS.md` behind an item follows the item.
 - A status brief carries handoffs and gate verdicts, not statuses: you decide each ticket's status. `done` only when its evidence holds (developer handoff, review PASS, qa PASS as the pipeline requires); `review` while a gate is open; `Agent time` from the measured time it gives, else `–`.
 - `blocked` with a reason ≤ 15 words; done tickets collapse into the `Done:` line (ID ranges), per the template Budget.
 

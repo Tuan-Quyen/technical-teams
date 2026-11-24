@@ -4,7 +4,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
 - **Orchestrator (`team-orchestrator`)**: điều phối — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ trạng thái từng item trong `.team/items/<slug>.json` (`.team/STATE.md` được sinh ra từ đó) để làm tiếp được khi session bị limit hoặc mở session mới.
 - **13 agent chuyên môn**: mỗi agent một vai trò, prompt ngắn, ghi đúng file của mình theo template.
-- **11 lệnh**: `run` (giao cho orchestrator tự phân loại) + `triage` (xếp hạng issue) + `standup` (báo cáo tiến độ sprint) + `retrospect` (nhìn lại các phiên đã chạy, đề xuất sửa team) + 7 pipeline, mỗi pipeline xử lý một loại vấn đề.
+- **11 lệnh**: `run` (giao cho orchestrator tự phân loại) + `triage` (xếp hạng issue) + `standup` (báo cáo tiến độ sprint) + `retrospect` (nhìn lại các phiên đã chạy, đề xuất sửa team) + 7 pipeline. `run`, `feature`, `new` là pipeline **cha**; `fix`, `review`, `test`, `infra`, `release`, `standup` là **khối**: chạy riêng được, và được pipeline cha ghép vào làm một bước (`review` (as a step: gate), `fix` (as a step: findings), `standup` (as a step: sync) để đồng bộ Task board…).
 - **Màu phân loại agent**: mỗi agent có một `color:` trong frontmatter (nhãn trong UI + badge khi orchestrator spawn).
 - **14 template** trong `plugins/team/templates/`, chia folder theo loại (`core/`, `requirements/`, `design/`, `adr/`, `reports/`).
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Orchestrator nạp khi cần; không tự spawn ai.
@@ -55,7 +55,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 |---|---|---|
 | `/technical-team:run` | bất kỳ; orchestrator tự phân loại (trống = resume) | theo pipeline orchestrator chọn |
 | `/technical-team:feature` | làm tính năng (`--small` = T0, `--tier T0\|T1\|T2`) | theo tier, bảng dưới |
-| `/technical-team:fix` | sửa bug | T1: debugger → developer (regression test trước, rồi sửa) → code-reviewer (∥ security) → qa · T2 thêm qa pre-check |
+| `/technical-team:fix` | sửa bug; bug thuộc ticket trên board (`CART-T3`) → Task board được đồng bộ | T1: debugger → developer (regression test trước, rồi sửa) → [`review` → `test` → fix]* · T2 thêm qa pre-check |
 | `/technical-team:review` | review diff, không sửa code; finding không thuộc item nào → đề xuất `triage` để qa nhập vào `ISSUES.md` | code-reviewer ∥ security (∥ dba) |
 | `/technical-team:test` | bổ sung và chạy test | qa |
 | `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
