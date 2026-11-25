@@ -4,5 +4,6 @@ Thumbs.db
 node_modules/
 *.log
 .team/
+.demo/
 docs/
 plugins/team/evals/results/
