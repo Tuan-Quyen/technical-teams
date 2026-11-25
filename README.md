@@ -1,5 +1,7 @@
 # technical-team
 
+<img src=".github/assets/hero.png" alt="technical-team: Plugin Claude Code gồm một team kỹ thuật gọn nhẹ, với nhân vật team-developer, team-orchestrator và team-qa" width="100%">
+
 Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 
 - **Orchestrator (`team-orchestrator`)**: điều phối — phân loại yêu cầu, chọn pipeline, spawn agent tuần tự hoặc song song, giữ trạng thái từng item trong `.team/items/<slug>.json` (`.team/STATE.md` được sinh ra từ đó) để làm tiếp được khi session bị limit hoặc mở session mới.
@@ -10,17 +12,7 @@ Plugin Claude Code gồm một team kỹ thuật gọn nhẹ:
 - **`run-kit`**: tài liệu tra cứu khi chạy team — roster, các lệnh pipeline, cách viết brief, workspace `.team/`, handoff. Orchestrator nạp khi cần; không tự spawn ai.
 - **5 skill** nạp khi cần: `business-analysis` (spec), `plan` (thiết kế + ticket + lập sprint: ai tham gia bước nào, xếp theo priority, vừa capacity, board), `development-process` (code + unit test + evidence), `test-process` (QA), `retrospect` (playbook audit team: nguồn, ngưỡng tín hiệu, luật evidence, report, tự phản biện; kèm script `retro-miner.mjs` đọc transcript).
 
-```
-bạn ──▶ /technical-team:run "login trả 500"
-            │
-            ▼
-        team-orchestrator ── phân loại: bug ──▶ pipeline fix
-            │   ghi items/<slug>.json trước/sau mỗi bước
-            ▼
-        debugger ──▶ qa pre-check ──▶ developer ──▶ code-reviewer ──▶ qa ──▶ đóng item
-                     (regression test)    ▲               │ FAIL         │ FAIL
-                                          └───────────────┴──────────────┘
-```
+<img src=".github/assets/pipeline.png" alt="/technical-team:fix, sửa bug: debugger tìm root cause; qa pre-check chỉ chạy ở T2; developer viết regression test trước rồi sửa; code-reviewer rồi qa; FAIL ở code-reviewer hoặc qa quay lại developer, vòng QA-Fix round tối đa 3; xong thì đóng item.">
 
 Plugin không gắn với ngôn ngữ hay framework nào: agent tự đọc stack, convention và lệnh build/test của repo.
 
@@ -51,19 +43,27 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 
 ## Lệnh
 
-| Lệnh | Vấn đề | Agent được spawn |
-|---|---|---|
-| `/technical-team:run` | bất kỳ; orchestrator tự phân loại (trống = resume) | theo pipeline orchestrator chọn |
-| `/technical-team:feature` | làm tính năng (`--small` = T0, `--tier T0\|T1\|T2`) | theo tier, bảng dưới |
-| `/technical-team:fix` | sửa bug; bug thuộc ticket trên board (`CART-T3`) → Task board được đồng bộ | T1: debugger → developer (regression test trước, rồi sửa) → [`review` → `test` → fix]* · T2 thêm qa pre-check |
-| `/technical-team:review` | review diff, không sửa code; finding không thuộc item nào → đề xuất `triage` để qa nhập vào `ISSUES.md` | code-reviewer ∥ security (∥ dba) |
-| `/technical-team:test` | bổ sung và chạy test | qa |
-| `/technical-team:infra` | CI/CD, Docker, deploy | devops → code-reviewer ∥ security → writer |
-| `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO; issue mở blocker/critical/P1 → NO-GO trừ khi bạn chấp nhận; release notes có Known issues | qa ∥ security ∥ devops (∥ dba) → writer |
-| `/technical-team:new` | project mới từ ý tưởng/PRD | ba → architect ∥ designer → pm → từng milestone như `feature` (qa pre-check trước) → release |
-| `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` | qa (severity) → ba ∥ architect (∥ security) tư vấn → pm (priority) |
-| `/technical-team:retrospect` | nhìn lại 7–30 ngày (mặc định 14) các phiên Claude Code dùng **phiên bản plugin hiện tại** (bản cũ bị bỏ qua): `team-retrospector` đọc transcript local, đối chiếu với file của plugin, so metric với lần retro trước (Δ theo version) rồi đề xuất thêm/bớt/sửa agent, skill, command, hook, workflow kèm evidence; bạn chọn cái để áp dụng. Report ngắn (≤ 600 từ, paste được vào prompt) `.team/retrospect/<ngày>/retrospect.md`: đề xuất new / update / delete chia theo Agents · Skills · Commands, mỗi đề xuất có Why · Improves which part · Workflow · Committed improvement (metric hiện tại → mục tiêu); draft đầy đủ ở `drafts/`, diff ở `changes.md`; không sửa plugin | retrospector |
-| `/technical-team:standup` | báo cáo trạng thái trên Task board `.team/TASKS.md`: việc xong / đang làm, blocker, rủi ro, burn của sprint. `close` = đóng sprint (review ngày cam kết vs xong, carry-over), `plan [<tuần> <ngày>] [<mục tiêu/epic>]` = lập sprint theo skill `plan` (ba spec + Must/Should/Could → architect → pm chia ticket, xếp theo priority vừa capacity, critical path) và chỉ mở sprint khi bạn OK. Chỉ chạy khi bạn yêu cầu | pm (`plan`: + ba, designer, architect) |
+| Lệnh | Vấn đề |
+|---|---|
+| `/technical-team:run` | bất kỳ; orchestrator tự phân loại (trống = resume) |
+| `/technical-team:feature` | làm tính năng (`--small` = T0, `--tier T0\|T1\|T2`) |
+| `/technical-team:fix` | sửa bug; bug thuộc ticket trên board (`CART-T3`) → Task board được đồng bộ |
+| `/technical-team:review` | review diff, không sửa code; finding không thuộc item nào → đề xuất `triage` để qa nhập vào `ISSUES.md` |
+| `/technical-team:test` | bổ sung và chạy test |
+| `/technical-team:infra` | CI/CD, Docker, deploy |
+| `/technical-team:release` | kiểm tra sẵn sàng phát hành, GO/NO-GO; issue mở blocker/critical/P1 → NO-GO trừ khi bạn chấp nhận; release notes có Known issues |
+| `/technical-team:new` | project mới từ ý tưởng/PRD |
+| `/technical-team:triage` | xếp hạng danh sách issue trong `.team/ISSUES.md` (nhận thêm file/list rời), gộp trùng, bạn chọn cái để fix. `/run` tự dùng khi: bạn đưa nhiều bug/issue một lúc, `/run` trống mà không có item mở, hoặc đóng item còn ≥5 dòng `new` |
+| `/technical-team:retrospect` | nhìn lại 7–30 ngày (mặc định 14) các phiên Claude Code dùng **phiên bản plugin hiện tại** (bản cũ bị bỏ qua): `team-retrospector` đọc transcript local, đối chiếu với file của plugin, so metric với lần retro trước (Δ theo version) rồi đề xuất thêm/bớt/sửa agent, skill, command, hook, workflow kèm evidence; bạn chọn cái để áp dụng. Report ngắn (≤ 600 từ, paste được vào prompt) `.team/retrospect/<ngày>/retrospect.md`: đề xuất new / update / delete chia theo Agents · Skills · Commands, mỗi đề xuất có Why · Improves which part · Workflow · Committed improvement (metric hiện tại → mục tiêu); draft đầy đủ ở `drafts/`, diff ở `changes.md`; không sửa plugin |
+| `/technical-team:standup` | báo cáo trạng thái trên Task board `.team/TASKS.md`: việc xong / đang làm, blocker, rủi ro, burn của sprint. `close` = đóng sprint (review ngày cam kết vs xong, carry-over), `plan [<tuần> <ngày>] [<mục tiêu/epic>]` = lập sprint theo skill `plan` (ba spec + Must/Should/Could → architect → pm chia ticket, xếp theo priority vừa capacity, critical path) và chỉ mở sprint khi bạn OK. Chỉ chạy khi bạn yêu cầu |
+
+<img src=".github/assets/pipeline-feature.png" alt="/technical-team:feature làm tính năng theo tier. T0: developer rồi code-reviewer. T1: ba, developer, rồi code-reviewer chạy song song với security và dba (tùy chọn, khi diff chạm tới), cuối cùng qa. T2: ba, designer (tùy chọn), architect kèm dba, pm, qa pre-check, developer, code-reviewer song song với security, qa, rồi writer.">
+
+<img src=".github/assets/pipeline-review-release.png" alt="/technical-team:review: code-reviewer chạy song song với security, thêm dba khi diff có migration; không sửa code. /technical-team:release: qa, security, devops chạy song song, thêm dba khi có migration; sau đó writer viết release notes, rồi ra quyết định GO hoặc NO-GO.">
+
+<img src=".github/assets/pipeline-new.png" alt="/technical-team:new, project mới từ ý tưởng hoặc PRD: ba, rồi architect chạy song song với designer (khi có giao diện), rồi pm chia milestone. Mỗi milestone: qa pre-check, developer, review, test; có lỗi thì sửa và quay lại developer. Cuối cùng chạy release.">
+
+<img src=".github/assets/pipeline-triage.png" alt="/technical-team:triage, xếp hạng issue trong .team/ISSUES.md: qa đánh giá mức độ nghiêm trọng, rồi ba và architect (thêm security khi cần) cùng tư vấn song song, rồi pm đặt độ ưu tiên; cuối cùng bạn chọn issue để sửa.">
 
 `→` là tuần tự, `∥` là song song.
 
@@ -80,6 +80,8 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 `review`, `release` và vòng (qa pre-check →) build → review → qa của `feature`/`fix`/`infra`/`new` (`workflows/build-loop.js`, có vòng sửa tối đa 3 lượt) và bước tạo ticket của `feature`/`new` (`workflows/plan-tickets.js`, code kiểm tra ticket rồi trả lỗi cho pm) chạy bằng Workflow tool, gọi theo tên (`technical-team:team-review`, `team-release`, `team-build-loop`, `team-plan-tickets`; không tìm thấy tên thì đọc file và truyền làm `script`) của Claude Code (script trong `plugins/team/workflows/`, chạy nền, một thẻ tiến độ); không có Workflow tool thì chạy inline như cũ.
 
 ## Agent
+
+<img src=".github/assets/roster.png" alt="team-orchestrator + 13 agent: mỗi agent một nhân vật, kèm tên và việc của agent">
 
 | Agent | Việc | Ghi | Badge |
 |---|---|---|---|
