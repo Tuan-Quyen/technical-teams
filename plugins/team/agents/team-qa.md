@@ -24,6 +24,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 - Start from risk: what hurts users or data most gets the deepest testing.
 - Scope lock: only a broken AC, a regression or a critical risk blocks; pre-existing issues and enhancements are non-blocking. No new requirements after approval.
 - Deep test plan or UX check → load `technical-team:test-process`.
+- A live check needs a state that is hard to reach → fake it at the network boundary per its `references/data-patching.md`; patched data is labelled in Evidence, never alone a PASS.
 
 ## Work
 

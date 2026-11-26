@@ -115,3 +115,61 @@ test('post-write: saving an item JSON regenerates STATE.md; other .team/ files a
   fs.writeFileSync(spec, '# X\n\n## Revision 2\n');
   assert.equal(run('post-write', { tool_input: { file_path: spec } }), null, 'spec files are not checked by the hook');
 });
+
+// ---- leftover temp-patch marker ----
+const MARK = 'TEAM-TEMP' + '-PATCH';
+const gitIn = (cwd, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.invalid', ...a], { cwd, encoding: 'utf8' });
+const tmpRepo = () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'guard-repo-'));
+  made.push(d);
+  fs.writeFileSync(path.join(d, 'a.js'), 'const a = 1;\nconst b = 2;\n');
+  fs.writeFileSync(path.join(d, 'NOTES.md'), '# notes\n');
+  gitIn(d, 'init', '-q'); gitIn(d, 'add', '-A'); gitIn(d, 'commit', '-qm', 'init');
+  return d;
+};
+const okReport = '### Handoff\n- Status: done\n- Files: none\n- Evidence: ok';
+const hand = (cwd, agent_type = dev) => run('pre-handback', { agent_type, cwd, tool_name: 'SubagentHandback', tool_input: { message: okReport } });
+const stop = (cwd, extra = {}) => run('subagent-stop', { agent_type: dev, cwd, last_assistant_message: okReport, ...extra });
+
+test('temp-patch marker: an added code line (tracked or untracked) refuses the hand-back, once at stop', () => {
+  const d = tmpRepo();
+  assert.equal(hand(d), null, 'clean tree');
+  fs.writeFileSync(path.join(d, 'a.js'), `const a = 1;\nconst b = fake(); // ${MARK}\n`);
+  const denied = hand(d)?.hookSpecificOutput;
+  assert.equal(denied?.permissionDecision, 'deny');
+  assert.match(denied.permissionDecisionReason, /a\.js:2/);
+  assert.match(denied.permissionDecisionReason, /data-patching\.md/);
+  assert.equal(stop(d)?.decision, 'block');
+  assert.equal(stop(d, { stop_hook_active: true }), null, 'no loop');
+  fs.writeFileSync(path.join(d, 'a.js'), 'const a = 1;\nconst b = 2;\n');
+  fs.writeFileSync(path.join(d, 'new.js'), `x(); /* ${MARK} */\n`);
+  assert.match(hand(d)?.hookSpecificOutput?.permissionDecisionReason, /new\.js:1/, 'untracked file');
+});
+
+test('temp-patch marker: markdown, .team/, a removed marker and a missing Handoff keep their own outcome', () => {
+  const d = tmpRepo();
+  fs.writeFileSync(path.join(d, 'NOTES.md'), `# notes\nrun git grep ${MARK}\n`);
+  fs.mkdirSync(path.join(d, '.team'));
+  fs.writeFileSync(path.join(d, '.team/x.txt'), `${MARK}\n`);
+  assert.equal(hand(d), null, 'md and .team ignored');
+  fs.writeFileSync(path.join(d, 'a.js'), `const a = 1; // ${MARK}\n`);
+  gitIn(d, 'add', 'a.js'); gitIn(d, 'commit', '-qm', 'oops');
+  fs.writeFileSync(path.join(d, 'a.js'), 'const a = 1;\n');
+  assert.equal(hand(d), null, 'removed');
+  fs.writeFileSync(path.join(d, 'a.js'), `const a = 1; // ${MARK}\n`);
+  const noHandoff = run('pre-handback', { agent_type: dev, cwd: d, tool_name: 'SubagentHandback', tool_input: { message: 'ok' } });
+  assert.match(noHandoff.hookSpecificOutput.permissionDecisionReason, /### Handoff/, 'Handoff check stays first');
+});
+
+test('temp-patch marker: orchestrator, user session and non-repo cwd are not touched', () => {
+  const d = tmpRepo();
+  fs.writeFileSync(path.join(d, 'a.js'), `x(); // ${MARK}\n`);
+  assert.equal(hand(d, 'technical-team:team-orchestrator'), null);
+  assert.equal(hand(d, ''), null, 'user session');
+  assert.equal(stop(d, { agent_type: 'technical-team:team-orchestrator' }), null);
+  const plain = fs.mkdtempSync(path.join(os.tmpdir(), 'guard-plain-'));
+  made.push(plain);
+  fs.writeFileSync(path.join(plain, 'a.js'), `x(); // ${MARK}\n`);
+  assert.equal(hand(plain), null, 'not a repo');
+  assert.equal(stop(path.join(plain, 'missing')), null, 'bad cwd');
+});

@@ -24,7 +24,7 @@ Node ≥ 21, no dependencies to install.
 | One test file | `node --test tests/hooks.test.mjs` |
 | One test by name | `node --test --test-name-pattern="<regex>" tests/<file>.test.mjs` |
 | Validate manifests only | `npm run validate` |
-| Behaviour eval (real Claude runs `plugins/team/evals/`, 1 run per case; ~$0.8, local only, not CI) | `npm run eval` (`-- --case <name>`) |
+| Behaviour eval (real Claude runs `plugins/team/evals/`, 1 run per case; ~$1.3, local only, not CI) | `npm run eval` (`-- --case <name>`) |
 | Full eval before a release (3 runs per case + a no-plugin baseline arm for the score delta) | `npm run eval:full` |
 | Try the working copy of the plugin | `claude --plugin-dir plugins/team`, then `/reload-plugins` after edits |
 | Migrate an old `.team/` workspace | `node plugins/team/tools/team-state.mjs migrate <dir>/.team` (dry run; `--write`) |
