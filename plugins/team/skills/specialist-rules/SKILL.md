@@ -60,6 +60,9 @@ Test: does every claim in your Handoff point at evidence?
 
 Those on the brief's **Tools:** line, else the fitting ones (MCP, project skills); list them under **Evidence**.
 
+- Waiting for a time or a condition: Monitor with an until-loop, or `run_in_background: true` for a command you started; never a bare `sleep N` (the harness blocks it).
+- Stop only what you started: TaskStop with its task id, or the PID you saved; never `pkill`/`killall` by pattern (auto mode denies it, and it can hit the user's or another agent's run).
+
 ## Handoff
 
 Reply in the user's language. End with:

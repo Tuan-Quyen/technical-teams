@@ -79,6 +79,17 @@ The four working principles (Think before you work · Simplicity first · Surgic
 
 - **Still in development: remove outright.** Unused or unwanted pieces are deleted fully — no `deprecated`/`removed` entries in `tests/contract.json`, no Deprecated/Removed/Migration lines in `CHANGELOG.md`, no compat fallbacks. Drop the name from `tests/contract.json` and from the `V031_*` lists in `tests/contract.test.mjs` too. These two files still pin everything that remains (plugin id, command and agent names, `.team/` paths, handoff fields), so add new public names there.
 - Adding/renaming/removing a command, agent, skill or template → update the lists in `tests/commands.test.mjs` and the tables in `README.md` (the test cross-checks README, the `.team/` layout and that every referenced file exists).
+- **Keep `README.md` and its art in sync, in the same change.** The README images in `.github/assets/` are made with the [`demo-studio`](https://github.com/Tuan-Quyen/demo-studio) plugin (`/demo-studio:art README.md`, slug `readme-art`; never hand-edit the PNGs). A change that alters what an image shows re-runs that image through its art → privacy → QA → GA flow before the change is done:
+
+  | Change | Image(s) |
+  |---|---|
+  | command flow (agents, order, ∥, tier, optional step) | `pipeline.png` (fix), `pipeline-{feature,review-release,new,triage}.png` |
+  | agent added, renamed, removed, or its one-line job | `roster.png` (+ `hero.png`, `social.png` when counts change) |
+  | agent / command / skill counts, tagline | `hero.png`, `social.png` |
+
+  - Image text traces to repo text (`#art.texts[].from`, anchored as `README.md#<section>: "<quote>"`): the `## Lệnh` "Vấn đề" column and the legend line are art sources, so edit their wording together with the images.
+  - Style: `B4 + C4` + the user's 14 chibi agent characters (kept outside the repo) on the light indigo palette; text in Vietnamese. P2 is waived only for those 14 assets.
+  - `docs/` is gitignored: images live in `.github/assets/` only. The `.demo/` workspace stays local.
 - A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (with a Breaking section when it applies).
 - Keep prompts short: orchestrator context size per run is a tracked metric in the CHANGELOG; prefer moving detail into a skill reference loaded on demand over growing an agent or command file.
 - Line endings: tests normalise CRLF, but keep files LF.
