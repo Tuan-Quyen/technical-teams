@@ -79,7 +79,7 @@ The four working principles (Think before you work · Simplicity first · Surgic
 
 - **Still in development: remove outright.** Unused or unwanted pieces are deleted fully — no `deprecated`/`removed` entries in `tests/contract.json`, no Deprecated/Removed/Migration lines in `CHANGELOG.md`, no compat fallbacks. Drop the name from `tests/contract.json` and from the `V031_*` lists in `tests/contract.test.mjs` too. These two files still pin everything that remains (plugin id, command and agent names, `.team/` paths, handoff fields), so add new public names there.
 - Adding/renaming/removing a command, agent, skill or template → update the lists in `tests/commands.test.mjs` and the tables in `README.md` (the test cross-checks README, the `.team/` layout and that every referenced file exists).
-- A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (Breaking / Deprecated / Removed / Migration when they apply).
+- A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (with a Breaking section when it applies).
 - Keep prompts short: orchestrator context size per run is a tracked metric in the CHANGELOG; prefer moving detail into a skill reference loaded on demand over growing an agent or command file.
 - Line endings: tests normalise CRLF, but keep files LF.
 - After a change to an agent, command, skill or hook, run `npm run eval` too. A failing case is a regression unless the transcript shows the plugin behaved correctly. Fix the grader only in that case. One eval case is one behaviour. Grade it deterministically, and use an `llm` grader only for quality a regex cannot judge. A new trigger or routing rule gets a should-not-fire case too.
