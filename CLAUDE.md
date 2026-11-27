@@ -90,7 +90,7 @@ The four working principles (Think before you work · Simplicity first · Surgic
   - Image text traces to repo text (`#art.texts[].from`, anchored as `README.md#<section>: "<quote>"`): the `## Lệnh` "Vấn đề" column and the legend line are art sources, so edit their wording together with the images.
   - Style: `B4 + C4` + the user's 14 chibi agent characters (kept outside the repo) on the light indigo palette; text in Vietnamese. P2 is waived only for those 14 assets.
   - `docs/` is gitignored: images live in `.github/assets/` only. The `.demo/` workspace stays local.
-- A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (Breaking / Deprecated / Removed / Migration when they apply).
+- A release bumps `version` in `plugins/team/.claude-plugin/plugin.json` and adds a `CHANGELOG.md` entry (with a Breaking section when it applies).
 - Keep prompts short: orchestrator context size per run is a tracked metric in the CHANGELOG; prefer moving detail into a skill reference loaded on demand over growing an agent or command file.
 - Line endings: tests normalise CRLF, but keep files LF.
 - After a change to an agent, command, skill or hook, run `npm run eval` too. A failing case is a regression unless the transcript shows the plugin behaved correctly. Fix the grader only in that case. One eval case is one behaviour. Grade it deterministically, and use an `llm` grader only for quality a regex cannot judge. A new trigger or routing rule gets a should-not-fire case too.
