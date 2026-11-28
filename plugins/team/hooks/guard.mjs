@@ -4,9 +4,11 @@
 //   pre-shell      PreToolUse Bash|PowerShell → deny `git commit` / `git push` (specialists never commit or push)
 //   pre-handback   PreToolUse SubagentHandback → a report without its Handoff (### Handoff, Status, Evidence) is refused
 //   subagent-stop  SubagentStop → a prose reply without its Handoff (### Handoff, Status, Evidence) is sent back once
+//   both handback modes also refuse while the working tree still has ADDED lines with the temp-patch marker (non-markdown, outside .team/; untracked and git-ignored files too)
 //   post-write     PostToolUse Write|Edit|MultiEdit on .team/items/*.json (any session) → regenerate STATE.md
 // Exit 0 with no output = no opinion. Any internal error also exits 0: a broken guard must not block work.
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const mode = process.argv[2];
 let input = {};
@@ -54,6 +56,53 @@ function lastAssistantText() {
 const HANDOFF_HINT = 'technical-team: end with your Handoff block from specialist-rules (### Handoff, then - Status: done | blocked | needs-input, - Files, - Evidence, - Next).';
 const hasHandoffBlock = (m) => /^#{2,4}\s*Handoff\b/m.test(m) && /-\s*Status:\s*(done|blocked|needs-input)\b/i.test(m) && /-\s*Evidence:/i.test(m);
 
+// A temporary data patch (test-process/references/data-patching.md) must not stay behind.
+// Built from two parts so this file never contains the literal marker (the repo is dogfooded).
+const MARKER = 'TEAM-TEMP' + '-PATCH';
+// Bounds for reading untracked and ignored files: a large generated file or a long list of
+// individually ignored files (logs, *.pyc) must not stall the hook. A hand-written fake is small.
+const MAX_SCAN_BYTES = 1024 * 1024;
+const MAX_IGNORED_FILES = 500;
+function leftoverPatches() {
+  const cwd = String(input.cwd || '');
+  if (!cwd) return [];
+  const git = (args) => execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 32 * 1024 * 1024 });
+  const skip = (f) => /\.md$/i.test(f) || /(^|\/)\.team\//.test(f);
+  const hits = [];
+  try {
+    let file = '', line = 0;
+    for (const l of git(['diff', '--no-color', '--no-ext-diff', '-U0', 'HEAD']).split('\n')) {
+      let m;
+      if ((m = l.match(/^\+\+\+ b\/(.*)$/))) file = m[1];
+      else if (l.startsWith('+++ ')) file = '';
+      else if ((m = l.match(/^@@ -\S+ \+(\d+)/))) line = Number(m[1]);
+      else if (l.startsWith('+') && file) { if (l.includes(MARKER) && !skip(file)) hits.push(`${file}:${line}`); line++; }
+    }
+    const scan = (files) => {
+      for (const f of files.filter((x) => x && !x.endsWith('/') && !skip(x))) {
+        try {
+          if (statSync(`${cwd}/${f}`).size > MAX_SCAN_BYTES) continue;
+          readFileSync(`${cwd}/${f}`, 'utf8').split('\n').forEach((t, i) => { if (t.includes(MARKER)) hits.push(`${f}:${i + 1}`); });
+        } catch { /* unreadable or binary → skip */ }
+      }
+    };
+    scan(git(['ls-files', '--others', '--exclude-standard']).split('\n'));
+    // A fake in a git-ignored file (api.local.js, .env.local) is just as much a leftover, and neither
+    // `git diff` nor the listing above shows it. `--directory` folds a wholly ignored directory
+    // (node_modules/, dist/, .venv/, .team/) into one `dir/` entry, which scan() skips: those trees are
+    // deps, build output and caches, and walking them would make every hand-back slow and could hit the
+    // timeout. Its own try, so a failure here never drops the hits found above.
+    try {
+      scan(git(['ls-files', '--others', '--ignored', '--exclude-standard', '--directory']).split('\n').slice(0, MAX_IGNORED_FILES));
+    } catch { /* listing failed or timed out → keep the other hits */ }
+  } catch { return []; } // not a repo, no HEAD, git missing → no opinion
+  return hits;
+}
+const patchReason = () => {
+  const hits = leftoverPatches();
+  return hits.length ? `technical-team: ${MARKER} left in the working tree (${hits.slice(0, 5).join(', ')}${hits.length > 5 ? `, +${hits.length - 5} more` : ''}). Remove the ${MARKER} lines (see test-process/references/data-patching.md), then hand back.` : '';
+};
+
 // Where the report goes out through a SubagentHandback tool call, a stop hook comes too late
 // (the call ends the run), so check the call itself.
 if (mode === 'pre-handback' && isSpecialist) {
@@ -61,6 +110,8 @@ if (mode === 'pre-handback' && isSpecialist) {
   if (!hasHandoffBlock(m)) {
     out({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `${HANDOFF_HINT} Call SubagentHandback again with your report plus that block.` } });
   }
+  const why = patchReason();
+  if (why) out({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: why } });
 }
 
 if (mode === 'subagent-stop' && isSpecialist && !input.stop_hook_active) {
@@ -73,6 +124,8 @@ if (mode === 'subagent-stop' && isSpecialist && !input.stop_hook_active) {
       reason: `${HANDOFF_HINT} Add it now; change nothing else.`,
     });
   }
+  const why = patchReason();
+  if (why) out({ decision: 'block', reason: why });
 }
 
 // ---- .team/items/*.json → regenerate the STATE.md view ----

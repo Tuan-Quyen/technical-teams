@@ -100,7 +100,7 @@ Orchestrator phải chạy ở session chính: subagent không spawn được su
 | `team-writer` | README, API docs, CHANGELOG, runbook | docs sản phẩm, `.team/docs/**` | 🩵 ✍️ |
 | `team-retrospector` | retro + audit chính team: theo skill `retrospect`: transcript local (`retro-miner.mjs`), `.team/`, git, định nghĩa agent; đối chiếu từng tín hiệu với file của plugin, đề xuất sửa kèm evidence; không sửa plugin | `retrospect/<YYYY-MM-DD>/` | 🟪 🔭 |
 
-Quy tắc chung + mẫu `### Handoff` của 13 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Hai quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay orchestrator): specialist không được `git commit`/`git push`, và báo cáo thiếu `### Handoff` (Status + Evidence) bị trả lại. Lưu `.team/items/*.json` thì hook sinh lại `STATE.md`. Luật chung của mọi pipeline (tier, opt-in workflow, task list, không commit/push) nằm **một chỗ**: run-kit §2.
+Quy tắc chung + mẫu `### Handoff` của 13 agent chuyên môn nằm ở **một chỗ**: skill `specialist-rules`, mỗi agent preload qua `skills:` trong frontmatter. Ba quy tắc được **hook** cưỡng chế (`hooks/hooks.json`, chỉ áp cho subagent `technical-team:team-*`, không chạm session của bạn hay orchestrator): specialist không được `git commit`/`git push`, báo cáo thiếu `### Handoff` (Status + Evidence) bị trả lại, và không được bàn giao khi cây làm việc còn dòng patch data tạm (marker `TEAM-TEMP-PATCH`, xem `test-process/references/data-patching.md`). Lưu `.team/items/*.json` thì hook sinh lại `STATE.md`. Luật chung của mọi pipeline (tier, opt-in workflow, task list, không commit/push) nằm **một chỗ**: run-kit §2.
 
 ## Màu agent
 
@@ -209,7 +209,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 |---|---|
 | Test (gồm cả validate nếu có `claude` CLI) | `npm test` |
 | Chỉ validate | `npm run validate` |
-| Eval hành vi thật, nhanh (Claude chạy plugin, mỗi case 1 lần; cần `ANTHROPIC_API_KEY` hoặc đã login, ~$0.8, không chạy trên CI) | `npm run eval` (`-- --case <tên>` cho một case) |
+| Eval hành vi thật, nhanh (Claude chạy plugin, mỗi case 1 lần; cần `ANTHROPIC_API_KEY` hoặc đã login, ~$1.3, không chạy trên CI) | `npm run eval` (`-- --case <tên>` cho một case) |
 | Eval đầy đủ trước release (mỗi case 3 lần + nhánh không plugin để đo Δ) | `npm run eval:full` |
 | Chạy thử bản đang sửa | `claude --plugin-dir plugins/team`, sửa xong gõ `/reload-plugins` |
 
@@ -217,7 +217,7 @@ Test và validate nằm ngoài plugin, ở `tests/` của repo (Node ≥ 21):
 |---|---|
 | `tests/build-loop.test.mjs` | chạy thật `build-loop.js` với agent giả: lô sửa, một bộ đếm, stall, cap, challenge (concede / trọng tài), câu brief giống hệt `run-kit` `qa-lines.md` |
 | `tests/team-state.test.mjs` | schema item JSON, view `STATE.md`, luật spec, `migrate` từ 0.32 |
-| `tests/hooks.test.mjs` | chặn commit/push của specialist, Handoff bắt buộc, sinh lại `STATE.md` |
+| `tests/hooks.test.mjs` | chặn commit/push của specialist, Handoff bắt buộc, không còn patch data tạm, sinh lại `STATE.md` |
 | `tests/retrospect.test.mjs` | `skills/retrospect/scripts/retro-miner.mjs` trên transcript giả: lọc phiên plugin/probe, cửa sổ ngày, usage, work inventory, correction, health (Status/Next, StructuredOutput), guard, evidence ref đúng dòng, `--show`, che secret |
 | `tests/structure.test.mjs` | khung section của từng loại file: agent, command, skill, reference (CLAUDE.md § Document format) |
 | `tests/contract.test.mjs` | tên lệnh, agent, đường dẫn `.team/` công khai (`tests/contract.json`) |
@@ -229,8 +229,8 @@ Eval (`plugins/team/evals/<case>/case.yaml`, fixture `evals/_fixtures/tiny-node.
 |---|---|---|
 | Phân loại | `route-feature-t2`, `route-feature-t1-tax`, `route-fix-t1` | `/technical-team:run` chọn đúng pipeline + tier theo run-kit |
 | Tự kích hoạt | `nl-feature-plan`, `nl-bug-plan` | câu tự nhiên, không slash command → đúng lane, đúng thứ tự agent |
-| Phủ định | `neg-question-no-pipeline`, `neg-auth-typo-not-t2` | câu hỏi → trả lời, không spawn/không item; sửa chữ ở trang login → không lên T2 |
-| Làm thật | `ba-writes-gwt`, `specialist-handoff`, `state-md-generated` | ba viết spec GWT có biên 100; debugger tìm đúng lỗi + Handoff; hook sinh lại `STATE.md` | Trên Windows eval không cấp được Bash/PowerShell (không có sandbox) nên chặn `git commit` chỉ được kiểm ở `tests/hooks.test.mjs`. Báo cáo HTML ở `plugins/team/evals/results/` (gitignored).
+| Phủ định | `neg-question-no-pipeline`, `neg-auth-typo-not-t2`, `neg-seed-no-patch` | câu hỏi → trả lời, không spawn/không item; sửa chữ ở trang login → không lên T2; state có sẵn trong seed → không patch tạm |
+| Làm thật | `ba-writes-gwt`, `specialist-handoff`, `state-md-generated`, `patch-temp-data` | ba viết spec GWT có biên 100; debugger tìm đúng lỗi + Handoff; hook sinh lại `STATE.md`; developer giả data ở biên fetch, ghi nhãn trong Evidence, không để lại gì trong code | Trên Windows eval không cấp được Bash/PowerShell (không có sandbox) nên chặn `git commit` chỉ được kiểm ở `tests/hooks.test.mjs`. Báo cáo HTML ở `plugins/team/evals/results/` (gitignored).
 
 Thêm, đổi tên hoặc xóa command/agent/skill/template → cập nhật bảng ở trên và danh sách trong `tests/commands.test.mjs`.
 

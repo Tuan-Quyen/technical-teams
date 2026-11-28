@@ -108,4 +108,5 @@ Under `${CLAUDE_PLUGIN_ROOT}/skills/test-process/references/`:
 |---|---|
 | `test-design.md` | designing test cases (techniques, exploratory charters), levels and types, quality characteristics in scope (ISO/IEC 25010:2023), risk → depth |
 | `ux-verification.md` | verifying UI/UX: conformance to the frontend design, Nielsen heuristics, WCAG 2.2 AA, UX severity |
+| `data-patching.md` | a live check or repro needs a state that is hard to reach (empty, error, edge data): fake the data at the network or fetch boundary, label it, roll it back |
 | `defects-and-reports.md` | writing a finding, rating severity, issue priority, the test summary |

@@ -40,6 +40,6 @@ Empty / one / many / max · invalid, missing, wrong-type or too-long input · de
 
 - One test per equivalence class plus each boundary; a decision with several conditions → a small table of the combinations that change the outcome; state logic → each valid transition and one invalid event per state.
 - Name tests by behaviour (`rejects an expired coupon`); one reason to fail; arrange → act → assert, no logic in the test.
-- Fake what crosses a boundary you do not own (network, clock, randomness, third-party API); keep your own logic real. Mock only to observe an interaction the AC is about. Time and randomness come from an injectable source.
+- Fake what crosses a boundary you do not own (network, clock, randomness, third-party API); keep your own logic real. Mock only to observe an interaction the AC is about. Time and randomness come from an injectable source. A hard UI state for a live check, not a test → `test-process/references/data-patching.md`.
 - A flaky test is a defect: find the race, shared state or real clock; never add retries or sleeps. One you did not write → report it with its failure rate; never delete or skip it.
 - Never loosen an assertion or change an expected value without the AC saying the behaviour changed. Coverage is a hint where tests are missing, not proof.

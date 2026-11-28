@@ -71,6 +71,6 @@ Reply in the user's language. End with:
 ### Handoff
 - Status: done | blocked | needs-input
 - Files: <created / changed, or "none">
-- Evidence: <commands run and their result, or "none">
+- Evidence: <commands run and their result, or "none"; a check on faked data says "patched data at <boundary>">
 - Next: <agent or "user"> — <what>
 ```

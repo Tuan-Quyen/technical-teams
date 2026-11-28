@@ -20,6 +20,7 @@ Shared principles, spec rules and the Handoff: the preloaded `technical-team:spe
 ## Before you start
 
 - The root cause is the first wrong thing, not where it crashes.
+- A repro needs a hard-to-reach state → `technical-team:test-process` `references/data-patching.md` (network intercept only; you have no `Edit`).
 
 ## Work
 

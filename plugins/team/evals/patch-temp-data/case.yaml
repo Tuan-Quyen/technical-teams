@@ -1,0 +1,34 @@
+schema_version: "1.1"
+name: patch-temp-data
+description: A hard UI state (empty orders, no backend) is reached by faking the API response; the fake is labelled in Evidence and nothing is left in the code.
+tags: [smoke, specialist, data-patching]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    Spawn the technical-team:team-developer agent with this brief, then relay its report verbatim:
+
+    Show that the empty state ("No orders yet") renders when the orders API returns []. No backend is available (fetchOrders in src/orders.js calls an unreachable URL). Run renderOrders on the fetched result with the response faked at the fetch boundary, and report what you saw. Do not change behaviour; leave the working tree as you found it.
+  max_turns: 20
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, Agent, Bash, Edit, Write]
+runs: 1
+graders:
+  - type: tool_used
+    name: spawns-developer
+    tool: Agent
+    input_match: 'team-developer'
+  - type: regex
+    name: evidence-labelled-patched
+    target: last_message
+    pattern: 'patched data at'
+    flags: i
+  - type: regex
+    name: orders-js-unchanged
+    target: { source: file, path: src/orders.js }
+    pattern: '^export async function fetchOrders\(\) \{\n  const res = await fetch\(.https://api\.example\.invalid/orders.\);\n  return res\.json\(\);\n\}\nexport function renderOrders\(list\) \{\n  if \(list\.length === 0\) return .No orders yet.;\n  return list\.map\(\(o\) => `#\$\{o\.id\} \$\{o\.status\}`\)\.join\(.\\n.\);\n\}\n$'
+  - type: llm
+    name: no-marker-left
+    focus: { source: file, path: src/orders.js }
+    criteria: |
+      Binary check. PASS only if the file shows no leftover fake data and no comment containing "TEAM-TEMP-PATCH"; the code must be a plain fetch of the URL with no hard-coded response.
