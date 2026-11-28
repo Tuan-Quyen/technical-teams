@@ -161,6 +161,24 @@ test('temp-patch marker: markdown, .team/, a removed marker and a missing Handof
   assert.match(noHandoff.hookSpecificOutput.permissionDecisionReason, /### Handoff/, 'Handoff check stays first');
 });
 
+test('temp-patch marker: a git-ignored file refuses the hand-back; ignored directories, markdown and .team/ do not', () => {
+  const d = tmpRepo();
+  fs.writeFileSync(path.join(d, '.gitignore'), '*.local.js\n*.local.md\nnode_modules/\n.team/\n');
+  gitIn(d, 'add', '.gitignore'); gitIn(d, 'commit', '-qm', 'ignore');
+  fs.writeFileSync(path.join(d, 'notes.local.md'), `${MARK}\n`);
+  fs.mkdirSync(path.join(d, '.team'));
+  fs.writeFileSync(path.join(d, '.team/x.js'), `${MARK}\n`);
+  fs.mkdirSync(path.join(d, 'node_modules/pkg'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'node_modules/pkg/index.js'), `x(); // ${MARK}\n`);
+  assert.equal(hand(d), null, 'ignored markdown, .team/ and a wholly ignored directory are skipped');
+  fs.writeFileSync(path.join(d, 'api.local.js'), `const api = 1;\nfetch = fake; // ${MARK}\n`);
+  const denied = hand(d)?.hookSpecificOutput;
+  assert.equal(denied?.permissionDecision, 'deny', 'ignored file');
+  assert.match(denied.permissionDecisionReason, /api\.local\.js:2/);
+  assert.doesNotMatch(denied.permissionDecisionReason, /node_modules|\.team|notes\.local/);
+  assert.equal(stop(d)?.decision, 'block');
+});
+
 test('temp-patch marker: orchestrator, user session and non-repo cwd are not touched', () => {
   const d = tmpRepo();
   fs.writeFileSync(path.join(d, 'a.js'), `x(); // ${MARK}\n`);
